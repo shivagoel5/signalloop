@@ -200,6 +200,8 @@
   .crmlog li{margin:5px 0}
   .crmlog code{font-size:12px;background:#F4F6FE;border-radius:4px;padding:1px 5px}
   .derr{color:#A61E4D;background:#FCE8EF;border-radius:8px;padding:10px 14px;margin-top:14px;font-size:14px}
+  .dtable td.best{background:#E9F6F0;color:var(--green);font-weight:700}
+  .dsubhead{margin-top:18px}
   @media(max-width:680px){.dgrid{grid-template-columns:1fr}.demo-steps{grid-template-columns:repeat(2,1fr)}
     .dtable .hm{display:none}
     .bar{grid-template-columns:1fr 70px 50px}}
@@ -461,9 +463,9 @@
   <section id="live">
     <div class="kicker">Live demo</div>
     <h2>Run the loop yourself</h2>
-    <p>Pick a company and run one full loop: generate the content, distribute it through the CRM, measure
-    engagement, and decide what to publish next. Every run is saved, so the recommendations shift as
-    results pile up.</p>
+    <p>Pick a company and run one full loop: generate the content, distribute it through HubSpot to email,
+    social and the blog, measure engagement on every channel, and decide what each audience should get next
+    and where. Every run is saved, so the recommendations shift as results pile up.</p>
     <div class="demo" id="demo">
       <div class="demo-bar">
         <div class="demo-pick" role="radiogroup" aria-label="Company">
@@ -477,8 +479,8 @@
       </ol>
       <div class="demo-out" id="demo-out" hidden></div>
       <p class="demo-note" id="demo-note">Content comes from each company's profile. CRM calls are built exactly as
-      they would be sent to HubSpot, in mock mode until a CRM account is connected. Engagement is simulated and
-      no emails are sent.</p>
+      they would be sent to HubSpot. Email engagement is simulated and no emails are sent. LinkedIn, Instagram,
+      Facebook and blog figures are sample data standing in for HubSpot Social and website analytics.</p>
     </div>
   </section>
 
@@ -673,6 +675,17 @@
     thead.appendChild(hr);t.appendChild(thead);
     rows.forEach(function(r){var tr=el('tr',r.top?'top':null);r.cells.forEach(function(c,i){tr.appendChild(el('td',cls(i),c))});tb.appendChild(tr)});
     t.appendChild(tb);wrap.appendChild(t);return wrap}
+  // Audience x channel grid; each audience's best channel this run is highlighted.
+  function matrix(channels,metrics){
+    var wrap=el('div','dtable-wrap'),t=el('table','dtable'),thead=el('thead'),tb=el('tbody'),hr=el('tr');
+    var th0=el('th',null,'Audience');th0.scope='col';hr.appendChild(th0);
+    channels.forEach(function(c){var th=el('th','num',c.label);th.scope='col';hr.appendChild(th)});
+    thead.appendChild(hr);t.appendChild(thead);
+    metrics.forEach(function(m){var tr=el('tr');tr.appendChild(el('td',null,m.persona));
+      channels.forEach(function(c){var cell=m.channels.filter(function(x){return x.channel===c.key})[0];
+        tr.appendChild(el('td','num'+(cell&&m.best_channel===c.key?' best':''),cell?cell.engaged+' · '+pct(cell.rate):'—'))});
+      tb.appendChild(tr)});
+    t.appendChild(tb);wrap.appendChild(t);return wrap}
 
   function refreshCount(){
     fetch('/api/run?company='+company).then(function(r){return r.ok?r.json():null}).then(function(h){
@@ -689,9 +702,10 @@
   function render(d){
     out.textContent='';out.hidden=false;
     var head=el('div','dhead');head.appendChild(el('b',null,'Run #'+d.loop.run_number+' · '+d.company));
-    head.appendChild(el('span','chip'+(d.mode.crm==='live'?' live':''),d.mode.crm==='live'?'HubSpot: live':'HubSpot: mock'));
+    head.appendChild(el('span','chip'+(d.mode.crm==='live'?' live':''),d.mode.crm==='live'?'HubSpot CRM: live':'HubSpot CRM: mock'));
     head.appendChild(el('span','chip','Content: '+d.mode.content));
     head.appendChild(el('span','chip sim','Engagement: simulated'));
+    head.appendChild(el('span','chip sim','Social & blog: sample data'));
     out.appendChild(head);
 
     var b1=block('1 · Generate');
@@ -702,14 +716,16 @@
     b1.appendChild(g);
 
     var b2=block('2 · Distribute');
-    b2.appendChild(table(['Audience','Subject line','Segment size','CRM contacts'],d.distribution.map(function(r){
-      return {cells:[r.persona,r.subject,String(r.segment_size),String(r.crm_contacts)]}}),2,[1]));
+    b2.appendChild(table(['Audience','Channels','Segment size','CRM contacts'],d.distribution.map(function(r){
+      return {cells:[r.persona,r.channels.join(' · '),String(r.segment_size),String(r.crm_contacts)]}}),2,[2]));
     var log=el('details','crmlog');
-    log.appendChild(el('summary',null,d.crm.request_count+' HubSpot API calls ('+d.crm.mode+')'));
+    log.appendChild(el('summary',null,d.crm.request_count+' HubSpot API calls ('+d.crm.mode+') · '+d.crm.simulated_sends+' email sends simulated'));
     var ul=el('ul');
     d.crm.requests.forEach(function(r){var li=el('li');li.appendChild(el('code',null,r.method+' '+r.path));
       li.appendChild(document.createTextNode(' × '+r.count+' · '+r.status));ul.appendChild(li)});
+    ul.appendChild(el('li',null,'No emails are sent: HubSpot\'s email-sending API needs a paid add-on, so sends are simulated.'));
     log.appendChild(ul);b2.appendChild(log);
+    b2.appendChild(el('div','dsub','Sources: '+d.channels.map(function(c){return c.label+' ('+c.source+')'}).join(' · ')));
 
     var b3=block('3 · Measure');
     var top=d.metrics.reduce(function(a,m){return m.click_rate>a.click_rate?m:a});
@@ -718,15 +734,19 @@
     var sum=el('div','dsum');sum.appendChild(el('p',null,d.summary.summary));
     var recs=el('ul');d.summary.recommendations.forEach(function(r){recs.appendChild(el('li',null,r))});
     sum.appendChild(recs);b3.appendChild(sum);
+    b3.appendChild(el('div','dlab dsubhead','Engagement by channel (people engaged · rate)'));
+    b3.appendChild(matrix(d.channels,d.metrics));
 
     var b4=block('4 · Optimize');
-    var topics=el('ul','dlist');d.optimization.next_topics.forEach(function(t){topics.appendChild(el('li',null,t))});
+    b4.appendChild(el('div','dsub','Next topic and best channel for each audience, based on every saved run:'));
+    var topics=el('ul','dlist');d.optimization.by_audience.forEach(function(a){var li=el('li');
+      li.appendChild(el('b',null,a.persona+' → '+a.best_channel_label+': '));li.appendChild(document.createTextNode(a.next_topic));topics.appendChild(li)});
     b4.appendChild(topics);
     var hls=el('div','hls');d.optimization.headline_variants.forEach(function(h){hls.appendChild(el('span',null,h))});
     b4.appendChild(hls);b4.appendChild(el('div','dsub','Why: '+d.optimization.rationale));
 
     var b5=block('↻ Loop memory');
-    b5.appendChild(el('div','dsub','Average click rate by audience across '+d.loop.run_number+' saved run'+(d.loop.run_number===1?'':'s')+'. The leader is what the next slate leans into.'));
+    b5.appendChild(el('div','dsub','Average email click rate by audience across '+d.loop.run_number+' saved run'+(d.loop.run_number===1?'':'s')+'. The leader is what the next slate leans into.'));
     var max=Math.max.apply(null,d.loop.averages.map(function(a){return a.avg_click}))||1,bars=el('div','bars');
     d.loop.averages.forEach(function(a){
       var row=el('div','bar'+(a.persona===d.loop.leader?' lead':'')),track=el('div','track'),fill=el('div','fill');
@@ -735,9 +755,10 @@
       bars.appendChild(row)});
     b5.appendChild(bars);
 
-    note.textContent=d.mode.crm==='live'
-      ?'Contacts and lists were written to a real HubSpot account. Engagement is simulated and no emails are sent.'
-      :'CRM calls are built exactly as they would be sent to HubSpot, in mock mode until a CRM account is connected. Engagement is simulated and no emails are sent.';
+    note.textContent=(d.mode.crm==='live'
+      ?'Contacts, the persona property and audience lists were written to a real HubSpot account. '
+      :'CRM calls are built exactly as they would be sent to HubSpot, in mock mode until the account is connected. ')
+      +'Email engagement is simulated and no emails are sent. LinkedIn, Instagram, Facebook and blog figures are sample data standing in for HubSpot Social and website analytics.';
   }
 
   runBtn.addEventListener('click',async function(){

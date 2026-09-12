@@ -35,10 +35,16 @@ export default async (req) => {
     mode: env("HUBSPOT_MODE") || "mock",
   });
   const history = (await store.get(`history/${company}`, { type: "json" })) ?? [];
+  // Remembers which HubSpot properties and lists already exist, so repeat runs skip setup calls.
+  const crmKey = `crm-state/${hubspot.live ? "live" : "mock"}`;
+  const crmState = (await store.get(crmKey, { type: "json" })) ?? {};
 
   try {
-    const { report, history: updated } = await runPipeline({ companyKey: company, history, hubspot });
+    const { report, history: updated, crmState: updatedCrm } = await runPipeline({
+      companyKey: company, history, hubspot, crmState,
+    });
     await store.setJSON(`history/${company}`, updated);
+    await store.setJSON(crmKey, updatedCrm);
     await store.setJSON(usageKey, used + 1);
     return json(report);
   } catch (err) {

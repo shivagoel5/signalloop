@@ -1,11 +1,34 @@
-// HubSpot CRM client for the live demo, mirroring ai-content-pipeline/pipeline/crm.py.
+// HubSpot CRM client for the live demo, built around what a free HubSpot account allows:
+// custom contact properties, batch contact upserts, and static (MANUAL) lists.
 //
 //   mock (default)  Build the real request, record it, return a simulated response.
 //   live            Send it with HUBSPOT_ACCESS_TOKEN (set HUBSPOT_MODE=live in Netlify).
 //
-// Every call is appended to `requestLog` so the demo can show exactly what was exercised.
+// Email sends are not HubSpot calls here: HubSpot's transactional email API needs a paid
+// add-on, so the pipeline simulates sends and only counts them.
 
 const BASE_URL = "https://api.hubapi.com";
+
+export const CONTACT_PROPERTIES = [
+  { name: "persona", label: "Persona", description: "SignalLoop audience segment" },
+  {
+    name: "signalloop_last_newsletter",
+    label: "SignalLoop last newsletter",
+    description: "Subject line of the newsletter variant assigned in the last SignalLoop run",
+  },
+  {
+    name: "signalloop_last_campaign",
+    label: "SignalLoop last campaign",
+    description: "Campaign id and date of the last SignalLoop run",
+  },
+];
+
+export class HubSpotError extends Error {
+  constructor(message, status) {
+    super(message);
+    this.status = status;
+  }
+}
 
 export class HubSpotClient {
   constructor({ token = "", mode = "mock", fetchImpl = globalThis.fetch } = {}) {
@@ -15,113 +38,86 @@ export class HubSpotClient {
     this.requestLog = [];
   }
 
-  async request(method, path, payload, simulated) {
-    const entry = { method, url: `${BASE_URL}${path}`, payload };
+  // `simulated` is the mock response, or a function that returns (or throws) one.
+  async request(method, path, body, simulated) {
+    const entry = { method, path, body };
     this.requestLog.push(entry);
 
     if (this.live) {
-      const resp = await this.fetch(entry.url, {
+      const resp = await this.fetch(`${BASE_URL}${path}`, {
         method,
         headers: { Authorization: `Bearer ${this.token}`, "Content-Type": "application/json" },
-        body: payload ? JSON.stringify(payload) : undefined,
+        body: body === undefined ? undefined : JSON.stringify(body),
       });
       entry.status = resp.status;
       const text = await resp.text();
       if (!resp.ok) {
-        throw new Error(`HubSpot ${method} ${path} failed with ${resp.status}: ${text.slice(0, 200)}`);
+        throw new HubSpotError(`HubSpot ${method} ${path} failed with ${resp.status}: ${text.slice(0, 200)}`, resp.status);
       }
       return text ? JSON.parse(text) : {};
     }
 
     entry.status = "MOCK";
-    return simulated ?? { id: mockId(), mock: true };
+    return typeof simulated === "function" ? simulated() : simulated ?? {};
   }
 
-  // Contacts: one batch upsert keyed on email, so repeat runs update the same records.
-  upsertContacts(contacts) {
-    const inputs = contacts.map((c) => ({
-      idProperty: "email",
-      id: c.email,
-      properties: {
-        email: c.email,
-        firstname: c.first_name ?? "",
-        lastname: c.last_name ?? "",
-        company: c.company ?? "",
-        persona: c.persona, // custom segmentation property
-        lifecyclestage: "subscriber",
-      },
-    }));
-    return this.request("POST", "/crm/v3/objects/contacts/batch/upsert", { inputs }, {
+  // Create the SignalLoop contact properties that don't exist yet.
+  async ensureContactProperties() {
+    for (const p of CONTACT_PROPERTIES) {
+      try {
+        await this.request("GET", `/crm/v3/properties/contacts/${p.name}`, undefined, () => {
+          throw new HubSpotError("Simulated: property not found", 404);
+        });
+      } catch (err) {
+        if (err.status !== 404) throw err;
+        await this.request("POST", "/crm/v3/properties/contacts", {
+          groupName: "contactinformation",
+          name: p.name,
+          label: p.label,
+          description: p.description,
+          type: "string",
+          fieldType: "text",
+        }, { name: p.name });
+      }
+    }
+  }
+
+  // One batch upsert keyed on email, so repeat runs update the same records.
+  // Returns a Map of lowercase email -> HubSpot record id.
+  async upsertContacts(contacts) {
+    const inputs = contacts.map((c) => ({ idProperty: "email", id: c.email, properties: c.properties }));
+    const resp = await this.request("POST", "/crm/v3/objects/contacts/batch/upsert", { inputs }, () => ({
       status: "COMPLETE",
-      results: inputs.map((i) => ({ id: mockId(), properties: i.properties })),
-    });
+      results: inputs.map((i) => ({ id: mockId(), properties: { email: i.id } })),
+    }));
+    return new Map((resp.results ?? [])
+      .filter((r) => r.properties?.email)
+      .map((r) => [r.properties.email.toLowerCase(), String(r.id)]));
   }
 
-  // A dynamic list that captures everyone in a persona segment.
-  createSegmentList(personaId, segment) {
-    const payload = {
-      name: `SignalLoop · ${personaId}`,
-      objectTypeId: "0-1", // contacts
-      processingType: "DYNAMIC",
-      filterBranch: {
-        filterBranchType: "OR",
-        filterBranches: [{
-          filterBranchType: "AND",
-          filters: [{
-            filterType: "PROPERTY",
-            property: "persona",
-            operation: { operationType: "ENUMERATION", operator: "IS_ANY_OF", values: [segment] },
-          }],
-        }],
-      },
-    };
-    return this.request("POST", "/crm/v3/lists", payload, { listId: mockId(), name: payload.name });
+  // Create a static list, or find it by name if an earlier run already created it.
+  async ensureStaticList(name) {
+    try {
+      const resp = await this.request("POST", "/crm/v3/lists", {
+        name,
+        objectTypeId: "0-1", // contacts
+        processingType: "MANUAL",
+      }, () => ({ list: { listId: mockId(), name } }));
+      return String(resp.list.listId);
+    } catch (err) {
+      if (err.status !== 400 && err.status !== 409) throw err;
+      const resp = await this.request("GET", `/crm/v3/lists/object-type-id/0-1/name/${encodeURIComponent(name)}`);
+      return String(resp.list.listId);
+    }
   }
 
-  // Send the persona's newsletter variant to one contact.
-  sendMarketingEmail(contact, newsletter, blogTitle) {
-    const payload = {
-      emailId: stableEmailId(newsletter.newsletter_id),
-      message: { to: contact.email, subject: newsletter.subject },
-      contactProperties: { firstname: contact.first_name ?? "", persona: contact.persona },
-      customProperties: {
-        blog_title: blogTitle,
-        preview_text: newsletter.preview ?? "",
-        html_body: newsletter.body.replace("{first_name}", contact.first_name || "there"),
-      },
-    };
-    return this.request("POST", "/marketing/v3/transactional/single-email/send", payload, {
-      requestId: mockId(),
-      sendResult: "SENT",
-    });
-  }
-
-  // Record the campaign as a CRM object for reporting.
-  logCampaign(campaign) {
-    const payload = {
-      properties: {
-        campaign_name: campaign.blog_title,
-        campaign_id: campaign.id,
-        topic: campaign.topic,
-        newsletter_ids: campaign.newsletter_ids.join(","),
-        send_date: campaign.send_date,
-        segments: campaign.segments.join(","),
-      },
-    };
-    return this.request("POST", "/crm/v3/objects/marketing_campaigns", payload, {
-      id: mockId(),
-      properties: payload.properties,
+  addToStaticList(listId, recordIds) {
+    return this.request("PUT", `/crm/v3/lists/${listId}/memberships/add`, recordIds, {
+      recordIdsAdded: recordIds,
     });
   }
 }
 
 function mockId() {
-  return crypto.randomUUID().replace(/-/g, "").slice(0, 12);
-}
-
-// Deterministic pseudo-template-id per newsletter variant.
-function stableEmailId(newsletterId) {
-  let h = 0;
-  for (const ch of newsletterId) h = (Math.imul(h, 31) + ch.codePointAt(0)) >>> 0;
-  return `tmpl_${h % 10_000_000}`;
+  return String(Math.floor(1e10 + Math.random() * 9e10));
 }

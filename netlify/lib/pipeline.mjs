@@ -1,55 +1,77 @@
 // One SignalLoop run for the live demo, ported from ai-content-pipeline (main.py and pipeline/*).
 // Company profiles and sample contacts are read from the Python project, so both versions
-// share one source of truth.
+// share one source of truth. Channel mixes beyond email live in channels.mjs.
 
 import ramp from "../../ai-content-pipeline/examples/ramp.json" with { type: "json" };
 import square from "../../ai-content-pipeline/examples/square.json" with { type: "json" };
 import contactBook from "../../ai-content-pipeline/data/contacts.json" with { type: "json" };
+import { CHANNELS, CHANNEL_MIX } from "./channels.mjs";
 
 export const PROFILES = { ramp, square };
 export const HISTORY_LIMIT = 50;
 
-export async function runPipeline({ companyKey, history = [], hubspot, seed, now = new Date() }) {
+export async function runPipeline({ companyKey, history = [], hubspot, crmState = {}, seed, now = new Date() }) {
   const profile = PROFILES[companyKey];
   if (!profile) throw new Error(`Unknown company: ${companyKey}`);
   seed = (seed ?? Math.floor(Math.random() * 2 ** 32)) >>> 0;
 
   const personas = profile.personas;
+  const mix = CHANNEL_MIX[companyKey];
+  const sendDate = now.toISOString().slice(0, 10);
   const campaignId = `cmp_${now.toISOString().replace(/\D/g, "").slice(0, 14)}_${seed.toString(36).slice(-4)}`;
+  const channelKeys = (p) => ["email", ...Object.keys(mix[p.id].channels)];
 
   // --- Stage 1: generate (template mode, same as the Python mock engine) ---
   const blog = profile.blog;
   const newsletters = Object.fromEntries(personas.map((p) => [p.id, p.newsletter]));
 
   // --- Stage 2: distribute through the CRM ---
-  const segments = new Set(personas.map((p) => p.segment));
-  const contacts = contactBook.filter((c) => segments.has(c.persona));
-  await hubspot.upsertContacts(contacts);
-  for (const p of personas) await hubspot.createSegmentList(p.id, p.segment);
+  const state = { propertiesReady: false, lists: {}, ...crmState };
+  state.lists = { ...state.lists };
+  if (!state.propertiesReady) {
+    await hubspot.ensureContactProperties();
+    state.propertiesReady = true;
+  }
+
+  const bySegment = new Map(personas.map((p) => [p.segment, p]));
+  const contacts = contactBook
+    .filter((c) => bySegment.has(c.persona))
+    .map((c) => ({
+      email: c.email,
+      persona: c.persona,
+      properties: {
+        email: c.email,
+        firstname: c.first_name ?? "",
+        lastname: c.last_name ?? "",
+        company: c.company ?? "",
+        persona: c.persona,
+        signalloop_last_newsletter: newsletters[bySegment.get(c.persona).id].subject,
+        signalloop_last_campaign: `${campaignId} (${sendDate})`,
+      },
+    }));
+  const idsByEmail = await hubspot.upsertContacts(contacts);
 
   const crmContacts = {};
-  const newsletterIds = {};
-  for (const p of personas) {
-    const newsletterId = `${campaignId}_${p.id}`;
-    newsletterIds[p.id] = newsletterId;
-    const recipients = contacts.filter((c) => c.persona === p.segment);
-    for (const c of recipients) {
-      await hubspot.sendMarketingEmail(c, { ...newsletters[p.id], newsletter_id: newsletterId }, blog.title);
-    }
-    crmContacts[p.id] = recipients.length;
-  }
+  await Promise.all(personas.map(async (p) => {
+    const listName = `SignalLoop - ${profile.name} - ${p.id}`;
+    state.lists[listName] ??= await hubspot.ensureStaticList(listName);
+    const ids = contacts
+      .filter((c) => c.persona === p.segment)
+      .map((c) => idsByEmail.get(c.email.toLowerCase()))
+      .filter(Boolean);
+    if (ids.length) await hubspot.addToStaticList(state.lists[listName], ids);
+    crmContacts[p.id] = ids.length;
+  }));
 
   const campaign = {
     id: campaignId,
     blog_title: blog.title,
     topic: blog.title,
-    send_date: now.toISOString().slice(0, 10),
-    newsletter_ids: Object.values(newsletterIds),
+    send_date: sendDate,
     segments: personas.map((p) => p.segment),
   };
-  await hubspot.logCampaign(campaign);
 
-  // --- Stage 3: measure (simulated engagement around each persona's baseline) ---
+  // --- Stage 3: measure (simulated email engagement, sample data for other channels) ---
   const rng = makeRng(seed);
   const metrics = personas.map((p) => {
     const base = p.engagement;
@@ -75,28 +97,48 @@ export async function runPipeline({ companyKey, history = [], hubspot, seed, now
     };
   });
 
+  for (const m of metrics) {
+    const sampled = Object.entries(mix[m.persona_id].channels).map(([channel, b]) => {
+      const reach = Math.round(b.reach * (1 + (rng() * 2 - 1) * 0.15));
+      const rate = round4(jitter(rng, b.rate, b.rate * 0.25));
+      return { channel, reach, rate, engaged: Math.round(reach * rate) };
+    });
+    m.channels = [{ channel: "email", reach: m.delivered, rate: m.click_rate, engaged: m.clicks }, ...sampled];
+    m.best_channel = maxBy(m.channels, (c) => c.engaged).channel;
+  }
+
   const runRecord = {
     campaign_id: campaignId,
     at: now.toISOString(),
-    metrics: metrics.map(({ persona_id, open_rate, click_rate, unsub_rate }) => ({
-      persona_id, open_rate, click_rate, unsub_rate,
+    metrics: metrics.map((m) => ({
+      persona_id: m.persona_id,
+      open_rate: m.open_rate,
+      click_rate: m.click_rate,
+      unsub_rate: m.unsub_rate,
+      channels: m.channels.map(({ channel, rate, engaged }) => ({ channel, rate, engaged })),
     })),
   };
   const updatedHistory = [...history, runRecord].slice(-HISTORY_LIMIT);
-  const averages = averagesByPersona(updatedHistory, personas);
+  const averages = averagesByPersona(updatedHistory, personas, mix);
   const leader = maxBy(averages, (a) => a.avg_click);
   const runs = updatedHistory.length;
 
-  // --- Stage 4: optimize (lean into the audience that leads across saved runs) ---
+  // --- Stage 4: optimize (next topic and best channel per audience, from every saved run) ---
   const optimization = {
-    next_topics: profile.optimization.next_topics,
+    by_audience: averages.map((a) => ({
+      persona: a.persona,
+      best_channel: a.best_channel,
+      best_channel_label: CHANNELS[a.best_channel].label,
+      next_topic: mix[a.persona_id].next_topic,
+    })),
     headline_variants: profile.optimization.headline_variants,
     rationale:
-      `${leader.persona} has the strongest average click-through (${pct(leader.avg_click)} across ` +
+      `${leader.persona} has the strongest average email click-through (${pct(leader.avg_click)} across ` +
       `${runs} run${runs === 1 ? "" : "s"}), so the next slate leans into the angle that resonated ` +
       "with that segment.",
   };
 
+  const usedChannels = [...new Set(personas.flatMap(channelKeys))];
   const report = {
     company: profile.name,
     company_key: companyKey,
@@ -104,8 +146,16 @@ export async function runPipeline({ companyKey, history = [], hubspot, seed, now
     mode: {
       content: "templates",
       crm: hubspot.live ? "live" : "mock",
-      engagement: "simulated",
+      email_engagement: "simulated",
+      social_and_blog: "sample data",
     },
+    channels: usedChannels.map((key) => ({
+      key,
+      label: CHANNELS[key].label,
+      source: key === "email"
+        ? `HubSpot CRM ${hubspot.live ? "(live)" : "(mock)"} · engagement simulated`
+        : CHANNELS[key].source,
+    })),
     blog: {
       title: blog.title,
       outline_points: blog.outline.length,
@@ -118,6 +168,7 @@ export async function runPipeline({ companyKey, history = [], hubspot, seed, now
     })),
     distribution: personas.map((p) => ({
       persona: p.name,
+      channels: channelKeys(p).map((k) => CHANNELS[k].label),
       segment_size: p.audience_size,
       crm_contacts: crmContacts[p.id],
       subject: newsletters[p.id].subject,
@@ -130,10 +181,11 @@ export async function runPipeline({ companyKey, history = [], hubspot, seed, now
       mode: hubspot.live ? "live" : "mock",
       request_count: hubspot.requestLog.length,
       requests: groupRequests(hubspot.requestLog),
+      simulated_sends: contacts.length,
     },
   };
 
-  return { report, history: updatedHistory };
+  return { report, history: updatedHistory, crmState: state };
 }
 
 export function summarizeHistory(companyKey, history) {
@@ -141,21 +193,31 @@ export function summarizeHistory(companyKey, history) {
   return {
     company: profile.name,
     runs: history.length,
-    averages: averagesByPersona(history, profile.personas),
+    averages: averagesByPersona(history, profile.personas, CHANNEL_MIX[companyKey]),
   };
 }
 
-function averagesByPersona(history, personas) {
+function averagesByPersona(history, personas, mix) {
   return personas.map((p) => {
     const rows = history.flatMap((run) => run.metrics.filter((m) => m.persona_id === p.id));
-    const avg = (key) => (rows.length ? round4(rows.reduce((s, r) => s + r[key], 0) / rows.length) : 0);
+    const avg = (values) => (values.length ? round4(values.reduce((s, v) => s + v, 0) / values.length) : 0);
+
+    // Runs saved before channels existed have no per-channel data; skip them for channel averages.
+    const channelAverages = ["email", ...Object.keys(mix[p.id].channels)].map((channel) => {
+      const engaged = rows.flatMap((r) => (r.channels ?? []).filter((c) => c.channel === channel).map((c) => c.engaged));
+      return { channel, runs: engaged.length, avg_engaged: avg(engaged) };
+    });
+    const best = maxBy(channelAverages, (c) => c.avg_engaged);
+
     return {
       persona_id: p.id,
       persona: p.name,
       runs: rows.length,
-      avg_open: avg("open_rate"),
-      avg_click: avg("click_rate"),
-      avg_unsub: avg("unsub_rate"),
+      avg_open: avg(rows.map((r) => r.open_rate)),
+      avg_click: avg(rows.map((r) => r.click_rate)),
+      avg_unsub: avg(rows.map((r) => r.unsub_rate)),
+      channels: channelAverages,
+      best_channel: best.channel,
     };
   });
 }
@@ -165,26 +227,30 @@ function summarize(metrics, leader, runs) {
   const worst = maxBy(metrics, (m) => -m.click_rate);
   const lift = ((best.click_rate - worst.click_rate) * 100).toFixed(1);
   let summary =
-    `${best.persona} led this send with a ${pct(best.click_rate)} click rate, about ${lift} points ` +
-    `higher than ${worst.persona}. Open rates were healthy across segments, so the gap is driven by ` +
-    "message-to-offer fit rather than subject lines.";
+    `${best.persona} led email this send with a ${pct(best.click_rate)} click rate, about ${lift} points ` +
+    `higher than ${worst.persona}. Across channels, ${best.persona} engaged most on ` +
+    `${CHANNELS[best.best_channel].label}.`;
   if (runs > 1) {
-    summary += ` Across ${runs} runs, ${leader.persona} leads on average click rate (${pct(leader.avg_click)}).`;
+    summary += ` Across ${runs} runs, ${leader.persona} leads on average email click rate (${pct(leader.avg_click)}).`;
   }
   return {
     summary,
     recommendations: [
       `Double down on the angle that worked for ${best.persona}: lead with the concrete ROI or time-saved hook in future sends.`,
       `Rework the ${worst.persona} variant: swap abstract framing for a specific case study or before-and-after example.`,
-      "Add a single, unmissable primary CTA per email to lift click-through.",
+      "Put each audience's next piece on the channel where it engages most, not on every channel.",
     ],
   };
 }
 
+// Group the CRM log by endpoint, with record ids and names folded into placeholders.
 function groupRequests(log) {
   const groups = new Map();
   for (const r of log) {
-    const path = new URL(r.url).pathname;
+    const path = r.path
+      .replace(/\/lists\/[^/]+\/memberships\/add$/, "/lists/{listId}/memberships/add")
+      .replace(/\/name\/[^/]+$/, "/name/{listName}")
+      .replace(/\/properties\/contacts\/[^/]+$/, "/properties/contacts/{name}");
     const key = `${r.method} ${path}`;
     const group = groups.get(key) ?? { method: r.method, path, count: 0, status: r.status };
     group.count += 1;

@@ -109,7 +109,15 @@ http://127.0.0.1:5000
 
 The [case study](https://signalloop-shiva.netlify.app/#live) includes a **Run the loop** panel backed by a Netlify Function (`netlify/functions/run.mjs`). It runs the same four stages as the Python pipeline, reads the same company profiles and sample contacts, and saves run history in Netlify Blobs so recommendations shift as results accumulate.
 
-HubSpot calls run in mock mode unless `HUBSPOT_MODE=live` and `HUBSPOT_ACCESS_TOKEN` are set in Netlify's environment variables. Engagement is simulated and no emails are sent.
+What is real and what is sample data:
+
+| Part | Source |
+|---|---|
+| Contacts, `persona` property, audience lists | HubSpot CRM, written for real when `HUBSPOT_MODE=live` and `HUBSPOT_ACCESS_TOKEN` are set in Netlify (works on a free HubSpot account); mock otherwise |
+| Email engagement | Simulated. No emails are sent (HubSpot's email-sending API needs a paid add-on) |
+| LinkedIn, Instagram, Facebook, blog | Sample data (`netlify/lib/channels.mjs`) standing in for HubSpot Social and website analytics |
+
+The HubSpot private app needs these scopes: `crm.objects.contacts.read`, `crm.objects.contacts.write`, `crm.lists.read`, `crm.lists.write`, `crm.schemas.contacts.read`, `crm.schemas.contacts.write`.
 
 Preview it locally (Node 20+):
 
