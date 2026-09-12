@@ -49,7 +49,9 @@ export default async (req) => {
 
 export const config = {
   path: "/api/run",
-  rateLimit: { windowLimit: 6, windowSize: 60, aggregateBy: ["ip", "domain"] },
+  // Per visitor only: domain-wide aggregation is an Enterprise feature and blocked every request
+  // on the free plan. The page also calls GET on load and on company switch, so leave headroom.
+  rateLimit: { windowLimit: 20, windowSize: 60, aggregateBy: ["ip"] },
 };
 
 function env(key) {
