@@ -1,0 +1,16 @@
+{
+  "name": "signalloop",
+  "private": true,
+  "type": "module",
+  "description": "SignalLoop live demo: a Netlify Function that runs the write, send, measure, improve loop.",
+  "scripts": {
+    "dev": "node netlify/dev-server.mjs",
+    "test": "node --test netlify/test/*.test.mjs"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^11.0.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

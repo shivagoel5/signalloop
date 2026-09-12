@@ -1,0 +1,7 @@
+# Node / Netlify
+node_modules/
+.netlify/
+
+# Local editor and agent tooling
+.claude/
+.DS_Store

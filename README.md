@@ -62,6 +62,9 @@ signalloop/
 ├── ai-content-pipeline/      # The runnable SignalLoop engine (CLI, dashboard, Claude Skill)
 ├── assets/                   # Screenshots and diagrams
 ├── docs/                     # Case study page (deployed to Netlify)
+├── netlify/                  # Live demo: Netlify Function, shared pipeline code, tests
+├── netlify.toml              # Netlify build and functions settings
+├── package.json              # Live demo dependencies and scripts
 └── setup-content-engine.sh   # Setup helper
 ```
 
@@ -99,6 +102,23 @@ Then open:
 ```text
 http://127.0.0.1:5000
 ```
+
+---
+
+## Live Demo
+
+The [case study](https://signalloop-shiva.netlify.app/#live) includes a **Run the loop** panel backed by a Netlify Function (`netlify/functions/run.mjs`). It runs the same four stages as the Python pipeline, reads the same company profiles and sample contacts, and saves run history in Netlify Blobs so recommendations shift as results accumulate.
+
+HubSpot calls run in mock mode unless `HUBSPOT_MODE=live` and `HUBSPOT_ACCESS_TOKEN` are set in Netlify's environment variables. Engagement is simulated and no emails are sent.
+
+Preview it locally (Node 20+):
+
+```bash
+npm install
+npm run dev
+```
+
+Then open `http://localhost:8888/#live`. Run the tests with `npm test`.
 
 ---
 
