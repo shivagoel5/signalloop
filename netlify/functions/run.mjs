@@ -2,7 +2,7 @@
 //   POST /api/run {"company": "ramp" | "square"}  runs one full loop and returns the report
 //   GET  /api/run?company=ramp                     returns saved run history for that company
 
-import { HubSpotClient } from "../lib/hubspot.mjs";
+import { HubSpotClient, HubSpotError } from "../lib/hubspot.mjs";
 import { PROFILES, runPipeline, summarizeHistory } from "../lib/pipeline.mjs";
 import { openStore } from "../lib/store.mjs";
 
@@ -49,7 +49,8 @@ export default async (req) => {
     return json(report);
   } catch (err) {
     console.error("SignalLoop run failed:", err);
-    return json({ error: "The run failed. Please try again in a minute." }, 502);
+    const detail = err instanceof HubSpotError ? err.toDetail() : undefined;
+    return json({ error: "The run failed. Please try again in a minute.", detail }, 502);
   }
 };
 

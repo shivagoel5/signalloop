@@ -115,6 +115,28 @@ test("live mode: creates missing properties, falls back to an existing list, add
   assert.deepEqual(addedIds, Array.from({ length: 10 }, (_, n) => String(900 + n)).sort());
 });
 
+test("live mode: a property created concurrently (409) is fine; other HubSpot errors carry safe details", async () => {
+  const reply = (status, body) => new Response(JSON.stringify(body), { status });
+  const conflictFetch = async (url, init) => {
+    const path = new URL(url).pathname;
+    if (init.method === "GET") return reply(404, { message: "not found" });
+    if (path === "/crm/v3/properties/contacts") return reply(409, { category: "CONFLICT", message: "exists" });
+    return reply(200, {});
+  };
+  await new HubSpotClient({ token: "t", mode: "live", fetchImpl: conflictFetch }).ensureContactProperties();
+
+  const forbiddenFetch = async () => reply(403, { category: "MISSING_SCOPES", message: "This app hasn't been granted all required scopes" });
+  const err = await new HubSpotClient({ token: "t", mode: "live", fetchImpl: forbiddenFetch })
+    .ensureContactProperties().catch((e) => e);
+  assert.deepEqual(err.toDetail(), {
+    step: "GET /crm/v3/properties/contacts/persona",
+    status: 403,
+    category: "MISSING_SCOPES",
+    message: "This app hasn't been granted all required scopes",
+  });
+  assert.ok(!JSON.stringify(err.toDetail()).includes("Bearer"));
+});
+
 test("handler: POST runs a loop, GET returns saved history, bad input is rejected", async () => {
   const post = (body) => handler(new Request("http://localhost/api/run", {
     method: "POST",

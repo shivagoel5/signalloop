@@ -9,8 +9,9 @@
 
 const BASE_URL = "https://api.hubapi.com";
 
+// Labels are prefixed so they can't collide with HubSpot's built-in "Persona" property.
 export const CONTACT_PROPERTIES = [
-  { name: "persona", label: "Persona", description: "SignalLoop audience segment" },
+  { name: "persona", label: "SignalLoop persona", description: "SignalLoop audience segment" },
   {
     name: "signalloop_last_newsletter",
     label: "SignalLoop last newsletter",
@@ -24,9 +25,23 @@ export const CONTACT_PROPERTIES = [
 ];
 
 export class HubSpotError extends Error {
-  constructor(message, status) {
+  constructor(message, { status, method, path, category, hubspotMessage } = {}) {
     super(message);
     this.status = status;
+    this.method = method;
+    this.path = path;
+    this.category = category;
+    this.hubspotMessage = hubspotMessage;
+  }
+
+  // Safe to return to the page: no token, just which call failed and HubSpot's reason.
+  toDetail() {
+    return {
+      step: `${this.method} ${this.path}`,
+      status: this.status,
+      category: this.category,
+      message: this.hubspotMessage?.slice(0, 200),
+    };
   }
 }
 
@@ -52,7 +67,11 @@ export class HubSpotClient {
       entry.status = resp.status;
       const text = await resp.text();
       if (!resp.ok) {
-        throw new HubSpotError(`HubSpot ${method} ${path} failed with ${resp.status}: ${text.slice(0, 200)}`, resp.status);
+        let parsed = {};
+        try { parsed = JSON.parse(text); } catch {}
+        throw new HubSpotError(`HubSpot ${method} ${path} failed with ${resp.status}: ${text.slice(0, 200)}`, {
+          status: resp.status, method, path, category: parsed.category, hubspotMessage: parsed.message ?? text,
+        });
       }
       return text ? JSON.parse(text) : {};
     }
@@ -66,18 +85,23 @@ export class HubSpotClient {
     for (const p of CONTACT_PROPERTIES) {
       try {
         await this.request("GET", `/crm/v3/properties/contacts/${p.name}`, undefined, () => {
-          throw new HubSpotError("Simulated: property not found", 404);
+          throw new HubSpotError("Simulated: property not found", { status: 404 });
         });
       } catch (err) {
         if (err.status !== 404) throw err;
-        await this.request("POST", "/crm/v3/properties/contacts", {
-          groupName: "contactinformation",
-          name: p.name,
-          label: p.label,
-          description: p.description,
-          type: "string",
-          fieldType: "text",
-        }, { name: p.name });
+        try {
+          await this.request("POST", "/crm/v3/properties/contacts", {
+            groupName: "contactinformation",
+            name: p.name,
+            label: p.label,
+            description: p.description,
+            type: "string",
+            fieldType: "text",
+          }, { name: p.name });
+        } catch (createErr) {
+          // Another run created it in the meantime.
+          if (createErr.status !== 409) throw createErr;
+        }
       }
     }
   }

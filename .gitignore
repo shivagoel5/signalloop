@@ -1,3 +1,7 @@
+# Secrets (HubSpot key and other tokens belong in Netlify environment variables)
+.env
+.env.*
+
 # Node / Netlify
 node_modules/
 .netlify/
