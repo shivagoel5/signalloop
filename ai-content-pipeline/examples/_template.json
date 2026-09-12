@@ -1,0 +1,42 @@
+{
+  "name": "<Company Name>",
+  "context": "<1-2 sentences: what the company sells and to whom. Steers the LLM.>",
+  "segmentation_logic": "<e.g. 'by organizational role' or 'by business stage' \u2014 and why>",
+  "blog": {
+    "title": "<blog title>",
+    "outline": [
+      "<point 1>",
+      "<point 2>",
+      "..."
+    ],
+    "draft": "<400-600 word draft, \\n\\n between paragraphs>"
+  },
+  "personas": [
+    {
+      "id": "<short_snake_case_id>",
+      "name": "<Display Name (role or stage)>",
+      "segment": "persona_<id>",
+      "angle": "<the angle this persona's content leads with>",
+      "engagement": {
+        "open": 0.45,
+        "click": 0.15,
+        "unsub": 0.006
+      },
+      "audience_size": 400,
+      "newsletter": {
+        "subject": "<subject line>",
+        "preview": "<preview text>",
+        "body": "Hi {first_name},\\n\\n<70-120 words in this persona's angle>\\n\\n\u2192 Read the post"
+      }
+    }
+  ],
+  "optimization": {
+    "next_topics": [
+      "<4 next blog topics>"
+    ],
+    "headline_variants": [
+      "<3 A/B headlines for the top topic>"
+    ],
+    "rationale": "<1-2 sentences; the pipeline overrides this with the actual top segment>"
+  }
+}

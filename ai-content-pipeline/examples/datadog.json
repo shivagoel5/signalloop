@@ -1,0 +1,101 @@
+{
+  "name": "Datadog",
+  "context": "Datadog is an AI-powered observability and security platform for cloud applications. Its buyers are engineering, platform, security, and finance leaders running AI and cloud workloads in production. Write specific, credible B2B copy that respects technical audiences; never invent customer metrics or unreleased features. Product references (LLM Observability, GPU Monitoring, Data Observability, AI Guard, Bits AI) reflect publicly stated platform direction.",
+  "segmentation_logic": "by accountability in production (each function owns a different failure mode of AI in prod \u2014 reliability, on-call, security, and cost \u2014 so what a buyer is responsible for matters more than their seniority)",
+  "blog": {
+    "title": "Your AI is in production. Can you see what it's doing?",
+    "outline": [
+      "The 2 a.m. problem: live AI, a separate dashboard, no single answer",
+      "Why now: AI crossed from experiment into mission-critical path",
+      "One tool per concern was already breaking before AI arrived",
+      "What confident teams do: see behavior, infra, security, and spend at once",
+      "How one platform helps: LLM Observability, GPU Monitoring, Data Observability, AI Guard",
+      "The budget story: consolidation turns AI cost from surprise into forecast"
+    ],
+    "draft": "Most teams shipped their first AI features faster than they built a way to watch them. The model is live \u2014 calling tools, touching customer data, burning GPU hours \u2014 but it surfaces in a different dashboard than the services around it, if it surfaces at all. So when something breaks at 2 a.m., the on-call engineer is stitching together a monitoring tool, a logging tool, a security console, and a billing export just to answer one question: what actually happened?\n\nThat question used to be survivable because AI was an experiment. It isn't anymore. AI workloads have crossed into mission-critical paths, and that changes the stakes of every blind spot. A slow API is a latency problem. A misbehaving model is a latency problem and a cost problem and a security problem at the same time \u2014 and the old approach of one tool per concern was already straining under microservices and multi-cloud before AI arrived to break it.\n\nThe teams running AI with confidence aren't the ones with the most tools. They're the ones who can see model behavior, infrastructure, application performance, security signals, and compute spend in the same view, at the same time. When everything lives in one place, root cause stops being a scavenger hunt, and security stops being a separate investigation that only starts once the incident is already bad.\n\nThis is the case for putting observability, security, and AI on one platform. LLM Observability shows how models actually behave in production. GPU Monitoring ties AI performance back to compute spend. Data Observability traces the pipelines feeding the models. AI Guard watches the new security surface AI introduces. Because it's all unified, an engineer chasing an incident \u2014 or a security lead responding to a threat \u2014 works from full context instead of correlating across five consoles.\n\nThere's a budget story underneath all of this, too. AI scaled compute spend faster than most teams modeled, and the sprawl of separate tools compounds quietly at every renewal. Consolidating onto one platform turns AI cost from a quarterly surprise into a number you can forecast and defend \u2014 which is exactly the conversation finance leaders are now having about every AI initiative.\n\nPutting AI into production is the easy part now. Running it reliably, securely, and within budget is the actual work. If your AI stack is visible only in fragments, you're flying on instruments spread across four different cockpits. The teams that win the next phase will be the ones who can see the whole thing at once."
+  },
+  "personas": [
+    {
+      "id": "platform_leader",
+      "name": "Platform / Engineering Leader",
+      "segment": "persona_platform_leader",
+      "angle": "Executive + functional. Lead with end-to-end context across AI + multi-cloud and the cost of tool sprawl during incidents. One platform, full context.",
+      "engagement": {
+        "open": 0.441,
+        "click": 0.136,
+        "unsub": 0.004
+      },
+      "audience_size": 1200,
+      "newsletter": {
+        "subject": "Five dashboards, one incident \u2014 that's the real AI tax",
+        "preview": "Your stack got an AI layer. Your visibility didn't.",
+        "body": "Hi {first_name},\n\nEvery AI capability your team ships seems to arrive with its own dashboard \u2014 useful in isolation, until an incident spans the model, the services around it, and the infrastructure underneath, and no one can see all three at once. The cost isn't the tools; it's the context lost every time an engineer switches between them mid-incident. Our new post makes the case for one platform where infrastructure, apps, security, and AI live in a single view \u2014 so your team reads one story instead of assembling four.\n\n\u2192 Book a platform assessment"
+      }
+    },
+    {
+      "id": "sre_oncall",
+      "name": "SRE / On-Call Engineer",
+      "segment": "persona_sre_oncall",
+      "angle": "End user. Lead with faster root cause, fewer tabs, and AI failure modes without runbooks. Hands-on, low-pressure, proof over pitch.",
+      "engagement": {
+        "open": 0.398,
+        "click": 0.169,
+        "unsub": 0.007
+      },
+      "audience_size": 2400,
+      "newsletter": {
+        "subject": "Shorter path from 'alert fired' to 'I found it'",
+        "preview": "Fewer tabs. Faster root cause.",
+        "body": "Hi {first_name},\n\nOn-call is hard enough without AI workloads adding failure modes you don't have runbooks for yet \u2014 and every minute spent switching between a monitoring tool, your logs, and a separate console is a minute the incident keeps running. This week's post shows how unified telemetry plus a role-aware assistant collapses the path from alert to root cause into one place instead of four, so your MTTR drops without adding another tool to learn.\n\n\u2192 Try the guided incident walkthrough"
+      }
+    },
+    {
+      "id": "security_leader",
+      "name": "CISO / Security Leader",
+      "segment": "persona_security_leader",
+      "angle": "Technical evaluator. Lead with AI's new attack surface living inside engineering's tools and responding with full context instead of correlating across stacks.",
+      "engagement": {
+        "open": 0.473,
+        "click": 0.121,
+        "unsub": 0.003
+      },
+      "audience_size": 800,
+      "newsletter": {
+        "subject": "Your AI's attack surface lives in engineering's tools, not yours",
+        "preview": "Prompt injection doesn't show up in the SIEM.",
+        "body": "Hi {first_name},\n\nAI introduced a security surface that mostly lives inside the apps engineering owns \u2014 prompt injection, model misuse, sensitive data slipping into a response \u2014 and traditional security tooling wasn't built to see it. That leaves your team correlating across separate stacks while the clock runs. Our new post looks at how bringing cloud security and AI guardrails into the same platform engineering already uses for observability lets you respond with full context: the model behavior, the infrastructure, and the security signal in one view.\n\n\u2192 Read the AI security posture guide"
+      }
+    },
+    {
+      "id": "finance_buyer",
+      "name": "CFO / Finance Buyer",
+      "segment": "persona_finance_buyer",
+      "angle": "Finance buyer. Lead with unpredictable GPU/compute spend and tool-sprawl cost; consolidation and forecastable AI ROI for a board conversation.",
+      "engagement": {
+        "open": 0.41,
+        "click": 0.092,
+        "unsub": 0.005
+      },
+      "audience_size": 450,
+      "newsletter": {
+        "subject": "GPU spend is the new line item nobody forecast",
+        "preview": "See AI cost before it scales.",
+        "body": "Hi {first_name},\n\nAI scaled your compute bill faster than anyone modeled, and the tool sprawl around it \u2014 a separate vendor for monitoring, logs, security, and cost \u2014 compounds quietly at every renewal. This week's post breaks down how visibility into GPU and cloud spend, paired with consolidating point tools onto one platform, turns AI cost from a quarterly surprise into a number you can forecast and defend in a board conversation.\n\n\u2192 Request the consolidation and ROI worksheet"
+      }
+    }
+  ],
+  "optimization": {
+    "next_topics": [
+      "A runbook for AI-in-production incidents",
+      "The real cost of observability tool sprawl (with a consolidation worksheet)",
+      "What CISOs miss when AI ships without security in the loop",
+      "Forecasting GPU spend before it scales"
+    ],
+    "headline_variants": [
+      "See Your Whole Stack \u2014 AI Included \u2014 in One View",
+      "Your AI Is in Production. You're Watching It Through Four Tools.",
+      "More AI Tools Won't Make Your AI Safer. Fewer Might."
+    ],
+    "rationale": "The SRE / on-call segment drove the highest click-through on a low-friction, hands-on CTA, so the next slate leans into practical incident-response and cost-control assets rather than executive framing."
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "name": "Shopify",
+  "context": "Shopify is a commerce platform that helps anyone start, run, and grow a business by selling online and in person. Its users are merchants and small-business owners, from first-time founders to growing brands. You write encouraging, practical copy for owner-operators. Never invent product features or customer metrics.",
+  "segmentation_logic": "by business stage (an SMB owner wears every hat, so maturity matters more than job title)",
+  "blog": {
+    "title": "What separates stores that scale from stores that stall",
+    "outline": [
+      "The myth: more traffic is the answer to every growth problem",
+      "Stage 1 \u2014 getting to your first 100 orders without burning out",
+      "Stage 2 \u2014 turning steady sales into a repeatable growth engine",
+      "Stage 3 \u2014 unifying in-person and online so growth doesn't add chaos",
+      "The through-line: systems beat hustle at every stage",
+      "Picking the one thing to fix for the stage you're in now"
+    ],
+    "draft": "Most advice for online stores assumes everyone has the same problem. They don't. What grows a brand-new store is almost the opposite of what grows an established one, and treating them the same is why a lot of good products stall.\n\nIf you're just starting, your real enemy isn't competition \u2014 it's overwhelm. The win is getting to your first hundred orders without drowning in tools you don't need yet. Pick a simple storefront, one sales channel, and ship.\n\nOnce sales are steady, the game changes. Now it's about turning one-time buyers into repeat ones: email flows, a reason to come back, and knowing your numbers well enough to spend on what actually works. This is where a real growth engine gets built.\n\nAnd if you're running a physical store too, the challenge is keeping online and in-person from becoming two separate businesses. One inventory, one view of the customer, one back office \u2014 so growth adds revenue, not chaos.\n\nThe through-line at every stage is the same: systems beat hustle. The owners who scale aren't working harder than the ones who stall. They've just matched their effort to the stage they're actually in."
+  },
+  "personas": [
+    {
+      "id": "new_founder",
+      "name": "First-time Founder (just starting)",
+      "segment": "persona_new_founder",
+      "angle": "Earliest stage. Lead with zero-to-first-sale, no tech overwhelm, you can start today. Encouraging, low-pressure.",
+      "engagement": {
+        "open": 0.42,
+        "click": 0.14,
+        "unsub": 0.01
+      },
+      "audience_size": 1200,
+      "newsletter": {
+        "subject": "Your first sale is closer than you think",
+        "preview": "Start simple. Ship today.",
+        "body": "Hi {first_name},\n\nStarting a store can feel like there are a hundred things to set up before you can sell anything. There aren't. This week's post shows the shortest path to your first 100 orders \u2014 one storefront, one channel, no tool overload \u2014 so you can start before you feel 'ready'.\n\n\u2192 Read the post"
+      }
+    },
+    {
+      "id": "growing_brand",
+      "name": "Growing DTC Brand Owner (scaling up)",
+      "segment": "persona_growing_brand",
+      "angle": "Mid stage. Lead with turning steady sales into a repeatable growth engine \u2014 repeat customers, email flows, knowing your numbers.",
+      "engagement": {
+        "open": 0.47,
+        "click": 0.19,
+        "unsub": 0.005
+      },
+      "audience_size": 600,
+      "newsletter": {
+        "subject": "From steady sales to a real growth engine",
+        "preview": "Turn buyers into repeat buyers.",
+        "body": "Hi {first_name},\n\nYou've got sales coming in \u2014 now the question is how to make them compound. Our new post breaks down how growing brands turn one-time buyers into repeat ones with email flows, a reason to return, and spending only on what the numbers prove works.\n\n\u2192 Read the post"
+      }
+    },
+    {
+      "id": "omnichannel_retailer",
+      "name": "Established Retailer (online + in person)",
+      "segment": "persona_omnichannel_retailer",
+      "angle": "Most mature. Lead with unifying in-person and online \u2014 one inventory, one back office, manage growth without chaos.",
+      "engagement": {
+        "open": 0.43,
+        "click": 0.13,
+        "unsub": 0.006
+      },
+      "audience_size": 300,
+      "newsletter": {
+        "subject": "One back office for your store and your website",
+        "preview": "Stop running two businesses.",
+        "body": "Hi {first_name},\n\nWhen your shop and your website run on separate systems, growth just means double the work. This week we show how established retailers unify in-person and online \u2014 one inventory, one view of the customer \u2014 so adding a channel adds revenue, not chaos.\n\n\u2192 Read the post"
+      }
+    }
+  ],
+  "optimization": {
+    "next_topics": [
+      "The first-100-orders playbook: launching without tool overload",
+      "Email flows that turn one-time buyers into repeat customers",
+      "Knowing your numbers: the 4 metrics every growing store should watch",
+      "Going omnichannel without doubling your workload"
+    ],
+    "headline_variants": [
+      "What Separates Stores That Scale From Stores That Stall",
+      "Systems Beat Hustle: Growth Advice for Every Stage",
+      "The Repeat-Customer Engine Most Stores Never Build"
+    ],
+    "rationale": "The growing-brand segment drove the highest click-through, so the next slate leans into repeatable-growth and retention topics rather than pure beginner content."
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "name": "Zip",
+  "context": "Zip is an AI procurement-orchestration platform (intake-to-pay). It lets any employee make a purchase request easily while procurement, finance, IT, and legal keep control and visibility. You write sharp, credible B2B copy for enterprise buyers. Never invent product features or customer metrics.",
+  "segmentation_logic": "by organizational role (an enterprise has many distinct stakeholders)",
+  "blog": {
+    "title": "How to scale procurement without scaling headcount",
+    "outline": [
+      "The hidden tax: procurement becomes the bottleneck as a company grows",
+      "Why throwing more headcount at it doesn't scale",
+      "Orchestration over tickets: one front door for every request",
+      "Where AI removes the manual touchpoints (intake, vendor checks, follow-ups)",
+      "Keeping control while moving faster: policy adoption, not policing",
+      "A 90-day path from spreadsheets to a self-service process"
+    ],
+    "draft": "Every growing company hits the same wall. Headcount climbs, purchasing requests multiply, and procurement quietly becomes the team everyone waits on. The instinct is to hire more buyers, but that only scales the bottleneck.\n\nThe companies that break the pattern do something different: they orchestrate. Instead of routing requests through scattered tickets, spreadsheets, and email threads, they give the business one front door. A request comes in once, and the right approvals, security reviews, and finance checks happen in the background.\n\nThis is where AI earns its place. The repetitive work that eats a procurement team's week, duplicate-vendor checks, chasing approvers for context, re-reviewing the same suppliers, can be handled automatically, with a human on the decisions that actually need judgment.\n\nThe payoff isn't just speed. When procurement stops being the office that slows things down, it becomes a strategic partner: faster cycle times, higher policy adoption because the compliant path is the easy path, and a team freed to focus on sourcing strategy instead of paperwork. You don't need a bigger team. You need a process that scales without one."
+  },
+  "personas": [
+    {
+      "id": "procurement_leader",
+      "name": "Procurement Leader (CPO / VP)",
+      "segment": "persona_procurement_leader",
+      "angle": "Champion. Lead with going from gatekeeper to strategic enabler \u2014 scale the function without adding headcount, cut cycle times.",
+      "engagement": {
+        "open": 0.47,
+        "click": 0.18,
+        "unsub": 0.004
+      },
+      "audience_size": 280,
+      "newsletter": {
+        "subject": "Scale procurement without scaling your team",
+        "preview": "Stop being the bottleneck.",
+        "body": "Hi {first_name},\n\nAs the business grows, every new hire means more requests landing on your team \u2014 and procurement becomes the function everyone waits on. This week's piece breaks down how leading teams orchestrate intake-to-pay so volume can double without the headcount doubling, and procurement shifts from gatekeeper to strategic partner.\n\n\u2192 Read the post"
+      }
+    },
+    {
+      "id": "finance_leader",
+      "name": "Finance Leader (CFO / Finance Ops)",
+      "segment": "persona_finance_leader",
+      "angle": "Economic buyer. Lead with spend visibility before approval, savings, ROI, and keeping control during growth.",
+      "engagement": {
+        "open": 0.44,
+        "click": 0.15,
+        "unsub": 0.006
+      },
+      "audience_size": 220,
+      "newsletter": {
+        "subject": "See every dollar before it's committed",
+        "preview": "Control without slowing the business.",
+        "body": "Hi {first_name},\n\nThe spend that hurts is the spend you find out about after it's committed. Our new post shows how finance teams get visibility into every request before approval \u2014 catching duplicate tools and off-policy spend early, while still letting the business move fast.\n\n\u2192 Read the post"
+      }
+    },
+    {
+      "id": "requester",
+      "name": "Business Requester (any employee)",
+      "segment": "persona_requester",
+      "angle": "End user. Lead with one frictionless front door, transparent status, self-serve \u2014 no chasing procurement.",
+      "engagement": {
+        "open": 0.4,
+        "click": 0.11,
+        "unsub": 0.009
+      },
+      "audience_size": 900,
+      "newsletter": {
+        "subject": "Buy what you need, without the back-and-forth",
+        "preview": "One front door for every request.",
+        "body": "Hi {first_name},\n\nNeed a new tool or vendor and not sure where to even start? This week we show how a single intake front door takes the guesswork out of buying \u2014 submit once, see exactly where your request stands, and skip the email chains and 'who do I ask?' detours.\n\n\u2192 Read the post"
+      }
+    }
+  ],
+  "optimization": {
+    "next_topics": [
+      "From cost center to strategic partner: redefining the procurement mandate",
+      "The intake front door: why request experience drives policy adoption",
+      "AI agents in procurement: where to start and what to automate first",
+      "Measuring cycle time: the metric that proves procurement is scaling"
+    ],
+    "headline_variants": [
+      "Scale Procurement Without Scaling Headcount",
+      "The Self-Service Procurement Playbook for High-Growth Teams",
+      "Stop Being the Bottleneck: Orchestration Over Tickets"
+    ],
+    "rationale": "Click-through is strongest with the procurement-leader segment on ROI-and-scale framing, so the next slate leans into 'scale without headcount' and the request experience rather than generic procurement trends."
+  }
+}

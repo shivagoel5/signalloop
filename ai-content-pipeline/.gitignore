@@ -1,0 +1,22 @@
+# Secrets
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Generated pipeline artifacts (kept out of source; regenerated on each run)
+data/runs/
+data/pipeline.db
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Runtime profiles written by the skill (examples/ are the committed ones)
+data/profiles/*
+!data/profiles/.gitkeep

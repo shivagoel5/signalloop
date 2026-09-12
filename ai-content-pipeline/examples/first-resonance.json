@@ -1,0 +1,101 @@
+{
+  "name": "First Resonance",
+  "context": "First Resonance builds ION, a Factory Operating System positioned as a modern alternative to traditional MES for complex, discrete hardware manufacturers \u2014 aerospace and space, robotics, medical device, alternative energy, defense, and EVs. Its buyers are manufacturing and operations leaders, manufacturing and quality engineers, technicians, and supply-chain teams moving hardware from prototype to repeatable, certifiable production. Write specific, credible B2B copy that respects technical audiences; never invent customer metrics or unreleased features. Product references (ION Factory OS, ION Autoplan, ION Analytics, ION Intelligence, the as-built BOM / digital thread, and SOC 2 / ITAR / FedRAMP compliance) reflect publicly stated platform direction.",
+  "segmentation_logic": "by where the build slows (each role owns a different point where production stalls \u2014 committing to a delivery date, configuring a process, resolving an issue on the floor, or sourcing parts \u2014 so what a buyer is responsible for unblocking matters more than their seniority)",
+  "blog": {
+    "title": "The bottleneck isn't your factory floor. It's the system underneath it.",
+    "outline": [
+      "The prototype works \u2014 that was supposed to be the hard part",
+      "Why now: hardware cycles compressed while legacy MES stayed slow",
+      "Every redline becomes a delay when engineers and the floor aren't in one system",
+      "What confident teams do: treat the factory as software, capture data in-process",
+      "How ION helps: one digital thread, as-built BOM, open API, fast deploy",
+      "One system from purchase order to shipped product \u2014 with the traceability to certify"
+    ],
+    "draft": "The prototype works. That was supposed to be the hard part. But for teams building rockets, satellites, robots, and medical devices, the real wall isn't the first unit \u2014 it's the hundredth, built the same way, on time, with a record clean enough to certify. And the thing standing between a working prototype and repeatable production usually isn't the engineering. It's the manufacturing software underneath it.\n\nLegacy MES was built for a slower, simpler era. It takes quarters to configure, can't keep pace with design changes, and scatters process data across spreadsheets, email, and tribal knowledge. Hardware cycles have compressed \u2014 teams iterate in weeks \u2014 and when the software can't move as fast as the design changes, every redline becomes a delay you can't get back. A part you can't trace is an audit you can't pass. A date you can't commit to is a contract you don't win.\n\nThe teams shipping breakthrough hardware have stopped treating the MES as a system of record they fight against. They treat the factory as software. Engineers define and visualize complex processes; technicians execute against step-by-step visual instructions; and every value \u2014 torque, gap, voltage \u2014 is captured in-process instead of reconstructed later. When something deviates, it surfaces at the exact step it happened, and an engineer responds in real time rather than after the build is already wrong.\n\nThis is what ION Factory OS is built to do. It connects engineering, parts, and production into one living digital thread, and its as-built BOM keeps traceability through builds, upgrades, and servicing \u2014 so the hard audit and quality questions get answered in minutes, not days. It's highly configurable through an open API, deploys without a drawn-out multi-quarter implementation, and runs in SOC 2, ITAR, and FedRAMP environments for teams whose compliance requirements are non-negotiable.\n\nThe payoff shows up across the whole line. Autoplan uses real-time inventory and capacity data to calculate start dates you can actually stand behind. Analytics exposes the true cost of every assembly so slow output and quality drift have somewhere to be diagnosed. Inventory, purchasing, and build live in one system instead of three, which means supply chain stops guessing at what's available to build.\n\nYou don't scale modern hardware by adding people to an outdated system. You scale it by giving every team \u2014 engineers, technicians, supply chain, and leadership \u2014 one connected view of production. The bottleneck was never the factory floor. It was the system underneath it, and that's the part you can finally replace."
+  },
+  "personas": [
+    {
+      "id": "manufacturing_exec",
+      "name": "VP Manufacturing / COO",
+      "segment": "persona_manufacturing_exec",
+      "angle": "Executive buyer. Lead with scaling from prototype to full production with the traceability to certify and ship, and committing to delivery dates you actually control. ROI, risk reduction, and the cost of standing still on legacy MES.",
+      "engagement": {
+        "open": 0.418,
+        "click": 0.096,
+        "unsub": 0.004
+      },
+      "audience_size": 420,
+      "newsletter": {
+        "subject": "Your delivery dates are only as good as your MES",
+        "preview": "Speed to production and traceability are the same problem.",
+        "body": "Hi {first_name},\n\nCommitting to a delivery date is hard when production data lives across disconnected systems and every design change means another workaround \u2014 and that gap costs more than time. It costs the ability to certify, scale, and win the next contract. This week's post makes the case for one Factory OS that connects engineering, parts, and production with as-built traceability and SOC 2 / ITAR / FedRAMP compliance built in, so you move from prototype to full-scale production with dates you can stand behind.\n\n\u2192 Book a demo"
+      }
+    },
+    {
+      "id": "manufacturing_engineer",
+      "name": "Manufacturing / Quality Engineer",
+      "segment": "persona_manufacturing_engineer",
+      "angle": "Functional leader. Lead with configuring complex processes without a multi-quarter implementation and resolving issues at the exact step. Process control and in-process data over feature lists.",
+      "engagement": {
+        "open": 0.475,
+        "click": 0.162,
+        "unsub": 0.005
+      },
+      "audience_size": 980,
+      "newsletter": {
+        "subject": "Stop reconfiguring your MES for the next two quarters",
+        "preview": "Define complex processes without the implementation slog.",
+        "body": "Hi {first_name},\n\nIf your MES takes a quarter to reconfigure every time a process changes, the software is slowing the build instead of supporting it \u2014 and the redlines and in-process data you need are stuck in spreadsheets. Our new post shows how teams define and visualize complex processes in a single editor, set validation criteria inline, and track non-conformances to resolution, with issues surfacing at the exact step a technician hits them so you can answer in real time instead of reconstructing after the fact.\n\n\u2192 Read how legacy tools are failing engineers"
+      }
+    },
+    {
+      "id": "technician_operator",
+      "name": "Technician / Operator",
+      "segment": "persona_technician_operator",
+      "angle": "End user. Lead with step-by-step visual work instructions and reaching an engineer at the exact step. Hands-on, less manual work, background data capture; proof over pitch.",
+      "engagement": {
+        "open": 0.352,
+        "click": 0.071,
+        "unsub": 0.008
+      },
+      "audience_size": 610,
+      "newsletter": {
+        "subject": "Flag the issue at the exact step it happens",
+        "preview": "Visual work instructions, real-time engineer support.",
+        "body": "Hi {first_name},\n\nBuilding from outdated instructions and chasing down an engineer when something's off slows everyone down. This week's post walks through how technicians follow step-by-step visual work instructions, capture values as they go, and alert an engineer in real time at the exact step \u2014 who can respond immediately \u2014 while data collection happens in the background, so you stay focused on the build instead of the paperwork.\n\n\u2192 See the execution interface"
+      }
+    },
+    {
+      "id": "supply_chain_lead",
+      "name": "Supply Chain / Procurement Lead",
+      "segment": "persona_supply_chain_lead",
+      "angle": "Operations leader. Lead with managing inventory, purchasing, and build in one system with real-time parts and capacity data, and turning sourcing into a plan with reliable start dates.",
+      "engagement": {
+        "open": 0.44,
+        "click": 0.124,
+        "unsub": 0.005
+      },
+      "audience_size": 540,
+      "newsletter": {
+        "subject": "Inventory, purchasing, and build \u2014 in one system",
+        "preview": "Real-time parts and capacity data, not three spreadsheets.",
+        "body": "Hi {first_name},\n\nWhen inventory, purchasing, and production live in separate tools, you're always one step behind on what's actually available to build. Our new post looks at how managing suppliers, inventory, and consumption in the same system as production \u2014 with Autoplan using real-time inventory and capacity data to calculate accurate start dates \u2014 turns sourcing from a guessing game into a plan you can set reliable delivery expectations against.\n\n\u2192 Explore ION Autoplan"
+      }
+    }
+  ],
+  "optimization": {
+    "next_topics": [
+      "The hidden cost of a slow MES implementation in hard-tech",
+      "Traceability that certifies: how the as-built BOM answers audit questions in minutes",
+      "One system from purchase order to shipped product: closing the supply-chain-to-floor gap",
+      "Why more automation won't fix a factory that can't see its own bottlenecks"
+    ],
+    "headline_variants": [
+      "Your Legacy MES Is the Bottleneck \u2014 Not Your Factory Floor",
+      "Move From Prototype to Production Without Rebuilding Your MES",
+      "What If Your Factory Ran Like Software?"
+    ],
+    "rationale": "The manufacturing / quality engineer segment drove the highest open and click on the configuration-speed angle, so the next slate leans into practical, engineer-felt assets \u2014 implementation cost, audit traceability, and bottleneck visibility \u2014 over executive framing."
+  }
+}

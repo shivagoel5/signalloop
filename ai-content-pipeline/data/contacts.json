@@ -1,0 +1,27 @@
+[
+  {"email": "dana.whitfield@northpeak.io", "first_name": "Dana", "last_name": "Whitfield", "company": "NorthPeak", "persona": "persona_procurement_leader"},
+  {"email": "raj.menon@helioscorp.com", "first_name": "Raj", "last_name": "Menon", "company": "Helios Corp", "persona": "persona_procurement_leader"},
+  {"email": "claire.dubois@vantage.co", "first_name": "Claire", "last_name": "Dubois", "company": "Vantage", "persona": "persona_procurement_leader"},
+
+  {"email": "marcus.lee@helioscorp.com", "first_name": "Marcus", "last_name": "Lee", "company": "Helios Corp", "persona": "persona_finance_leader"},
+  {"email": "sofia.romano@vantage.co", "first_name": "Sofia", "last_name": "Romano", "company": "Vantage", "persona": "persona_finance_leader"},
+  {"email": "ken.tanaka@northpeak.io", "first_name": "Ken", "last_name": "Tanaka", "company": "NorthPeak", "persona": "persona_finance_leader"},
+
+  {"email": "amelia.ford@northpeak.io", "first_name": "Amelia", "last_name": "Ford", "company": "NorthPeak", "persona": "persona_requester"},
+  {"email": "diego.santos@helioscorp.com", "first_name": "Diego", "last_name": "Santos", "company": "Helios Corp", "persona": "persona_requester"},
+  {"email": "nina.patel@vantage.co", "first_name": "Nina", "last_name": "Patel", "company": "Vantage", "persona": "persona_requester"},
+  {"email": "tom.becker@helioscorp.com", "first_name": "Tom", "last_name": "Becker", "company": "Helios Corp", "persona": "persona_requester"},
+
+  {"email": "lena@brewandbloom.shop", "first_name": "Lena", "last_name": "Ortiz", "company": "Brew & Bloom", "persona": "persona_new_founder"},
+  {"email": "sam@trailknots.co", "first_name": "Sam", "last_name": "Greene", "company": "Trailknots", "persona": "persona_new_founder"},
+  {"email": "yuki@paperlane.store", "first_name": "Yuki", "last_name": "Mori", "company": "Paperlane", "persona": "persona_new_founder"},
+  {"email": "ava@wildform.co", "first_name": "Ava", "last_name": "Nguyen", "company": "Wildform", "persona": "persona_new_founder"},
+
+  {"email": "marco@lumastudio.com", "first_name": "Marco", "last_name": "Rossi", "company": "Luma Studio", "persona": "persona_growing_brand"},
+  {"email": "priya@everbloom.co", "first_name": "Priya", "last_name": "Shah", "company": "Everbloom", "persona": "persona_growing_brand"},
+  {"email": "noah@driftgoods.com", "first_name": "Noah", "last_name": "Park", "company": "Drift Goods", "persona": "persona_growing_brand"},
+
+  {"email": "grace@harborhome.store", "first_name": "Grace", "last_name": "Hall", "company": "Harbor Home", "persona": "persona_omnichannel_retailer"},
+  {"email": "ben@stonemill.co", "first_name": "Ben", "last_name": "Carter", "company": "Stonemill", "persona": "persona_omnichannel_retailer"},
+  {"email": "isla@fieldandco.shop", "first_name": "Isla", "last_name": "Murphy", "company": "Field & Co", "persona": "persona_omnichannel_retailer"}
+]
