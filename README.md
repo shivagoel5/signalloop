@@ -30,7 +30,7 @@ flowchart TD
 
 SignalLoop takes a company profile as input and turns it into segmented marketing content and performance recommendations. It moves from company profile to personas, content, CRM-style distribution, analytics, and optimization recommendations, and each run's results feed the next one.
 
-The same engine adapts to different markets by swapping the profile: Zip segments by organizational role, Shopify by business stage, Datadog by technical and business function.
+The same engine adapts to different markets by swapping the profile: Ramp segments by organizational role, Square by business stage, Datadog by technical and business function.
 
 ---
 
@@ -75,13 +75,13 @@ Requires Python 3.10+. Runs with no API keys (mock mode).
 cd ai-content-pipeline
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-python main.py run --profile examples/zip.json
+python main.py run --profile examples/ramp.json
 ```
 
 You can also run another company profile:
 
 ```bash
-python main.py run --profile examples/shopify.json
+python main.py run --profile examples/square.json
 python main.py run --profile examples/datadog.json
 ```
 

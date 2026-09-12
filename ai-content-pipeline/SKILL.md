@@ -27,7 +27,7 @@ This skill is both a **Claude workflow** (invoked in chat, below) and a **runnab
 ## When to use
 
 Shiva wants segmented content for a company or audience and provides ONE of:
-- a **company name** (e.g. "Zip", "Shopify") → research it, propose personas, or
+- a **company name** (e.g. "Ramp", "Square") → research it, propose personas, or
 - **user pain points / an ICP description / interview notes** → structure them into personas.
 
 ## Workflow (follow in order)
@@ -55,7 +55,7 @@ interviews and CRM data. Never invent metrics or fabricate customer quotes.
 
 ### 3. After Shiva confirms — generate
 Once they approve (with any edits applied), write a **company profile JSON** matching the schema
-in `examples/_template.json` (`examples/zip.json` and `examples/shopify.json` are filled
+in `examples/_template.json` (`examples/ramp.json` and `examples/square.json` are filled
 reference examples). Fill in:
 - `blog` — title, 5–7 point outline, a 400–600 word draft.
 - one `newsletter` per confirmed persona — subject, preview, and a 70–120 word body in that
@@ -86,7 +86,7 @@ History accumulates in `data/pipeline.db` (`python main.py history`).
   contains the content Claude wrote, so the run uses it directly. Setting `ANTHROPIC_API_KEY`
   and `HUBSPOT_MODE=live` switches the standalone program to live generation/sending.
 - **Engagement is simulated** and labelled as such in every output.
-- **Built-in examples** (`--company zip` / `--company shopify`) exist for the portfolio demo;
+- **Built-in examples** (`--company ramp` / `--company square`) exist for the portfolio demo;
   the `--profile` path is what makes the skill work for any company.
 - Keep the segmentation logic explicit in the profile's `segmentation_logic` field — it's the
   clearest signal of PMM judgment in the whole artifact.

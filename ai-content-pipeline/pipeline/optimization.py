@@ -15,7 +15,8 @@ def suggest_next(llm: LLM | None = None) -> dict:
         f"You are {active_company()['name']}'s content strategist. Using real engagement "
         "data, you decide what to publish next and how to title it to maximize click-through."
     )
-    averages = storage.averages_by_persona()
+    # History spans every company that has run; only rank the active company's personas.
+    averages = [a for a in storage.averages_by_persona() if a["persona_id"] in PERSONA_BY_ID]
     campaigns = storage.all_campaigns()
 
     if averages:
@@ -23,7 +24,7 @@ def suggest_next(llm: LLM | None = None) -> dict:
             f"- {PERSONA_BY_ID[a['persona_id']]['name']}: avg open "
             f"{a['avg_open']*100:.1f}%, avg click {a['avg_click']*100:.1f}% "
             f"over {a['campaigns']} sends"
-            for a in averages if a["persona_id"] in PERSONA_BY_ID
+            for a in averages
         ]
         recent_topics = ", ".join(c["topic"] for c in campaigns[:5]) or "none yet"
     else:

@@ -41,13 +41,13 @@ flowchart TD
 Run the workflow locally with a sample company profile:
 
 ```bash
-python main.py run --profile examples/zip.json
+python main.py run --profile examples/ramp.json
 ```
 
 You can also run other company profiles:
 
 ```bash
-python main.py run --profile examples/shopify.json
+python main.py run --profile examples/square.json
 python main.py run --profile examples/datadog.json
 ```
 
@@ -107,8 +107,8 @@ Example company profiles include:
 
 | Company | Market                 | Segmentation logic              | Example audiences                                           |
 | ------- | ---------------------- | ------------------------------- | ----------------------------------------------------------- |
-| Zip     | Enterprise procurement | Organizational role             | Procurement Leader, Finance Leader, Business Requester      |
-| Shopify | SMB commerce           | Business stage                  | First-time Founder, Growing DTC Brand, Established Retailer |
+| Ramp    | Finance automation     | Organizational role             | Finance Leader, Controller, Employee Spender                |
+| Square  | SMB commerce           | Business stage                  | New Seller, Growing Business, Multi-Location Operator       |
 | Datadog | Cloud observability    | Technical and business function | Engineering Leader, DevOps Team, Platform Buyer             |
 
 The segmentation logic adapts to the market instead of only changing persona names.
@@ -131,13 +131,13 @@ pip install -r requirements.txt
 Run the pipeline:
 
 ```bash
-python main.py run --profile examples/zip.json
+python main.py run --profile examples/ramp.json
 ```
 
 Run another company profile:
 
 ```bash
-python main.py run --profile examples/shopify.json
+python main.py run --profile examples/square.json
 python main.py run --profile examples/datadog.json
 ```
 

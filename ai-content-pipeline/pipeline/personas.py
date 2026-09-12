@@ -6,237 +6,240 @@ personas — including each persona's content angle and a newsletter template.
 
 Two profiles ship as examples, and they deliberately segment differently:
 
-  zip      Enterprise procurement software → segments by ORGANIZATIONAL ROLE,
-           because a large company has many distinct stakeholders.
-  shopify  Commerce platform for SMB owners → segments by BUSINESS STAGE,
-           because a small-business owner wears every hat, so "what stage is
-           their business at" matters more than their job title.
+  ramp     Finance automation for companies (cards, expenses, bills, procurement)
+           → segments by ORGANIZATIONAL ROLE, because spend touches finance
+           leadership, accounting, and every employee who buys.
+  square   Commerce and payments for sellers → segments by BUSINESS STAGE,
+           because an owner-operator wears every hat, so "what stage is their
+           business at" matters more than their job title.
 
 That contrast is the point: the segmentation LOGIC adapts to the market, not
-just the persona names. To run one: `use_company("zip")`.
+just the persona names. To run one: `use_company("ramp")`.
 """
 
 COMPANIES = {
     # ====================================================================
-    "zip": {
-        "name": "Zip",
+    "ramp": {
+        "name": "Ramp",
         "context": (
-            "Zip is an AI procurement-orchestration platform (intake-to-pay). It lets "
-            "any employee make a purchase request easily while procurement, finance, IT, "
-            "and legal keep control and visibility. You write sharp, credible B2B copy for "
-            "enterprise buyers. Never invent product features or customer metrics."
+            "Ramp is a finance automation platform that combines corporate cards, expense "
+            "management, bill payments, procurement, and accounting automation. It helps finance "
+            "teams control spend and close the books faster while employees buy what they need "
+            "within policy. You write sharp, credible B2B copy for finance and operations buyers. "
+            "Never invent product features or customer metrics."
         ),
-        "segmentation_logic": "by organizational role (an enterprise has many distinct stakeholders)",
+        "segmentation_logic": "by organizational role (spend touches finance leadership, accounting, and every employee who buys)",
         "blog": {
-            "title": "How to scale procurement without scaling headcount",
+            "title": "How finance teams control spend without slowing the business",
             "outline": [
-                "The hidden tax: procurement becomes the bottleneck as a company grows",
-                "Why throwing more headcount at it doesn't scale",
-                "Orchestration over tickets: one front door for every request",
-                "Where AI removes the manual touchpoints (intake, vendor checks, follow-ups)",
-                "Keeping control while moving faster: policy adoption, not policing",
-                "A 90-day path from spreadsheets to a self-service process",
+                "The real cost of finding out about spend after it happens",
+                "Why stricter approval chains backfire as a company grows",
+                "Policy at the point of purchase: controls built into cards and requests",
+                "Where automation removes the manual work (receipts, coding, reconciliation)",
+                "A faster close as a byproduct of cleaner spend data",
+                "A 90-day path from expense reports to real-time visibility",
             ],
             "draft": (
-                "Every growing company hits the same wall. Headcount climbs, purchasing "
-                "requests multiply, and procurement quietly becomes the team everyone waits "
-                "on. The instinct is to hire more buyers, but that only scales the bottleneck.\n\n"
-                "The companies that break the pattern do something different: they orchestrate. "
-                "Instead of routing requests through scattered tickets, spreadsheets, and email "
-                "threads, they give the business one front door. A request comes in once, and the "
-                "right approvals, security reviews, and finance checks happen in the background.\n\n"
-                "This is where AI earns its place. The repetitive work that eats a procurement "
-                "team's week, duplicate-vendor checks, chasing approvers for context, re-reviewing "
-                "the same suppliers, can be handled automatically, with a human on the decisions "
-                "that actually need judgment.\n\n"
-                "The payoff isn't just speed. When procurement stops being the office that slows "
-                "things down, it becomes a strategic partner: faster cycle times, higher policy "
-                "adoption because the compliant path is the easy path, and a team freed to focus on "
-                "sourcing strategy instead of paperwork. You don't need a bigger team. You need a "
-                "process that scales without one."
+                "Most finance teams find out about spend the same way: after it has already "
+                "happened. A card statement arrives, receipts go missing, and month-end becomes a "
+                "hunt for context. The usual fix is more approvals, but every extra approval step "
+                "slows down the people trying to do their jobs.\n\n"
+                "The teams that get ahead of this move control earlier. Instead of reviewing spend "
+                "after the fact, they build policy into the purchase itself: cards with limits set by "
+                "role or vendor, requests that route to the right approver automatically, and clear "
+                "rules employees can see before they buy.\n\n"
+                "This is where automation earns its place. Collecting receipts, coding transactions, "
+                "matching bills, and reconciling accounts are the tasks that eat a finance team's week. "
+                "When those happen in the background, people spend their time on decisions that need "
+                "judgment, not paperwork.\n\n"
+                "The payoff goes beyond a faster close. With spend data that is clean as it happens, "
+                "finance leaders see where money is going in real time, catch duplicate tools and "
+                "off-policy purchases early, and plan with numbers they trust. Control stops being the "
+                "thing that slows the business down and becomes the thing that lets it grow with confidence."
             ),
         },
         "personas": [
             {
-                "id": "procurement_leader", "name": "Procurement Leader (CPO / VP)",
-                "segment": "persona_procurement_leader",
-                "angle": "Champion. Lead with going from gatekeeper to strategic enabler — scale the function without adding headcount, cut cycle times.",
-                "engagement": {"open": 0.47, "click": 0.18, "unsub": 0.004}, "audience_size": 280,
-                "newsletter": {
-                    "subject": "Scale procurement without scaling your team",
-                    "preview": "Stop being the bottleneck.",
-                    "body": (
-                        "Hi {first_name},\n\nAs the business grows, every new hire means more "
-                        "requests landing on your team — and procurement becomes the function "
-                        "everyone waits on. This week's piece breaks down how leading teams "
-                        "orchestrate intake-to-pay so volume can double without the headcount "
-                        "doubling, and procurement shifts from gatekeeper to strategic partner.\n\n"
-                        "→ Read the post"
-                    ),
-                },
-            },
-            {
-                "id": "finance_leader", "name": "Finance Leader (CFO / Finance Ops)",
+                "id": "finance_leader", "name": "Finance Leader (CFO / VP Finance)",
                 "segment": "persona_finance_leader",
-                "angle": "Economic buyer. Lead with spend visibility before approval, savings, ROI, and keeping control during growth.",
-                "engagement": {"open": 0.44, "click": 0.15, "unsub": 0.006}, "audience_size": 220,
+                "angle": "Economic buyer. Lead with real-time spend visibility, savings, and control that scales with growth.",
+                "engagement": {"open": 0.46, "click": 0.17, "unsub": 0.004}, "audience_size": 260,
                 "newsletter": {
-                    "subject": "See every dollar before it's committed",
-                    "preview": "Control without slowing the business.",
+                    "subject": "See spend as it happens, not at month-end",
+                    "preview": "Control that scales with the company.",
                     "body": (
-                        "Hi {first_name},\n\nThe spend that hurts is the spend you find out about "
-                        "after it's committed. Our new post shows how finance teams get visibility "
-                        "into every request before approval — catching duplicate tools and off-policy "
-                        "spend early, while still letting the business move fast.\n\n→ Read the post"
+                        "Hi {first_name},\n\nThe spend that hurts is the spend you only see after the "
+                        "statement closes. This week's post shows how finance leaders move control to the "
+                        "point of purchase, with limits, approvals, and policy built in, so they see every "
+                        "dollar in real time and catch off-policy spend before it adds up.\n\n→ Read the post"
                     ),
                 },
             },
             {
-                "id": "requester", "name": "Business Requester (any employee)",
-                "segment": "persona_requester",
-                "angle": "End user. Lead with one frictionless front door, transparent status, self-serve — no chasing procurement.",
-                "engagement": {"open": 0.40, "click": 0.11, "unsub": 0.009}, "audience_size": 900,
+                "id": "controller", "name": "Controller / Accounting Lead",
+                "segment": "persona_controller",
+                "angle": "Operator. Lead with a faster close: automatic receipt capture, coding, and reconciliation, with fewer people to chase.",
+                "engagement": {"open": 0.44, "click": 0.15, "unsub": 0.005}, "audience_size": 240,
                 "newsletter": {
-                    "subject": "Buy what you need, without the back-and-forth",
-                    "preview": "One front door for every request.",
+                    "subject": "Close the books without chasing receipts",
+                    "preview": "Less reconciliation, more analysis.",
                     "body": (
-                        "Hi {first_name},\n\nNeed a new tool or vendor and not sure where to even "
-                        "start? This week we show how a single intake front door takes the guesswork "
-                        "out of buying — submit once, see exactly where your request stands, and skip "
-                        "the email chains and 'who do I ask?' detours.\n\n→ Read the post"
+                        "Hi {first_name},\n\nIf month-end still means chasing receipts and recoding "
+                        "transactions by hand, this one is for you. Our new post breaks down how accounting "
+                        "teams automate receipt capture, coding, and reconciliation, so the close gets faster "
+                        "and your team spends its time on analysis instead of cleanup.\n\n→ Read the post"
+                    ),
+                },
+            },
+            {
+                "id": "employee_spender", "name": "Employee Spender (any team)",
+                "segment": "persona_employee_spender",
+                "angle": "End user. Lead with buying what you need in minutes, clear policy up front, and no expense reports.",
+                "engagement": {"open": 0.39, "click": 0.10, "unsub": 0.009}, "audience_size": 900,
+                "newsletter": {
+                    "subject": "Buy what you need, without the expense report",
+                    "preview": "Clear rules, fast approvals.",
+                    "body": (
+                        "Hi {first_name},\n\nNeed software, travel, or supplies for your team and not sure "
+                        "what's allowed? This week we show how clear spending rules, built right into your "
+                        "card and requests, take the guesswork out of buying. Get what you need in minutes, "
+                        "snap the receipt, and skip the expense report.\n\n→ Read the post"
                     ),
                 },
             },
         ],
         "optimization": {
             "next_topics": [
-                "From cost center to strategic partner: redefining the procurement mandate",
-                "The intake front door: why request experience drives policy adoption",
-                "AI agents in procurement: where to start and what to automate first",
-                "Measuring cycle time: the metric that proves procurement is scaling",
+                "From expense reports to real-time spend visibility: a finance leader's playbook",
+                "Month-end close in days, not weeks: what to automate first",
+                "Card policies that employees actually follow",
+                "Catching duplicate software spend before renewal",
             ],
             "headline_variants": [
-                "Scale Procurement Without Scaling Headcount",
-                "The Self-Service Procurement Playbook for High-Growth Teams",
-                "Stop Being the Bottleneck: Orchestration Over Tickets",
+                "Control Spend Without Slowing the Business",
+                "The Real-Time Spend Playbook for Growing Finance Teams",
+                "Stop Finding Out About Spend at Month-End",
             ],
             "rationale": (
-                "Click-through is strongest with the procurement-leader segment on ROI-and-scale "
-                "framing, so the next slate leans into 'scale without headcount' and the request "
-                "experience rather than generic procurement trends."
+                "Click-through is strongest with the finance-leader segment on visibility-and-control "
+                "framing, so the next slate leans into real-time spend and a faster close rather than "
+                "generic expense tips."
             ),
         },
     },
     # ====================================================================
-    "shopify": {
-        "name": "Shopify",
+    "square": {
+        "name": "Square",
         "context": (
-            "Shopify is a commerce platform that helps anyone start, run, and grow a business by "
-            "selling online and in person. Its users are merchants and small-business owners, from "
-            "first-time founders to growing brands. You write encouraging, practical copy for "
-            "owner-operators. Never invent product features or customer metrics."
+            "Square is a commerce and payments platform that helps sellers take payments, sell in "
+            "person and online, and run their business with tools for inventory, invoices, and staff. "
+            "Its users range from first-time sellers to multi-location businesses. You write "
+            "encouraging, practical copy for owner-operators. Never invent product features or "
+            "customer metrics."
         ),
-        "segmentation_logic": "by business stage (an SMB owner wears every hat, so maturity matters more than job title)",
+        "segmentation_logic": "by business stage (an owner-operator wears every hat, so maturity matters more than job title)",
         "blog": {
-            "title": "What separates stores that scale from stores that stall",
+            "title": "What changes as your business grows from first sale to multiple locations",
             "outline": [
-                "The myth: more traffic is the answer to every growth problem",
-                "Stage 1 — getting to your first 100 orders without burning out",
-                "Stage 2 — turning steady sales into a repeatable growth engine",
-                "Stage 3 — unifying in-person and online so growth doesn't add chaos",
-                "The through-line: systems beat hustle at every stage",
-                "Picking the one thing to fix for the stage you're in now",
+                "The myth: every growth problem is a sales problem",
+                "Stage 1 — taking your first payments without a complicated setup",
+                "Stage 2 — selling in person and online without running two businesses",
+                "Stage 3 — keeping inventory, staff, and reporting in sync across locations",
+                "The through-line: the right system for the stage you're in",
+                "Choosing the one thing to fix this quarter",
             ],
             "draft": (
-                "Most advice for online stores assumes everyone has the same problem. They don't. "
-                "What grows a brand-new store is almost the opposite of what grows an established one, "
-                "and treating them the same is why a lot of good products stall.\n\n"
-                "If you're just starting, your real enemy isn't competition — it's overwhelm. The win "
-                "is getting to your first hundred orders without drowning in tools you don't need yet. "
-                "Pick a simple storefront, one sales channel, and ship.\n\n"
-                "Once sales are steady, the game changes. Now it's about turning one-time buyers into "
-                "repeat ones: email flows, a reason to come back, and knowing your numbers well enough "
-                "to spend on what actually works. This is where a real growth engine gets built.\n\n"
-                "And if you're running a physical store too, the challenge is keeping online and in-person "
-                "from becoming two separate businesses. One inventory, one view of the customer, one back "
-                "office — so growth adds revenue, not chaos.\n\n"
-                "The through-line at every stage is the same: systems beat hustle. The owners who scale "
-                "aren't working harder than the ones who stall. They've just matched their effort to the "
-                "stage they're actually in."
+                "Most small-business advice assumes every owner has the same problem. They don't. "
+                "What helps a seller take their first payment is very different from what helps a "
+                "business running three locations, and treating them the same is why good businesses "
+                "get stuck.\n\n"
+                "If you're just starting, your biggest risk isn't competition, it's complexity. The win "
+                "is taking payments quickly with a setup simple enough that you can focus on customers "
+                "instead of software. Start with what you need today and add the rest later.\n\n"
+                "Once sales are steady, the challenge shifts. Customers want to buy from you in person, "
+                "online, and everywhere in between, and running each channel separately doubles the work. "
+                "One catalog, one view of what's selling, and one place to see your numbers turns steady "
+                "sales into real growth.\n\n"
+                "When you open a second or third location, the hard part becomes consistency. Inventory, "
+                "staff schedules, and reporting all need to stay in sync, or every new site adds chaos "
+                "along with revenue.\n\n"
+                "The through-line at every stage is the same: the right system for the stage you're in. "
+                "The owners who grow aren't working harder than the ones who stall. They've matched their "
+                "tools to where their business actually is."
             ),
         },
         "personas": [
             {
-                "id": "new_founder", "name": "First-time Founder (just starting)",
-                "segment": "persona_new_founder",
-                "angle": "Earliest stage. Lead with zero-to-first-sale, no tech overwhelm, you can start today. Encouraging, low-pressure.",
+                "id": "new_seller", "name": "New Seller (just starting)",
+                "segment": "persona_new_seller",
+                "angle": "Earliest stage. Lead with taking the first payment today: simple setup, no tech overwhelm. Encouraging, low-pressure.",
                 "engagement": {"open": 0.42, "click": 0.14, "unsub": 0.010}, "audience_size": 1200,
                 "newsletter": {
-                    "subject": "Your first sale is closer than you think",
-                    "preview": "Start simple. Ship today.",
+                    "subject": "Your first sale can happen today",
+                    "preview": "Simple setup. Start selling.",
                     "body": (
-                        "Hi {first_name},\n\nStarting a store can feel like there are a hundred things "
-                        "to set up before you can sell anything. There aren't. This week's post shows "
-                        "the shortest path to your first 100 orders — one storefront, one channel, no "
-                        "tool overload — so you can start before you feel 'ready'.\n\n→ Read the post"
+                        "Hi {first_name},\n\nGetting set up to take payments can feel like a project of "
+                        "its own. It doesn't have to be. This week's post shows the simplest path to your "
+                        "first sales, with a setup you can finish in an afternoon, so you can focus on "
+                        "customers instead of software.\n\n→ Read the post"
                     ),
                 },
             },
             {
-                "id": "growing_brand", "name": "Growing DTC Brand Owner (scaling up)",
-                "segment": "persona_growing_brand",
-                "angle": "Mid stage. Lead with turning steady sales into a repeatable growth engine — repeat customers, email flows, knowing your numbers.",
+                "id": "growing_business", "name": "Growing Business (in person + online)",
+                "segment": "persona_growing_business",
+                "angle": "Mid stage. Lead with selling everywhere from one place: in person and online, one catalog, knowing what sells.",
                 "engagement": {"open": 0.47, "click": 0.19, "unsub": 0.005}, "audience_size": 600,
                 "newsletter": {
-                    "subject": "From steady sales to a real growth engine",
-                    "preview": "Turn buyers into repeat buyers.",
+                    "subject": "Sell in person and online without doubling the work",
+                    "preview": "One catalog. One view of your sales.",
                     "body": (
-                        "Hi {first_name},\n\nYou've got sales coming in — now the question is how to make "
-                        "them compound. Our new post breaks down how growing brands turn one-time buyers "
-                        "into repeat ones with email flows, a reason to return, and spending only on what "
-                        "the numbers prove works.\n\n→ Read the post"
+                        "Hi {first_name},\n\nYour customers want to buy from you at the counter, on your "
+                        "website, and everywhere in between. Our new post breaks down how growing businesses "
+                        "run every channel from one place, with one catalog and one view of what's selling, "
+                        "so more channels mean more revenue, not more admin.\n\n→ Read the post"
                     ),
                 },
             },
             {
-                "id": "omnichannel_retailer", "name": "Established Retailer (online + in person)",
-                "segment": "persona_omnichannel_retailer",
-                "angle": "Most mature. Lead with unifying in-person and online — one inventory, one back office, manage growth without chaos.",
+                "id": "multi_location", "name": "Multi-Location Operator (several sites)",
+                "segment": "persona_multi_location",
+                "angle": "Most mature. Lead with running several sites as one business: shared inventory, staff management, and reporting across locations.",
                 "engagement": {"open": 0.43, "click": 0.13, "unsub": 0.006}, "audience_size": 300,
                 "newsletter": {
-                    "subject": "One back office for your store and your website",
-                    "preview": "Stop running two businesses.",
+                    "subject": "Run every location like one business",
+                    "preview": "Inventory, staff, and reports in sync.",
                     "body": (
-                        "Hi {first_name},\n\nWhen your shop and your website run on separate systems, growth "
-                        "just means double the work. This week we show how established retailers unify "
-                        "in-person and online — one inventory, one view of the customer — so adding a "
-                        "channel adds revenue, not chaos.\n\n→ Read the post"
+                        "Hi {first_name},\n\nEvery new location should add revenue, not chaos. This week we "
+                        "show how multi-location operators keep inventory, staff schedules, and reporting in "
+                        "sync across sites, so you can see the whole business at a glance and fix problems "
+                        "before they spread.\n\n→ Read the post"
                     ),
                 },
             },
         ],
         "optimization": {
             "next_topics": [
-                "The first-100-orders playbook: launching without tool overload",
-                "Email flows that turn one-time buyers into repeat customers",
-                "Knowing your numbers: the 4 metrics every growing store should watch",
-                "Going omnichannel without doubling your workload",
+                "Taking your first payments: a no-overwhelm setup guide",
+                "Selling in person and online from one catalog",
+                "The weekly numbers every growing seller should check",
+                "Opening a second location without losing control",
             ],
             "headline_variants": [
-                "What Separates Stores That Scale From Stores That Stall",
-                "Systems Beat Hustle: Growth Advice for Every Stage",
-                "The Repeat-Customer Engine Most Stores Never Build",
+                "What Changes as Your Business Grows",
+                "The Right System for the Stage You're In",
+                "Sell Everywhere Without Doubling the Work",
             ],
             "rationale": (
-                "The growing-brand segment drove the highest click-through, so the next slate leans "
-                "into repeatable-growth and retention topics rather than pure beginner content."
+                "The growing-business segment drove the highest click-through, so the next slate leans "
+                "into selling across channels and knowing your numbers rather than pure beginner content."
             ),
         },
     },
 }
 
 # --- Active-company state (mutated in place so existing imports stay valid) ---
-_ACTIVE = "zip"
+_ACTIVE = "ramp"
 PERSONAS: list = []
 PERSONA_BY_ID: dict = {}
 

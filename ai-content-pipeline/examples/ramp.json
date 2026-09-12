@@ -1,0 +1,84 @@
+{
+  "name": "Ramp",
+  "context": "Ramp is a finance automation platform that combines corporate cards, expense management, bill payments, procurement, and accounting automation. It helps finance teams control spend and close the books faster while employees buy what they need within policy. You write sharp, credible B2B copy for finance and operations buyers. Never invent product features or customer metrics.",
+  "segmentation_logic": "by organizational role (spend touches finance leadership, accounting, and every employee who buys)",
+  "blog": {
+    "title": "How finance teams control spend without slowing the business",
+    "outline": [
+      "The real cost of finding out about spend after it happens",
+      "Why stricter approval chains backfire as a company grows",
+      "Policy at the point of purchase: controls built into cards and requests",
+      "Where automation removes the manual work (receipts, coding, reconciliation)",
+      "A faster close as a byproduct of cleaner spend data",
+      "A 90-day path from expense reports to real-time visibility"
+    ],
+    "draft": "Most finance teams find out about spend the same way: after it has already happened. A card statement arrives, receipts go missing, and month-end becomes a hunt for context. The usual fix is more approvals, but every extra approval step slows down the people trying to do their jobs.\n\nThe teams that get ahead of this move control earlier. Instead of reviewing spend after the fact, they build policy into the purchase itself: cards with limits set by role or vendor, requests that route to the right approver automatically, and clear rules employees can see before they buy.\n\nThis is where automation earns its place. Collecting receipts, coding transactions, matching bills, and reconciling accounts are the tasks that eat a finance team's week. When those happen in the background, people spend their time on decisions that need judgment, not paperwork.\n\nThe payoff goes beyond a faster close. With spend data that is clean as it happens, finance leaders see where money is going in real time, catch duplicate tools and off-policy purchases early, and plan with numbers they trust. Control stops being the thing that slows the business down and becomes the thing that lets it grow with confidence."
+  },
+  "personas": [
+    {
+      "id": "finance_leader",
+      "name": "Finance Leader (CFO / VP Finance)",
+      "segment": "persona_finance_leader",
+      "angle": "Economic buyer. Lead with real-time spend visibility, savings, and control that scales with growth.",
+      "engagement": {
+        "open": 0.46,
+        "click": 0.17,
+        "unsub": 0.004
+      },
+      "audience_size": 260,
+      "newsletter": {
+        "subject": "See spend as it happens, not at month-end",
+        "preview": "Control that scales with the company.",
+        "body": "Hi {first_name},\n\nThe spend that hurts is the spend you only see after the statement closes. This week's post shows how finance leaders move control to the point of purchase, with limits, approvals, and policy built in, so they see every dollar in real time and catch off-policy spend before it adds up.\n\n\u2192 Read the post"
+      }
+    },
+    {
+      "id": "controller",
+      "name": "Controller / Accounting Lead",
+      "segment": "persona_controller",
+      "angle": "Operator. Lead with a faster close: automatic receipt capture, coding, and reconciliation, with fewer people to chase.",
+      "engagement": {
+        "open": 0.44,
+        "click": 0.15,
+        "unsub": 0.005
+      },
+      "audience_size": 240,
+      "newsletter": {
+        "subject": "Close the books without chasing receipts",
+        "preview": "Less reconciliation, more analysis.",
+        "body": "Hi {first_name},\n\nIf month-end still means chasing receipts and recoding transactions by hand, this one is for you. Our new post breaks down how accounting teams automate receipt capture, coding, and reconciliation, so the close gets faster and your team spends its time on analysis instead of cleanup.\n\n\u2192 Read the post"
+      }
+    },
+    {
+      "id": "employee_spender",
+      "name": "Employee Spender (any team)",
+      "segment": "persona_employee_spender",
+      "angle": "End user. Lead with buying what you need in minutes, clear policy up front, and no expense reports.",
+      "engagement": {
+        "open": 0.39,
+        "click": 0.1,
+        "unsub": 0.009
+      },
+      "audience_size": 900,
+      "newsletter": {
+        "subject": "Buy what you need, without the expense report",
+        "preview": "Clear rules, fast approvals.",
+        "body": "Hi {first_name},\n\nNeed software, travel, or supplies for your team and not sure what's allowed? This week we show how clear spending rules, built right into your card and requests, take the guesswork out of buying. Get what you need in minutes, snap the receipt, and skip the expense report.\n\n\u2192 Read the post"
+      }
+    }
+  ],
+  "optimization": {
+    "next_topics": [
+      "From expense reports to real-time spend visibility: a finance leader's playbook",
+      "Month-end close in days, not weeks: what to automate first",
+      "Card policies that employees actually follow",
+      "Catching duplicate software spend before renewal"
+    ],
+    "headline_variants": [
+      "Control Spend Without Slowing the Business",
+      "The Real-Time Spend Playbook for Growing Finance Teams",
+      "Stop Finding Out About Spend at Month-End"
+    ],
+    "rationale": "Click-through is strongest with the finance-leader segment on visibility-and-control framing, so the next slate leans into real-time spend and a faster close rather than generic expense tips."
+  }
+}

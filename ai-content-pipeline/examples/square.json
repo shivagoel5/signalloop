@@ -1,0 +1,84 @@
+{
+  "name": "Square",
+  "context": "Square is a commerce and payments platform that helps sellers take payments, sell in person and online, and run their business with tools for inventory, invoices, and staff. Its users range from first-time sellers to multi-location businesses. You write encouraging, practical copy for owner-operators. Never invent product features or customer metrics.",
+  "segmentation_logic": "by business stage (an owner-operator wears every hat, so maturity matters more than job title)",
+  "blog": {
+    "title": "What changes as your business grows from first sale to multiple locations",
+    "outline": [
+      "The myth: every growth problem is a sales problem",
+      "Stage 1 \u2014 taking your first payments without a complicated setup",
+      "Stage 2 \u2014 selling in person and online without running two businesses",
+      "Stage 3 \u2014 keeping inventory, staff, and reporting in sync across locations",
+      "The through-line: the right system for the stage you're in",
+      "Choosing the one thing to fix this quarter"
+    ],
+    "draft": "Most small-business advice assumes every owner has the same problem. They don't. What helps a seller take their first payment is very different from what helps a business running three locations, and treating them the same is why good businesses get stuck.\n\nIf you're just starting, your biggest risk isn't competition, it's complexity. The win is taking payments quickly with a setup simple enough that you can focus on customers instead of software. Start with what you need today and add the rest later.\n\nOnce sales are steady, the challenge shifts. Customers want to buy from you in person, online, and everywhere in between, and running each channel separately doubles the work. One catalog, one view of what's selling, and one place to see your numbers turns steady sales into real growth.\n\nWhen you open a second or third location, the hard part becomes consistency. Inventory, staff schedules, and reporting all need to stay in sync, or every new site adds chaos along with revenue.\n\nThe through-line at every stage is the same: the right system for the stage you're in. The owners who grow aren't working harder than the ones who stall. They've matched their tools to where their business actually is."
+  },
+  "personas": [
+    {
+      "id": "new_seller",
+      "name": "New Seller (just starting)",
+      "segment": "persona_new_seller",
+      "angle": "Earliest stage. Lead with taking the first payment today: simple setup, no tech overwhelm. Encouraging, low-pressure.",
+      "engagement": {
+        "open": 0.42,
+        "click": 0.14,
+        "unsub": 0.01
+      },
+      "audience_size": 1200,
+      "newsletter": {
+        "subject": "Your first sale can happen today",
+        "preview": "Simple setup. Start selling.",
+        "body": "Hi {first_name},\n\nGetting set up to take payments can feel like a project of its own. It doesn't have to be. This week's post shows the simplest path to your first sales, with a setup you can finish in an afternoon, so you can focus on customers instead of software.\n\n\u2192 Read the post"
+      }
+    },
+    {
+      "id": "growing_business",
+      "name": "Growing Business (in person + online)",
+      "segment": "persona_growing_business",
+      "angle": "Mid stage. Lead with selling everywhere from one place: in person and online, one catalog, knowing what sells.",
+      "engagement": {
+        "open": 0.47,
+        "click": 0.19,
+        "unsub": 0.005
+      },
+      "audience_size": 600,
+      "newsletter": {
+        "subject": "Sell in person and online without doubling the work",
+        "preview": "One catalog. One view of your sales.",
+        "body": "Hi {first_name},\n\nYour customers want to buy from you at the counter, on your website, and everywhere in between. Our new post breaks down how growing businesses run every channel from one place, with one catalog and one view of what's selling, so more channels mean more revenue, not more admin.\n\n\u2192 Read the post"
+      }
+    },
+    {
+      "id": "multi_location",
+      "name": "Multi-Location Operator (several sites)",
+      "segment": "persona_multi_location",
+      "angle": "Most mature. Lead with running several sites as one business: shared inventory, staff management, and reporting across locations.",
+      "engagement": {
+        "open": 0.43,
+        "click": 0.13,
+        "unsub": 0.006
+      },
+      "audience_size": 300,
+      "newsletter": {
+        "subject": "Run every location like one business",
+        "preview": "Inventory, staff, and reports in sync.",
+        "body": "Hi {first_name},\n\nEvery new location should add revenue, not chaos. This week we show how multi-location operators keep inventory, staff schedules, and reporting in sync across sites, so you can see the whole business at a glance and fix problems before they spread.\n\n\u2192 Read the post"
+      }
+    }
+  ],
+  "optimization": {
+    "next_topics": [
+      "Taking your first payments: a no-overwhelm setup guide",
+      "Selling in person and online from one catalog",
+      "The weekly numbers every growing seller should check",
+      "Opening a second location without losing control"
+    ],
+    "headline_variants": [
+      "What Changes as Your Business Grows",
+      "The Right System for the Stage You're In",
+      "Sell Everywhere Without Doubling the Work"
+    ],
+    "rationale": "The growing-business segment drove the highest click-through, so the next slate leans into selling across channels and knowing your numbers rather than pure beginner content."
+  }
+}

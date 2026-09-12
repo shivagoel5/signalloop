@@ -471,7 +471,7 @@ same code.
 
 | Workflow | What it does | Status |
 |---|---|---|
-| [**ai-content-pipeline**](./ai-content-pipeline) | Give it a company or an ICP → it proposes buyer personas (*you confirm them*) → generates a blog + a newsletter tailored to each persona → simulates engagement → recommends what to publish next. Demonstrated on Zip & Shopify. | ✅ Live |
+| [**ai-content-pipeline**](./ai-content-pipeline) | Give it a company or an ICP → it proposes buyer personas (*you confirm them*) → generates a blog + a newsletter tailored to each persona → simulates engagement → recommends what to publish next. Demonstrated on Ramp & Square. | ✅ Live |
 | [**shiva-content-engine**](./shiva-content-engine) | The operating system behind the pipeline: brief gate → AI research (every claim sourced) → human-owned thesis → draft in voice → two-pass edit (accuracy, then voice) → repurpose into N channel-native formats → pre-publish eval gate, with a performance loop that feeds learnings back into the next brief. Ships a versioned prompt library, repurposing map, and checklists. | ✅ Live (Claude skill) |
 
 *New workflows are added here only once they run end-to-end and produce real output.*
@@ -488,8 +488,8 @@ system executes.** That checkpoint is the whole point.
 ```bash
 cd ai-content-pipeline
 pip install -r requirements.txt
-python main.py run --company zip          # built-in example
-python main.py run --profile examples/shopify.json   # or any company profile
+python main.py run --company ramp         # built-in example
+python main.py run --profile examples/square.json    # or any company profile
 ```
 
 Each run writes a self-contained `report.html` (generate → distribute → measure → optimize).

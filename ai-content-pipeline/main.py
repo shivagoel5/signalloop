@@ -147,7 +147,7 @@ def build_parser():
     sub = p.add_subparsers(dest="command", required=True)
 
     run = sub.add_parser("run", help="run the full pipeline for a topic")
-    run.add_argument("--company", default="zip", choices=["zip", "shopify"],
+    run.add_argument("--company", default="ramp", choices=["ramp", "square"],
                      help="built-in example company profile")
     run.add_argument("--profile", default=None,
                      help="path to a custom company profile JSON (overrides --company)")
