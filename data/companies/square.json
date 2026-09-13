@@ -102,6 +102,8 @@
     "proof_rules": "Never invent customer names, statistics, quotes or product features."
   },
   "strategy": {
+    "market": "Commerce and payments for small businesses",
+    "segmentation": "By business stage: starting out, growing, multi-location",
     "basis": "Working hypotheses for this demonstration, based on Square's public product description. They are not Square's internal ICP, research, segmentation or positioning.",
     "icp": "Sellers with steady sales who are expanding how and where they sell, and are outgrowing separate tools for each channel.",
     "positioning": "Commerce and payments tools that grow with a seller from first sale to multiple locations.",

@@ -1,4 +1,5 @@
 // Local preview: serves docs/ and sends /api/* requests to the same handler the Vercel functions use.
+// Pages are served without their .html extension (/how-it-works), matching cleanUrls on Vercel.
 // Without Upstash credentials, run history is kept in memory for as long as this process runs.
 
 import http from "node:http";
@@ -24,20 +25,21 @@ http.createServer(async (req, res) => {
     return;
   }
 
-  const file = new URL(url.pathname === "/" ? "index.html" : `.${url.pathname}`, root);
-  if (!file.href.startsWith(root.href)) {
-    res.writeHead(403).end();
-    return;
+  const path = url.pathname === "/" ? "/index.html" : url.pathname.replace(/\/$/, "");
+  const candidates = /\.[a-z0-9]+$/i.test(path) ? [path] : [`${path}.html`, `${path}/index.html`];
+  for (const candidate of candidates) {
+    const file = new URL(`.${candidate}`, root);
+    if (!file.href.startsWith(root.href)) break;
+    try {
+      const data = await readFile(file);
+      const ext = file.pathname.slice(file.pathname.lastIndexOf("."));
+      res.writeHead(200, { "Content-Type": types[ext] ?? "application/octet-stream" });
+      res.end(data);
+      return;
+    } catch {}
   }
-  try {
-    const data = await readFile(file);
-    const ext = file.pathname.slice(file.pathname.lastIndexOf("."));
-    res.writeHead(200, { "Content-Type": types[ext] ?? "application/octet-stream" });
-    res.end(data);
-  } catch {
-    res.writeHead(404).end("Not found");
-  }
-}).listen(port, () => console.log(`SignalLoop preview: http://localhost:${port}/#live`));
+  res.writeHead(404).end("Not found");
+}).listen(port, () => console.log(`SignalLoop preview: http://localhost:${port}/#try`));
 
 function readBody(req) {
   return new Promise((resolve, reject) => {

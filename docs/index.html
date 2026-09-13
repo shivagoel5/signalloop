@@ -1,930 +1,124 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="A product marketing case study by Shiva Goel. SignalLoop is a working prototype that uses campaign evidence to recommend which audience, channel and message to test next, with code for the analysis, AI for interpretation and a marketer approving each step. Performance data is simulated; the prototype is being reviewed with product marketers.">
-  <meta property="og:title" content="SignalLoop: decide what to test next, before generating more content">
-  <meta property="og:description" content="Product marketing case study by Shiva Goel: a hypothesis, one decision end to end, the trade-offs behind the design and what still needs validating. Performance data is simulated.">
-  <meta property="og:type" content="article">
-<title>SignalLoop: decide what to test next · Shiva Goel</title>
-<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<meta name="description" content="SignalLoop is an AI campaign optimization prototype for product marketers. It learns from past campaign performance and recommends the next audience, channel, message and content to test. Designed and built by Shiva Goel; campaign results are simulated.">
+<meta property="og:title" content="SignalLoop · AI campaign optimization for product marketers">
+<meta property="og:description" content="SignalLoop is an AI campaign optimization prototype for product marketers. It learns from past campaign performance and recommends the next audience, channel, message and content to test. Designed and built by Shiva Goel; campaign results are simulated.">
+<meta property="og:type" content="website">
+<title>SignalLoop · AI campaign optimization for product marketers</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  :root{--signal:#D6336C;--ink:#151B3B;--paper:#F0F3FE;--card:#FFFFFF;--line:#DCE1F2;--mut:#616880;
-        --indigo:#3F4CCB;--green:#0E8A62;--signal:#D6336C;}
-  *{box-sizing:border-box} html,body{margin:0}
-  body{background:
-      radial-gradient(1000px 520px at 88% -120px, rgba(63,76,203,.12), transparent 60%),
-      radial-gradient(760px 460px at -8% 34%, rgba(214,51,108,.07), transparent 60%),
-      radial-gradient(700px 420px at 108% 78%, rgba(14,138,98,.06), transparent 60%),
-      linear-gradient(180deg,#F4F6FF 0%,#ECF0FC 100%);color:var(--ink);font-family:'Schibsted Grotesk',-apple-system,Arial,sans-serif;line-height:1.65;-webkit-font-smoothing:antialiased}
-  .wrap{max-width:900px;margin:0 auto;padding:0 22px}
-  h1,h2,h3{font-family:'Newsreader',Georgia,serif;line-height:1.15;letter-spacing:0}
-  a{color:var(--indigo);text-decoration-thickness:1px;text-underline-offset:3px}
-  a:focus-visible{outline:2px solid var(--indigo);outline-offset:2px;border-radius:2px}
-
-  /* hero: the one bold moment: a deep-ink cover panel with the loop motif */
-  .hero{position:relative;overflow:hidden;background:linear-gradient(135deg,#141A3C 0%,#1D2558 55%,#31388F 100%);color:#C7CCE4;
-        border-radius:22px;margin:26px 0 10px;padding:58px 54px 46px;border-bottom:none}
-  .hero::before{content:"";position:absolute;right:-70px;bottom:-110px;width:250px;height:250px;
-        border-radius:50%;border:2px solid rgba(133,144,255,.45)}
-  .hero::after{content:"";position:absolute;right:-130px;bottom:-180px;width:380px;height:380px;
-        border-radius:50%;border:2px dashed rgba(214,51,108,.5)}
-  .eyebrow{font-family:'Newsreader',serif;font-style:italic;font-size:17px;color:#A9B3FF}
-  .hero h1{font-size:44px;font-weight:500;margin:14px 0 18px;max-width:660px;color:#fff}
-  .lede{font-size:18px;color:#C7CCE4;max-width:600px;position:relative;z-index:1}
-  .meta{margin-top:30px;padding-top:18px;border-top:1px solid rgba(255,255,255,.16);
-        display:flex;flex-wrap:wrap;gap:10px 30px;font-size:13.5px;color:#98A0C4;position:relative;z-index:1}
-  .meta b{color:#fff;font-weight:600}
-
-  section{padding:52px 0;border-bottom:1px solid var(--line)}
-  .kicker{font-family:'Newsreader',serif;font-style:italic;font-size:17px;color:var(--indigo);margin-bottom:8px}
-  h2{font-size:30px;font-weight:500;margin:0 0 14px;max-width:680px}
-  p{font-size:16.5px;margin:0 0 16px;max-width:72ch}
-  .fig{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin:22px 0}
-  .cap{font-size:13px;color:var(--mut);margin-top:10px;text-align:center}
-
-  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin:22px 0}
-  .tile{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
-  .tile .ic{display:block;margin-bottom:12px}
-  .tile h3{font-family:'Schibsted Grotesk';font-size:15.5px;font-weight:700;margin:0 0 6px}
-  .tile p{font-size:14px;color:#4B5169;margin:0}
-
-  .seglogic{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0}
-  .seg{border:1px solid var(--line);border-radius:14px;padding:20px;background:var(--card)}
-  .seg.z{border-top:5px solid var(--indigo)} .seg.s{border-top:5px solid var(--green)}
-  .seg h3{font-family:'Schibsted Grotesk';font-size:17px;margin:0 0 2px}
-  .seg .by{font-size:13.5px;font-weight:700;margin:10px 0 8px}
-  .seg.z .by{color:var(--indigo)} .seg.s .by{color:var(--green)}
-  .seg ul{margin:8px 0 0;padding-left:18px;font-size:14px;color:#4B5169}
-  .seg li{margin:4px 0}
-
-  .report{border:1px solid var(--line);border-radius:14px;overflow:hidden;margin:16px 0;background:var(--card)}
-  .report img{width:100%;height:auto;display:block}
-  .report .lab{padding:11px 16px;font-size:13px;font-weight:700;border-bottom:1px solid var(--line)}
-  .report .lab span{float:right;font-weight:400;color:var(--mut)}
-
-  .stack{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
-  .pill{font-size:13px;background:#EDEFFA;color:#303DAF;border:1px solid #DADEF6;border-radius:999px;padding:6px 13px}
-  ul.next{padding-left:20px} ul.next li{margin:7px 0;font-size:16px}
-  footer{padding:40px 0 70px;color:var(--mut);font-size:13px}
-  .disc{font-size:12px;color:#8A90A6;margin-top:14px;border-top:1px dashed var(--line);padding-top:16px}
-  @media(max-width:680px){.grid3,.seglogic{grid-template-columns:1fr}
-    .hero{padding:44px 26px 38px}.hero h1{font-size:32px}}
-  @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
-
-  html{scroll-behavior:smooth} section[id]{scroll-margin-top:64px}
-  .nav{position:sticky;top:0;background:rgba(242,245,255,.9);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);z-index:9}
-  .nav .row{display:flex;align-items:center;gap:22px;padding:11px 0;font-size:13.5px}
-  .nav .brand{font-weight:700}
-  .nav a{color:var(--mut);text-decoration:none}
-  .nav a:hover,.nav a:focus-visible{color:var(--ink)}
-  .nav .me{margin-left:auto;color:var(--ink);font-weight:600}
-  .ctas{display:flex;gap:12px;margin-top:26px;position:relative;z-index:1;flex-wrap:wrap}
-  .btn{display:inline-block;font-size:14.5px;font-weight:600;border-radius:10px;padding:11px 20px;text-decoration:none}
-  .btn.primary{background:#fff;color:var(--ink)}
-  .btn.primary:hover{background:#E9ECFB}
-  .btn.ghost{border:1px solid rgba(255,255,255,.35);color:#C7CCE4;cursor:default}
-  .btn.ghost .soon{font-weight:400;color:#8A92B8;font-size:12.5px}
-  .ggrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 34px;margin-top:12px}
-  .gitem{padding:16px 0 20px;border-top:1px solid var(--line)}
-  .glabel{font-size:12px;font-weight:700;letter-spacing:.06em;color:var(--mut);text-transform:uppercase}
-  .gitem p{margin:6px 0 0;font-size:14.5px;color:#4B5169}
-  .gitem p b{color:var(--ink)}
-  .split{display:grid;grid-template-columns:1fr 1fr;margin-top:26px;border-top:1px solid var(--line)}
-  .col{padding:22px 26px 8px}
-  .col.machine{border-left:1px solid var(--line)}
-  .col h3{font-family:'Schibsted Grotesk';font-size:14px;margin:0 0 12px;font-weight:700}
-  .col.human h3{color:var(--ink)} .col.machine h3{color:var(--indigo)}
-  .col ul{list-style:none;margin:0;padding:0}
-  .col li{font-size:15px;color:#4B5169;padding:7px 0;border-bottom:1px dashed var(--line)}
-  .col li:last-child{border-bottom:none}
-  .col li::before{content:"\25CF";font-size:8px;vertical-align:2px;margin-right:10px}
-  .col.human li::before{color:var(--ink)} .col.machine li::before{color:var(--indigo)}
-  .land{margin-top:22px;font-family:'Newsreader',serif;font-style:italic;font-size:19px;color:var(--ink)}
-  em.badge{font-style:normal;font-size:10.5px;font-weight:700;letter-spacing:.07em;color:var(--signal);
-    border:1px solid var(--signal);border-radius:999px;padding:2px 9px;text-transform:uppercase;margin:0 8px;vertical-align:1px}
-  .stackrows{border-top:1px solid var(--line);margin-top:18px;max-width:640px}
-  .srow{display:grid;grid-template-columns:150px 1fr;padding:10px 0;border-bottom:1px solid var(--line);font-size:14.5px}
-  .srow b{color:var(--ink)} .srow span{color:#4B5169}
-  .closing{padding:64px 0 10px}
-  .bigland{font-family:'Newsreader',serif;font-style:italic;font-size:26px;line-height:1.35;color:var(--ink);max-width:640px}
-  .btn.ghostd{border:1px solid var(--line);color:var(--mut);cursor:default;background:var(--card)}
-  @media(max-width:680px){.ggrid{grid-template-columns:1fr}
-    .split{grid-template-columns:1fr}.col.machine{border-left:none;border-top:1px solid var(--line)}
-    .nav .row{gap:14px;overflow-x:auto}.nav .me{display:none}.srow{grid-template-columns:110px 1fr}}
-
-  .tile,.seg,.report,.fig{transition:box-shadow .25s ease,transform .25s ease;box-shadow:0 1px 2px rgba(21,27,59,.04)}
-  .tile:hover,.seg:hover{transform:translateY(-4px);box-shadow:0 14px 34px rgba(63,76,203,.14)}
-  .report:hover{box-shadow:0 14px 34px rgba(63,76,203,.14)}
-  .report img{cursor:zoom-in}
-  .btn{transition:transform .18s ease,background .18s ease}
-  .btn.primary:hover{transform:translateY(-1px)}
-  .nav a{transition:color .15s ease}
-  .nav a.on{color:var(--ink);font-weight:700}
-  .rv{opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s ease}
-  .rv.in{opacity:1;transform:none}
-  .flow{animation:dashflow 1.5s linear infinite}
-  @keyframes dashflow{to{stroke-dashoffset:-48}}
-  .hero::before{animation:drift 9s ease-in-out infinite alternate}
-  .hero::after{animation:drift 12s ease-in-out infinite alternate-reverse}
-  @keyframes drift{from{transform:translate(0,0)}to{transform:translate(-14px,-10px)}}
-  #lb{position:fixed;inset:0;background:rgba(18,22,48,.88);display:none;align-items:center;justify-content:center;z-index:99;padding:26px;cursor:zoom-out}
-  #lb.open{display:flex}
-  #lb img{max-width:100%;max-height:100%;border-radius:10px;box-shadow:0 24px 80px rgba(0,0,0,.5)}
-  @media (prefers-reduced-motion: reduce){
-    .rv{opacity:1;transform:none;transition:none}
-    .flow,.hero::before,.hero::after{animation:none}
-    .tile:hover,.seg:hover,.btn.primary:hover{transform:none}}
-
-  /* narrative: design tiles, status labels, real-vs-simulated table */
-  .mini{margin:10px 0 0;padding-left:18px;font-size:13.5px;color:#4B5169}
-  .mini li{margin:4px 0}
-  .truth{width:100%;border-collapse:collapse;font-size:14.5px;margin:18px 0 6px;background:var(--card)}
-  .truth th{text-align:left;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);padding:10px 14px;border-bottom:1px solid var(--line)}
-  .truth td{padding:10px 14px;border-bottom:1px solid #EEF1FA;vertical-align:top}
-  .truth tr:last-child td{border-bottom:0}
-  .st{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.06em;border-radius:999px;padding:2px 9px;white-space:nowrap;font-style:normal}
-  .st-live{background:#E2F3EB;color:#0B6B4C}
-  .st-sim{background:#FCE8EF;color:#A61E4D}
-  .st-ai{background:#EDEFFA;color:#303DAF}
-  .st-code,.st-stored{background:#F1EFE8;color:#444441}
-  /* live demo */
-  a.btn{cursor:pointer}
-  a.btn.ghost:hover{border-color:#fff;color:#fff}
-  a.btn.ghostd:hover{color:var(--ink);border-color:var(--mut)}
-  .demo{background:var(--card);border:1px solid var(--line);border-radius:16px;margin-top:22px;display:flex;flex-direction:column;overflow:hidden}
-  .demo-top{padding:14px 20px 0;border-bottom:1px solid var(--line)}
-  .demo-bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
-  .demo-pick{display:flex;gap:8px;flex-wrap:wrap}
-  .pick{font:inherit;font-size:14px;font-weight:700;color:var(--ink);background:#F4F6FE;border:1px solid var(--line);border-radius:10px;padding:6px 12px;cursor:pointer;text-align:left;line-height:1.35}
-  .pick span{margin-left:6px;font-size:12px;font-weight:400;color:var(--mut)}
-  .pick.on{border-color:var(--indigo);background:#E9ECFB;box-shadow:inset 0 0 0 1px var(--indigo)}
-  .pick:disabled{cursor:default;opacity:.7}
-  .obj{font-size:13px;font-weight:700;color:var(--mut);display:flex;align-items:center;gap:8px}
-  .obj select{font:inherit;font-size:13.5px;font-weight:600;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:6px 8px;background:#F4F6FE}
-  .pick:focus-visible,.btn.run:focus-visible,.obj select:focus-visible,button.btn.ghostd:focus-visible{outline:2px solid var(--indigo);outline-offset:2px}
-  .labels{display:flex;flex-wrap:nowrap;gap:5px;margin:10px 0 0;overflow-x:auto;scrollbar-width:none}
-  .labels::-webkit-scrollbar{display:none}
-  .lbl{flex:none;display:inline-flex;align-items:center;gap:5px;font-size:11.5px;border:1px solid var(--line);border-radius:999px;padding:2px 3px 2px 8px;color:var(--mut)}
-  .lbl b{font-size:10px;letter-spacing:.06em;border-radius:999px;padding:1px 7px;background:#EDEFFA;color:#303DAF}
-  .lbl-live b{background:#E2F3EB;color:#0B6B4C}
-  .lbl-simulated b,.lbl-mock b{background:#FCE8EF;color:#A61E4D}
-  .lbl-code b,.lbl-stored b{background:#F1EFE8;color:#444441}
-  .btn.run{font:inherit;font-size:14.5px;font-weight:700;background:var(--ink);color:#fff;border:0;cursor:pointer}
-  .btn.run:hover{background:#262E66}
-  .btn.run:disabled{opacity:.6;cursor:default}
-  button.btn.ghostd{font:inherit;font-size:14px;font-weight:600;cursor:pointer}
-  button.btn.ghostd:disabled{opacity:.6;cursor:default}
-  .step:focus-visible,details>summary:focus-visible{outline:2px solid var(--indigo);outline-offset:2px}
-
-  /* live demo: stepper and one stage at a time */
-  .stepper{list-style:none;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0 0;padding:0}
-  .stepper li{border-top:3px solid var(--line)}
-  .stepper li.done{border-color:var(--green)}
-  .stepper li.current{border-color:var(--indigo)}
-  .step{display:flex;align-items:center;gap:8px;width:100%;padding:7px 0 10px;font:inherit;font-size:13px;font-weight:700;color:var(--mut);background:none;border:0;text-align:left}
-  button.step{cursor:pointer}
-  button.step:hover .step-t{text-decoration:underline;text-underline-offset:3px}
-  button.step:disabled{cursor:default}
-  .step-n{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-size:11.5px;background:#EEF0F8;color:var(--mut);flex:none}
-  .stepper li.done .step{color:var(--green)}
-  .stepper li.done .step-n{background:#E2F3EB;color:#0B6B4C}
-  .stepper li.current .step{color:var(--indigo)}
-  .stepper li.current .step-n{background:var(--indigo);color:#fff}
-  .stepper li.shown .step-t{text-decoration:underline;text-underline-offset:3px}
-  .stage-scroll{padding:16px 20px 20px;background-color:#FBFCFF;
-    background-image:linear-gradient(#FBFCFF 30%,rgba(251,252,255,0)),linear-gradient(rgba(251,252,255,0),#FBFCFF 70%),radial-gradient(farthest-side at 50% 0,rgba(21,27,59,.14),transparent),radial-gradient(farthest-side at 50% 100%,rgba(21,27,59,.14),transparent);
-    background-position:center top,center bottom,center top,center bottom;background-repeat:no-repeat;background-size:100% 28px,100% 28px,100% 10px,100% 10px;background-attachment:local,local,scroll,scroll}
-  .stage{margin:0;padding:0}
-  .stage-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:12px 20px;border-top:1px solid var(--line);background:var(--card)}
-  .stage-bar[hidden]{display:none}
-  /* first-visit guidance: a tip with an arrow pointing at the next step's button, shown once the demo is in view */
-  .stage-bar{position:relative;z-index:3}
-  .demo{transition:box-shadow .6s ease}
-  .demo.in-view{box-shadow:0 14px 40px rgba(63,76,203,.14)}
-  .coach-tip{position:absolute;right:20px;bottom:calc(100% + 12px);max-width:300px;background:var(--ink);color:#fff;font-size:13.5px;line-height:1.45;border-radius:10px;padding:10px 12px;box-shadow:0 10px 30px rgba(21,27,59,.25);display:flex;gap:10px;align-items:flex-start;opacity:0;transform:translateY(6px);transition:opacity .35s ease,transform .35s ease;pointer-events:none}
-  .demo.in-view .coach-tip{opacity:1;transform:none;pointer-events:auto}
-  .coach-tip::after{content:"";position:absolute;right:48px;top:100%;border:8px solid transparent;border-top-color:var(--ink)}
-  .coach-tip b{color:#A9B3FF;margin-right:5px}
-  .coach-x{font:inherit;font-size:12.5px;font-weight:700;color:#fff;background:rgba(255,255,255,.14);border:0;border-radius:7px;padding:3px 9px;cursor:pointer;flex:none;white-space:nowrap}
-  .coach-x:hover{background:rgba(255,255,255,.24)}
-  .coach-x:focus-visible{outline:2px solid #A9B3FF;outline-offset:2px}
-  .demo.in-view .btn.run.pulse{animation:pulse 1.8s ease-out infinite}
-  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(63,76,203,.55)}70%{box-shadow:0 0 0 12px rgba(63,76,203,0)}100%{box-shadow:0 0 0 0 rgba(63,76,203,0)}}
-  @media(max-width:680px){.coach-tip{right:auto;left:14px}.coach-tip::after{right:auto;left:40px}.stage-bar .btn.run{order:-1}}
-  /* On laptop and desktop screens the demo fits the window: the stage scrolls inside and the next step's button stays in view. */
-  @media (min-width:681px) and (min-height:560px){.demo{height:calc(100vh - 76px);min-height:500px;max-height:900px}.stage-scroll{flex:1;min-height:0;overflow:auto}}
-  @media (max-width:680px),(max-height:559px){.demo{overflow:visible}.stage-bar{position:sticky;bottom:0;z-index:2;border-radius:0 0 16px 16px;box-shadow:0 -6px 16px rgba(21,27,59,.06)}}
-  .stage-k{font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--indigo)}
-  .stage-h{font-family:'Newsreader',Georgia,serif;font-size:22px;font-weight:500;margin:2px 0 8px}
-  .stage-intro{font-size:14.5px;color:#4B5169;margin:0 0 12px}
-  .tags{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
-  .chip{font-size:12px;font-weight:600;background:#EEF0F8;color:#4B5169;border-radius:999px;padding:3px 10px}
-  .chip.ai,.chip.sim,.chip.code{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:4px 10px}
-  .chip.ai{background:#EDEFFA;color:#303DAF}
-  .chip.sim{background:#FCE8EF;color:#A61E4D}
-  .chip.code{background:#F1EFE8;color:#444441}
-  .viewing{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;flex:1;font-size:13.5px;color:#4B5169}
-  .viewing .btn{padding:6px 12px;font-size:13px}
-  .dnote{background:#E9F6F0;color:#0B6B4C;border-radius:10px;padding:9px 14px;margin-bottom:14px;font-size:14px}
-  .stage-bar .dsub{margin:0;flex:1;min-width:220px}
-  .stage-bar .derr{flex-basis:100%;margin:0}
-  .dprogress{flex-basis:100%}
-  .dprogress .bar{height:4px;border-radius:999px;background:#E6E9F8;overflow:hidden;position:relative}
-  .dprogress .bar::after{content:"";position:absolute;top:0;bottom:0;left:0;width:35%;border-radius:999px;background:var(--indigo);animation:slide 1.2s ease-in-out infinite}
-  @keyframes slide{from{transform:translateX(-100%)}to{transform:translateX(290%)}}
-  .aud-list{list-style:none;margin:4px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-  .aud-list li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px}
-  .aud-list b{display:block}
-  .aud-list span{font-size:12.5px;color:var(--mut)}
-  .verdict{border-radius:12px;padding:14px 16px;margin:0 0 14px;border:1px solid var(--line);background:#F7F8FE}
-  .verdict.win{border-color:#BFE3D3;background:#F3FBF7}
-  .verdict.lose{border-color:#F3C6D5;background:#FFF6F9}
-  .verdict-h{font-weight:700;font-size:17px}
-  .versus{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0 4px}
-  .vs-card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
-  .vs-card.test{border-color:#C9CEF3}
-  .vs-l{font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--mut)}
-  .vs-card.test .vs-l{color:var(--indigo)}
-  .vs-ctr{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.2;margin-top:2px}
-  .vs-h{font-size:14px;margin-top:6px}
-  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px}
-  .card-t{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mut)}
-  details.data,details.hist{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
-  details.data>summary,details.hist>summary{cursor:pointer;font-size:14px;font-weight:700;color:var(--indigo)}
-  details.data[open]>summary{margin-bottom:8px}
-  #demo-history details.hist{margin-top:14px;border-top:0;padding-top:0}
-  .rec{font-family:'Newsreader',Georgia,serif;font-size:21px;line-height:1.4;margin:2px 0 12px;max-width:none}
-  .rec b{font-weight:600;color:var(--indigo)}
-
-  /* live demo: channel previews */
-  .mail,.post,.blogp{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 8px 24px rgba(21,27,59,.06);margin:4px 0 0}
-  .mail{max-width:620px}
-  .mail-head{padding:16px 20px 14px;border-bottom:1px solid #EEF1FA}
-  .mail-from,.post-head{display:flex;align-items:center;gap:10px;font-size:14px;line-height:1.35}
-  .avatar{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:var(--ink);color:#fff;font-weight:700;font-size:14px;flex:none}
-  .mut{color:var(--mut);font-size:12.5px}
-  .mail-subject{font-size:19px;font-weight:700;margin-top:12px;line-height:1.3}
-  .mail-pre{font-size:13.5px;color:var(--mut);margin-top:3px}
-  .mail-body{padding:18px 20px 22px;color:#2A3050}
-  .mail-body p{margin:0 0 14px;font-size:15px;line-height:1.7;max-width:none}
-  .mail-cta{display:inline-block;margin-top:4px;background:var(--indigo);color:#fff;font-weight:700;font-size:14px;border-radius:8px;padding:10px 18px}
-  .mail-foot{font-size:12px;color:var(--mut);background:#F7F8FE;border-top:1px solid #EEF1FA;padding:8px 20px}
-  mark.merge{background:#FFF1BF;color:inherit;border-radius:4px;padding:0 3px}
-  .post{max-width:560px}
-  .post-head{padding:14px 16px 4px}
-  .post-text{padding:8px 16px 6px}
-  .post-text p{margin:0 0 10px;font-size:14.5px;line-height:1.6;max-width:none}
-  .post-link{border-top:1px solid #EEF1FA}
-  .post-img{height:120px;background:linear-gradient(135deg,#1D2558,#3F4CCB);color:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center;font-family:'Newsreader',Georgia,serif;font-size:26px}
-  .post-meta{padding:10px 16px 2px}
-  .post-title{font-weight:700;font-size:15px;line-height:1.35}
-  .post-cta{display:inline-block;margin:8px 16px 14px;border:1px solid var(--indigo);color:var(--indigo);font-weight:700;font-size:13.5px;border-radius:999px;padding:6px 14px}
-  .insta-img{aspect-ratio:1/1;max-height:340px;width:100%;background:linear-gradient(135deg,#31388F,#D6336C);color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;padding:28px;font-family:'Newsreader',Georgia,serif;font-size:26px;line-height:1.25}
-  .insta-cta{font-weight:700;color:var(--indigo)}
-  .blogp{max-width:640px;padding:22px 24px 0}
-  .blog-k{font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}
-  .blog-t{font-family:'Newsreader',Georgia,serif;font-size:26px;font-weight:500;line-height:1.2;margin:6px 0 8px}
-  .blogp p{font-size:15px;line-height:1.7;max-width:none}
-  .blogp p.blog-sf{font-size:16px;color:#4B5169;font-style:italic}
-  .blog-more{display:inline-block;font-weight:700;color:var(--indigo);margin:0 0 18px}
-  .blogp .mail-foot{margin:0 -24px}
-
-  .demo-note{font-size:12.5px;color:var(--mut);margin:10px 4px 0;max-width:none}
-  .demo-tools{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
-  button.btn.sm{padding:6px 12px;font-size:13px}
-  /* one-time tour of the demo frame, and a soft marker on the choice still missing */
-  .demo{position:relative}
-  .demo-pick.need .pick,.obj.need select{border-color:#EBA3BD}
-  .obj select.empty{color:var(--mut);font-weight:500}
-  .tour-on{outline:3px solid rgba(63,76,203,.4);outline-offset:4px;border-radius:12px}
-  .tour{position:absolute;z-index:6;width:min(300px,calc(100% - 24px));background:var(--ink);color:#fff;font-size:13.5px;line-height:1.45;border-radius:12px;padding:12px 14px;box-shadow:0 12px 32px rgba(21,27,59,.28)}
-  .tour::before{content:"";position:absolute;bottom:100%;left:var(--arrow,24px);transform:translateX(-50%);border:8px solid transparent;border-bottom-color:var(--ink)}
-  .tour-k{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#A9B3FF}
-  .tour-t{display:block;font-size:14.5px;margin:2px 0 4px}
-  .tour p{margin:0;color:#DDE1F5;max-width:none}
-  .tour-row{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-top:10px}
-  .tour-skip{font:inherit;font-size:12.5px;font-weight:600;color:#A9B3FF;background:none;border:0;cursor:pointer;padding:3px 6px}
-  .tour-skip:hover{color:#fff}
-  .tour-skip:focus-visible{outline:2px solid #A9B3FF;outline-offset:2px}
-  .strategy-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:22px;align-items:start}
-  .content-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:18px;align-items:start}
-  .kv.compact{grid-template-columns:96px 1fr}
-  .content-side .vs-card{margin-top:8px}
-  .content-side .kv{grid-template-columns:1fr;gap:2px}
-  .content-side .kv dt{padding-top:8px}
-  .dlab{font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--indigo);margin-bottom:4px}
-  .dsub{font-size:13px;color:var(--mut);margin-top:6px}
-  .dsubhead{margin-top:16px}
-  .dtable-wrap{overflow-x:auto}
-  .dtable{width:100%;border-collapse:collapse;font-size:13.5px}
-  .dtable th{text-align:left;font-size:11.5px;color:var(--mut);font-weight:700;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
-  .dtable td{padding:8px;border-bottom:1px solid #EEF1FA;vertical-align:top}
-  .dtable .num{text-align:right;font-variant-numeric:tabular-nums}
-  .dtable tr.lead td{background:#E9F6F0}
-  .dsum{background:#F7F8FE;border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-top:12px;font-size:14px}
-  .dlist{margin:6px 0 0;padding-left:18px;font-size:14px}
-  .dlist li{margin:3px 0}
-  .two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-  .ins{margin:6px 0 0;padding-left:18px;font-size:14.5px}
-  .ins li{margin:6px 0}
-  .via{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#303DAF;background:#EDEFFA;border-radius:999px;padding:3px 10px;margin-bottom:10px}
-  .kv{display:grid;grid-template-columns:170px 1fr;gap:6px 16px;margin:8px 0 0;font-size:14px}
-  .kv dt{font-weight:700;color:var(--mut);font-size:12.5px;padding-top:2px}
-  .kv dd{margin:0}
-  .kv .dlist{margin:0;padding-left:18px}
-  .why{list-style:none;margin:6px 0 0;padding:0}
-  .why li{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:8px 0;font-size:14px}
-  .timeline{margin:4px 0 0;padding-left:18px;font-size:14px}
-  .timeline li{margin:6px 0}
-  .derr{color:#A61E4D;background:#FCE8EF;border-radius:10px;padding:10px 14px;margin-top:14px;font-size:14px}
-  @media(max-width:680px){.two,.versus,.aud-list,.strategy-grid,.content-grid{grid-template-columns:1fr}.stepper{gap:4px}.step{flex-direction:column;align-items:flex-start;gap:4px;font-size:12px}
-    .demo-top,.stage-scroll,.stage-bar{padding-left:14px;padding-right:14px}.stage-h{font-size:20px}.rec{font-size:18px}.mail-head,.mail-body,.mail-foot{padding-left:14px;padding-right:14px}
-    .kv,.kv.compact{grid-template-columns:1fr;gap:2px}.kv dt{padding-top:8px}.dtable .hm{display:none}.labels{flex-wrap:wrap}}
-
-  /* case study narrative */
-  .meta span b{margin-right:8px}
-  .status{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin-top:22px;padding:12px 16px;background:var(--card);border:1px solid var(--line);border-radius:12px}
-  .status-t{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);margin-right:4px}
-  .stc{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#4B5169}
-  .stc + .stc::before{content:"";width:1px;height:14px;background:var(--line);margin-right:4px}
-  .status-more{font-size:13px;margin-left:auto}
-  .question{font-family:'Newsreader',Georgia,serif;font-size:25px;line-height:1.3;color:var(--ink);border-left:3px solid var(--indigo);padding:4px 0 4px 16px;margin:22px 0;max-width:640px}
-  .aside{font-size:14px;color:var(--mut);margin-top:14px}
-  .st-human{background:#EEF0F8;color:#303A5E}
-  .chain{list-style:none;margin:26px 0 0 12px;padding:0;border-left:2px solid var(--line);counter-reset:chain}
-  .chain li{counter-increment:chain;position:relative;display:grid;grid-template-columns:120px 1fr;gap:4px 20px;padding:0 0 20px 28px}
-  .chain li:last-child{padding-bottom:4px}
-  .chain li::before{content:counter(chain);position:absolute;left:-13px;top:0;width:24px;height:24px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
-  .chain-k{font-weight:700;font-size:15px;padding-top:1px}
-  .chain-tags{display:flex;flex-wrap:wrap;gap:6px}
-  .chain-b p{margin:6px 0 0;font-size:15.5px;max-width:64ch}
-  .chain li.result .chain-b p{background:#FFF6F9;border:1px solid #F3C6D5;border-radius:10px;padding:10px 12px}
-  .cond{font-size:12.5px;color:var(--mut)}
-  details.more,details.shots{margin-top:16px;border:1px solid var(--line);border-radius:12px;background:var(--card);padding:12px 16px}
-  details.more>summary,details.shots>summary{cursor:pointer;font-weight:700;font-size:15px;color:var(--indigo)}
-  details.more[open]>summary,details.shots[open]>summary{margin-bottom:12px}
-  details.more .fig{margin:0}
-  .shot-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  .shot-grid .report{margin:0}
-  .dgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:22px}
-  .dcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
-  .dcard.wide{grid-column:1/-1}
-  .dcard-k{font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--indigo)}
-  .dcard h3{font-family:'Schibsted Grotesk',Arial,sans-serif;font-size:17px;font-weight:700;margin:4px 0 8px;line-height:1.35}
-  .dcard dl{margin:0;font-size:14.5px;color:#4B5169}
-  .dcard dt{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);margin-top:10px}
-  .dcard dd{margin:3px 0 0}
-  .seg-why{font-size:14px;color:#4B5169;margin:0 0 6px}
-  .seg li b{color:var(--ink)}
-  .qlist{list-style:none;counter-reset:q;margin:20px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .qlist li{counter-increment:q;position:relative;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px 14px 52px;font-size:15px}
-  .qlist li::before{content:counter(q);position:absolute;left:16px;top:14px;width:24px;height:24px;border-radius:50%;background:#EDEFFA;color:#303DAF;font-weight:700;font-size:12.5px;display:flex;align-items:center;justify-content:center}
-  .qlist b{display:block}
-  .qlist span{color:#4B5169}
-  .mini-h{font-family:'Schibsted Grotesk',Arial,sans-serif;font-size:14px;margin:4px 0 0}
-  @media(max-width:680px){.chain li{grid-template-columns:1fr}.shot-grid,.dgrid,.qlist{grid-template-columns:1fr}
-    .question{font-size:21px}.status-more{margin-left:0}.stc + .stc::before{display:none}}
-
-  /* readability pass: problem questions, three-part model, six-step walkthrough, status and production grids */
-  .asks{list-style:none;margin:6px 0 18px;padding:0;display:flex;flex-wrap:wrap;gap:8px}
-  .asks li{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:15px;font-weight:600;color:var(--ink)}
-  .model{display:grid;grid-template-columns:1fr 34px 1fr 34px 1fr;align-items:stretch;margin-top:22px}
-  .mstep{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
-  .mstep.ai{background:#F4F6FE;border-color:#C9CEF3}
-  .mstep h3{font-family:'Newsreader',Georgia,serif;font-size:21px;font-weight:500;line-height:1.2;margin:10px 0 6px}
-  .mstep p{font-size:14px;color:#4B5169;margin:0}
-  .marrow{display:flex;align-items:center;justify-content:center;color:var(--indigo);font-size:22px;font-weight:700}
-  .mhuman{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin-top:12px;background:var(--ink);color:#DDE1F5;border-radius:14px;padding:13px 18px;font-size:15px}
-  .mhuman .st{background:#fff;color:var(--ink)}
-  .mloop{font-size:14px;color:var(--mut);margin-top:10px}
-  .chain li{grid-template-columns:170px 1fr}
-  .chain li::before{content:counter(chain,decimal-leading-zero);width:28px;height:28px;left:-15px;font-size:11px}
-  .chain-q{display:block;font-size:12.5px;font-weight:400;color:var(--mut);margin-top:2px}
-  .disclaim{background:#FFF8E6;border:1px solid #F1DFB2;border-radius:10px;padding:10px 14px;font-size:14.5px;color:#5A4A1F;max-width:74ch}
-  .sgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px}
-  .scard{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
-  .scard.sim{border-color:#F3C6D5;background:#FFF8FA}
-  .scard .st{font-size:11.5px;padding:3px 10px}
-  .scard b{display:block;margin-top:8px;font-size:15px}
-  .scard span{font-size:13.5px;color:#4B5169}
-  .pgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:20px}
-  .pitem{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
-  .pitem b{display:block;font-size:15px;margin-bottom:4px}
-  .pitem span{font-size:13.5px;color:#4B5169}
-  .principles{margin:12px 0 0;padding-left:22px;font-size:17px;color:var(--ink)}
-  .principles li{margin:6px 0}
-  .dcard h3{margin-top:0}
-  @media(max-width:900px){.sgrid,.pgrid{grid-template-columns:1fr 1fr}}
-  @media(max-width:680px){.model{grid-template-columns:1fr}.marrow{height:26px;transform:rotate(90deg)}
-    .sgrid,.pgrid{grid-template-columns:1fr}.chain li{grid-template-columns:1fr}.mstep h3{font-size:19px}}
-
-  /* campaign loop, campaign context, learning, system roles, real vs simulated */
-  .idea{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--indigo);border-radius:10px;padding:12px 16px;font-size:15.5px;max-width:72ch}
-  .loop{list-style:none;margin:24px 0 0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:32px 38px}
-  .loop li{position:relative;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;align-items:flex-start;gap:6px;font-size:14.5px}
-  .loop li b{line-height:1.3}
-  .loop .ln{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;font-weight:700}
-  .loop .n1{grid-column:1;grid-row:1}.loop .n2{grid-column:2;grid-row:1}.loop .n3{grid-column:3;grid-row:1}.loop .n4{grid-column:4;grid-row:1}
-  .loop .n5{grid-column:4;grid-row:2}.loop .n6{grid-column:3;grid-row:2}.loop .n7{grid-column:2;grid-row:2}
-  .loop .n8{grid-column:1;grid-row:2;border:2px solid var(--signal);background:#FFF6F9}
-  .loop .n8 .ln{background:var(--signal)}
-  .loop li::after{position:absolute;color:var(--indigo);font-weight:700;font-size:20px;line-height:1}
-  .loop .n1::after,.loop .n2::after,.loop .n3::after{content:"→";right:-29px;top:50%;transform:translateY(-50%)}
-  .loop .n4::after{content:"↓";bottom:-27px;left:50%;transform:translateX(-50%)}
-  .loop .n5::after,.loop .n6::after,.loop .n7::after{content:"←";left:-29px;top:50%;transform:translateY(-50%)}
-  .loop .n8::after{content:"↑";top:-27px;left:50%;transform:translateX(-50%);color:var(--signal)}
-  .loop-human{font-size:15px;color:#4B5169;margin-top:16px;max-width:72ch}
-  .context{background:var(--ink);color:#DDE1F5;border-radius:14px;padding:16px 20px;margin:20px 0 26px}
-  .context-t{font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#A9B3FF;margin-bottom:8px}
-  .context dl{display:grid;grid-template-columns:repeat(4,1fr);gap:10px 18px;margin:0}
-  .context dt{font-size:12px;color:#98A0C4}
-  .context dd{margin:2px 0 0;color:#fff;font-size:14.5px;font-weight:600;line-height:1.4}
-  .chain .wt-mail{margin-top:10px}
-  .learned{margin-top:4px;background:#FFF8E6;border:1px solid #F1DFB2;border-left:5px solid #C98A00;border-radius:12px;padding:16px 20px}
-  .learned-t,.nextc-t{display:flex;flex-wrap:wrap;align-items:center;gap:10px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#7A5A00;margin-bottom:6px}
-  .learned p{margin:0;font-size:16px;color:#3D3218;max-width:none}
-  .nextc{margin-top:14px;background:var(--card);border:1px solid #C9CEF3;border-left:5px solid var(--indigo);border-radius:12px;padding:16px 20px}
-  .nextc-t{color:var(--indigo)}
-  .nextc-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:6px}
-  .nextc-k{font-size:12.5px;font-weight:700;color:var(--mut);margin-bottom:4px}
-  .nextc ul{margin:0;padding-left:18px;font-size:15px}
-  .nextc li{margin:4px 0}
-  .nextc-why{margin:12px 0 0;font-size:15px;max-width:none}
-  .sys{margin-top:20px;border-top:1px solid var(--line)}
-  .sysrow{display:grid;grid-template-columns:230px 1fr;gap:6px 20px;padding:14px 0;border-bottom:1px solid var(--line)}
-  .sysrow b{display:block;margin-top:6px;font-size:15.5px}
-  .sys-q{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--indigo)}
-  .sysrow p{margin:4px 0 0;font-size:15px;color:#4B5169;max-width:64ch}
-  .tech{margin-top:26px}
-  .tech-t{font-size:13px;font-weight:700;color:var(--mut);margin-bottom:4px}
-  .rs{list-style:none;margin:18px 0 0;padding:0;border-top:1px solid var(--line)}
-  .rs li{display:grid;grid-template-columns:200px 1fr;gap:6px 18px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);font-size:15px}
-  .rs .st{justify-self:start}
-  @media(max-width:900px){.context dl{grid-template-columns:1fr 1fr}}
-  @media(max-width:680px){.loop{grid-template-columns:1fr;gap:28px;padding-bottom:30px}.loop li{grid-column:1!important;grid-row:auto!important}
-    .loop li::after{content:"↓"!important;left:50%!important;right:auto!important;top:auto!important;bottom:-25px!important;transform:translateX(-50%)!important;color:var(--indigo)!important}
-    .loop .n8::after{content:"↺ back to step 1"!important;font-size:13px!important;color:var(--signal)!important;white-space:nowrap}
-    .context dl,.nextc-grid{grid-template-columns:1fr}.sysrow,.rs li{grid-template-columns:1fr}}
-
-  /* decision-first demo screens */
-  .finding.gaps{border-left:3px solid #C98A00}
-  .verdict.open{border-color:#F1DFB2;background:#FFFBF0}
-  .verdict .facts{margin-top:10px}
-  .hyp{font-size:14.5px;color:#4B5169;margin:8px 0 10px}
-  .src{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border-radius:999px;padding:1px 8px;margin-bottom:3px}
-  .src-pmm{background:#EEF0F8;color:#303A5E}
-  .src-code{background:#F1EFE8;color:#444441}
-  .alts{margin-top:14px}
-
-  /* PMM decision story: hypothesis, inputs, objective signals, walkthrough stages, PMM decisions, AI boundary, validation */
-  .equation{display:flex;flex-wrap:wrap;gap:4px 16px;font-family:'Newsreader',Georgia,serif;font-size:clamp(24px,3.2vw,34px);line-height:1.2;margin:14px 0 20px;color:var(--ink);max-width:none}
-  .equation span:nth-child(2),.equation span:nth-child(4){color:var(--indigo)}
-  .roles4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-  .role{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
-  .role b{display:block;margin:8px 0 4px;font-size:15.5px}
-  .role p{margin:0;font-size:14px;color:#4B5169}
-  .loop .tagrow{display:flex;flex-wrap:wrap;gap:4px}
-  .inputs{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:24px}
-  .inputs>div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
-  .inputs h3,.sub-h{font-family:'Schibsted Grotesk',system-ui,sans-serif;font-size:16px;margin:0 0 6px}
-  .sub-h{margin-top:28px}
-  .inputs ul{margin:0;padding-left:18px;font-size:14.5px;color:#4B5169}
-  .inputs li{margin:3px 0}
-  .objtable-wrap{overflow-x:auto;margin-top:10px}
-  .objtable{border-collapse:separate;border-spacing:0;width:100%;min-width:560px;font-size:14.5px;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
-  .objtable th,.objtable td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
-  .objtable tr:last-child td{border-bottom:0}
-  .objtable th{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);background:#F7F8FD}
-  .objtable td:first-child{font-weight:700;white-space:nowrap}
-  .wstage{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-top:14px}
-  .wstage-h{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin-bottom:12px}
-  .wstage-n{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;font-weight:700;flex:none}
-  .wstage-h b{font-size:16.5px;margin-right:4px}
-  .wgrid{display:grid;grid-template-columns:200px 1fr;gap:10px 18px;margin:0}
-  .wgrid dt{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);padding-top:3px}
-  .wgrid dd{margin:0;font-size:15px;line-height:1.55}
-  .wgrid dd.next{color:#2E3AA8}
-  .wstage .mail{margin-top:12px;max-width:620px}
-  .contrast{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0 2px}
-  .contrast>div{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#FBFCFF;font-size:14.5px}
-  .contrast .k{display:block;font-size:11.5px;font-weight:700;color:var(--mut);letter-spacing:.06em;text-transform:uppercase;margin-bottom:2px}
-  .wstage.result{border-color:#B7DDC9}
-  .wstage.result.open{border-color:#F1DFB2}
-  .pmmgrid{grid-template-columns:repeat(3,1fr)}
-  .pmmgrid .dcard.wide{grid-column:span 2}
-  .pull{margin:24px 0;padding:14px 20px;border-left:4px solid var(--indigo);background:var(--card);border-radius:0 12px 12px 0;font-family:'Newsreader',Georgia,serif;font-size:clamp(19px,2.4vw,23px);line-height:1.35;color:var(--ink)}
-  .boundary{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  .boundary>div{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:var(--card)}
-  .boundary .no{border-top:4px solid var(--signal)}
-  .boundary .yes{border-top:4px solid var(--green)}
-  .boundary h3{font-family:'Schibsted Grotesk',system-ui,sans-serif;font-size:15.5px;margin:0 0 6px}
-  .boundary ul{margin:0;padding-left:18px;font-size:14.5px}
-  .boundary li{margin:4px 0}
-  .vlist{margin:14px 0 0;padding-left:20px;max-width:78ch}
-  .vlist li{margin:9px 0;font-size:15.5px}
-  @media(max-width:900px){.roles4,.pmmgrid{grid-template-columns:1fr 1fr}}
-  @media(max-width:680px){.roles4,.inputs,.boundary,.contrast,.pmmgrid{grid-template-columns:1fr}.pmmgrid .dcard.wide{grid-column:auto}.wgrid{grid-template-columns:1fr;gap:2px}.wgrid dd{margin-bottom:10px}}
-</style></head>
-<body>
-<nav class="nav" aria-label="Case study sections"><div class="wrap"><div class="row">
-  <span class="brand">SignalLoop</span>
-  <a href="#problem">Problem</a><a href="#hypothesis">Hypothesis</a><a href="#loop">How it works</a><a href="#walkthrough">Walkthrough</a><a href="#pmm">My role</a><a href="#ai">AI design</a><a href="#live">Live demo</a><a href="#real">Real vs simulated</a>
-  <span class="me">Shiva Goel</span>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body data-page="home">
+<nav class="nav" aria-label="Site"><div class="wrap wide"><div class="row">
+  <a class="brand" href="/">SignalLoop</a>
+  <a href="/" data-page="home">Product</a><a href="/#try" data-page="try">Live demo</a><a href="/how-it-works" data-page="how">How it works</a><a href="/behind-the-build" data-page="build">Behind the build</a>
+  <a class="nav-cta" href="/#try">Try SignalLoop</a>
 </div></div></nav>
-<div class="wrap">
+<div class="wrap wide">
 
-  <header class="hero">
-    <div class="eyebrow">SignalLoop · a product marketing case study by Shiva Goel</div>
-    <h1>Decide what to test next, before generating more content.</h1>
-    <p class="lede">SignalLoop combines PMM strategy with campaign evidence to recommend the next audience × channel × message
-    experiment, then generates content for that approved test.</p>
-    <div class="ctas">
-      <a class="btn primary" href="#live">Try the live demo</a>
-      <a class="btn ghost" href="#walkthrough">See one decision</a>
+  <header class="hero phero" id="top">
+    <div class="phero-copy">
+      <div class="eyebrow">AI campaign optimization for product marketers</div>
+      <h1>Turn campaign performance into your next GTM experiment.</h1>
+      <p class="lede">SignalLoop learns from past campaigns and tells you who to target, which channel to use, what message to test
+      and what content to create next.</p>
+      <div class="ctas">
+        <a class="btn primary" href="#try">Try SignalLoop</a>
+        <a class="btn ghost" href="#loop">See how it works</a>
+      </div>
+      <p class="hero-pillars">AI recommendations · analytics you can check · you approve every step</p>
+      <p class="hero-note">An interactive prototype designed and built by Shiva Goel. Campaign results are simulated.</p>
     </div>
-    <div class="meta">
-      <span><b>My role</b>PMM workflow and decision design · experiment framework · AI system design · implementation (AI-assisted)</span>
-      <span><b>Status</b>Working prototype · HubSpot CRM live · campaign response simulated · strategy inputs are working hypotheses</span>
-    </div>
+    <aside class="nextcard" aria-label="Example recommendation from a recorded run">
+      <div class="nextcard-k">Next test</div>
+      <div class="nextcard-grid">
+        <div><span>Who to target</span><b>Finance Leaders</b></div>
+        <div><span>Channel</span><b>Email</b></div>
+        <div><span>Message</span><b>Real-time visibility</b></div>
+        <div><span>Content</span><b>Thought leadership</b></div>
+      </div>
+      <p class="nextcard-why"><b>Why:</b> they're the buyer, email drives the most buying intent from them, and this message hasn't been tested with them yet.</p>
+      <div class="nextcard-foot">Example from a recorded Ramp run</div>
+    </aside>
   </header>
 
-  <section id="problem">
-    <div class="kicker">The problem</div>
-    <h2>AI made content cheap. It didn't make the next experiment obvious.</h2>
-    <p>The harder product marketing question is still open: <b>which audience, message and channel deserve the next
-    experiment, and why?</b></p>
-    <p>Campaign dashboards tell marketers what happened. They rarely tell a PMM:</p>
-    <ul class="asks"><li>What was actually learned</li><li>Which assumption changed</li><li>Which uncertainty matters most</li><li>What to test next</li></ul>
+  <section id="loop" class="home-sec">
+    <h2>Every campaign teaches the next one.</h2>
+    <p class="sec-lede">SignalLoop closes the gap between the campaign report and the next campaign.</p>
+  <div class="cycle" role="list" aria-label="The SignalLoop learning loop">
+    <svg class="cycle-ring" viewBox="0 0 1000 620" aria-hidden="true" preserveAspectRatio="none">
+      <defs>
+        <marker id="cyc-arrow" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#3F4CCB"/></marker>
+        <marker id="cyc-arrow-back" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#D6336C"/></marker>
+      </defs>
+      <ellipse class="cycle-track" cx="500" cy="310" rx="362" ry="232"/>
+      <path class="cycle-arc" d="M629.7 93.4 L636.3 95.1 L642.9 96.8 L649.4 98.7 L655.8 100.6 L662.2 102.6 L668.6 104.7 L674.8 106.8 L681.0 109.1 L687.1 111.4 L693.2 113.8 L699.1 116.3 L705.0 118.8 L710.9 121.4 L716.6 124.1 L722.2 126.9 L727.8 129.7" marker-end="url(#cyc-arrow)"/>
+      <path class="cycle-arc" d="M857.5 273.7 L858.6 278.2 L859.5 282.7 L860.3 287.3 L860.9 291.8 L861.4 296.3 L861.7 300.9 L861.9 305.4 L862.0 310.0 L861.9 314.6 L861.7 319.1 L861.4 323.7 L860.9 328.2 L860.3 332.7 L859.5 337.3 L858.6 341.8 L857.5 346.3" marker-end="url(#cyc-arrow)"/>
+      <path class="cycle-arc" d="M727.8 490.3 L722.2 493.1 L716.6 495.9 L710.9 498.6 L705.0 501.2 L699.1 503.7 L693.2 506.2 L687.1 508.6 L681.0 510.9 L674.8 513.2 L668.6 515.3 L662.2 517.4 L655.8 519.4 L649.4 521.3 L642.9 523.2 L636.3 524.9 L629.7 526.6" marker-end="url(#cyc-arrow)"/>
+      <path class="cycle-arc" d="M370.3 526.6 L363.7 524.9 L357.1 523.2 L350.6 521.3 L344.2 519.4 L337.8 517.4 L331.4 515.3 L325.2 513.2 L319.0 510.9 L312.9 508.6 L306.8 506.2 L300.9 503.7 L295.0 501.2 L289.1 498.6 L283.4 495.9 L277.8 493.1 L272.2 490.3" marker-end="url(#cyc-arrow)"/>
+      <path class="cycle-arc" d="M142.5 346.3 L141.4 341.8 L140.5 337.3 L139.7 332.7 L139.1 328.2 L138.6 323.7 L138.3 319.1 L138.1 314.6 L138.0 310.0 L138.1 305.4 L138.3 300.9 L138.6 296.3 L139.1 291.8 L139.7 287.3 L140.5 282.7 L141.4 278.2 L142.5 273.7" marker-end="url(#cyc-arrow)"/>
+      <path class="cycle-arc back" d="M272.2 129.7 L277.8 126.9 L283.4 124.1 L289.1 121.4 L295.0 118.8 L300.9 116.3 L306.8 113.8 L312.9 111.4 L319.0 109.1 L325.2 106.8 L331.4 104.7 L337.8 102.6 L344.2 100.6 L350.6 98.7 L357.1 96.8 L363.7 95.1 L370.3 93.4" marker-end="url(#cyc-arrow-back)"/>
+    </svg>
+    <div class="cnode c1" role="listitem" style="left:50.00%;top:12.58%"><span class="cn">1</span><b>Past campaign performance</b><span class="cd">What each audience, channel and message did</span></div>
+    <div class="cnode c2" role="listitem" style="left:81.35%;top:31.29%"><span class="cn">2</span><b>Find what worked</b><span class="cd">Judged on your goal, not just clicks</span></div>
+    <div class="cnode c3" role="listitem" style="left:81.35%;top:68.71%"><span class="cn">3</span><b>Recommend the next test</b><span class="cd">Audience, channel, message and content</span></div>
+    <div class="cnode c4" role="listitem" style="left:50.00%;top:87.42%"><span class="cn">4</span><b>Create the campaign</b><span class="cd">AI drafts it. You approve it.</span></div>
+    <div class="cnode c5" role="listitem" style="left:18.65%;top:68.71%"><span class="cn">5</span><b>Measure the experiment</b><span class="cd">The new version vs what works today</span></div>
+    <div class="cnode c6" role="listitem" style="left:18.65%;top:31.29%"><span class="cn">↺</span><b>Learn and repeat</b><span class="cd">The result feeds the next recommendation</span></div>
+    <div class="cycle-center" aria-hidden="true"><b>Past results in. Next test out.</b><span>Each new result becomes the input for the next recommendation.</span></div>
+  </div>
+    <p class="more-link"><a href="/how-it-works">How it works in detail →</a></p>
   </section>
 
-  <section id="hypothesis">
-    <div class="kicker">My hypothesis</div>
-    <h2>The next decision needs measurement, interpretation, judgment and execution kept apart.</h2>
-    <p class="equation" aria-label="Code measures. AI interprets. PMM approves. AI executes."><span>Code measures.</span> <span>AI interprets.</span> <span>PMM approves.</span> <span>AI executes.</span></p>
-    <div class="roles4">
-      <div class="role"><em class="st st-code">CODE</em><b>Measure</b><p>Calculates rates, pools results, compares variants and checks whether the evidence is strong enough.</p></div>
-      <div class="role"><em class="st st-ai">AI · MARKETING AGENT</em><b>Interpret</b><p>Reads the evidence against the strategy and recommends the test that reduces the most important uncertainty.</p></div>
-      <div class="role"><em class="st st-human">PMM</em><b>Approve</b><p>Owns the strategy, checks the reasoning, and approves the test and its content before anything runs.</p></div>
-      <div class="role"><em class="st st-ai">AI · CONTENT AGENT</em><b>Execute</b><p>Writes the content for the approved test within brand and proof rules. It can't change the strategy.</p></div>
-    </div>
-    <p class="aside">A hypothesis about PMM work that I'm testing with product marketers, not a validated finding.</p>
-  </section>
-
-  <section id="loop">
-    <div class="kicker">How SignalLoop works</div>
-    <h2>Strategy and evidence go in; the learning that comes out shapes the next recommendation.</h2>
-    <ol class="loop" aria-label="The SignalLoop decision loop">
-      <li class="n1"><span class="ln">1</span><b>PMM strategy + campaign evidence</b><span class="tagrow"><em class="st st-human">PMM</em><em class="st st-code">CODE</em></span></li>
-      <li class="n2"><span class="ln">2</span><b>Marketing Agent</b><em class="st st-ai">AI</em></li>
-      <li class="n3"><span class="ln">3</span><b>Next experiment recommendation</b><em class="st st-ai">AI</em></li>
-      <li class="n4"><span class="ln">4</span><b>PMM approval</b><em class="st st-human">PMM</em></li>
-      <li class="n5"><span class="ln">5</span><b>Content Agent</b><em class="st st-ai">AI</em></li>
-      <li class="n6"><span class="ln">6</span><b>Experiment</b><em class="st st-sim">SIMULATED</em></li>
-      <li class="n7"><span class="ln">7</span><b>Measurement</b><em class="st st-code">CODE</em></li>
-      <li class="n8"><span class="ln">↺</span><b>Learning</b><span class="mut">feeds the next recommendation</span></li>
-    </ol>
-    <div class="inputs">
-      <div><h3>Strategy the PMM sets</h3><ul>
-        <li>Campaign objective and funnel stage</li>
-        <li>ICP, buying roles and jobs to be done</li>
-        <li>Positioning, value proposition and product proof</li>
-        <li>Competitive alternative</li>
-        <li>Message hypotheses and constraints</li></ul></div>
-      <div><h3>Evidence code measures</h3><ul>
-        <li>Audience, channel and message results on the objective's signal</li>
-        <li>Experiment history, and what each test was meant to learn</li>
-        <li>Evidence quality: whether a result met the guardrail and is significant</li>
-        <li>Prior learnings and open questions</li></ul></div>
-    </div>
-    <h3 class="sub-h">Success depends on the objective</h3>
-    <p class="aside" style="margin-top:0">A PMM doesn't optimize every campaign for clicks, so SignalLoop doesn't either. Every signal below is simulated.</p>
-    <div class="objtable-wrap"><table class="objtable">
-      <thead><tr><th>Objective</th><th>Primary signal</th><th>What matters most</th></tr></thead>
-      <tbody>
-        <tr><td>Awareness</td><td>Qualified reach: ICP-fit people who viewed most of the content</td><td>Scale within the ICP</td></tr>
-        <tr><td>Engagement</td><td>Engagement rate</td><td>Active response to the point of view</td></tr>
-        <tr><td>Traffic</td><td>CTR</td><td>Total visits to the content</td></tr>
-        <tr><td>Product consideration</td><td>High-intent rate: visits to product or proof pages</td><td>Buying intent from buying roles</td></tr>
-        <tr><td>Conversion</td><td>Conversion rate: demo requests and sign-ups</td><td>Proven results with enough evidence</td></tr>
-      </tbody>
-    </table></div>
-  </section>
-
-  <section id="walkthrough">
-    <div class="kicker">One decision, start to finish</div>
-    <h2>A recorded Ramp session, from baseline to the next recommendation.</h2>
-    <p>One real run of the demo. Response numbers are <span class="st st-sim">SIMULATED</span>; recommendations and the email
-    are <span class="st st-ai">AI</span> output from that run, condensed where marked. Strategy inputs are working hypotheses.</p>
-    <div class="context">
-      <div class="context-t">Campaign context</div>
-      <dl>
-        <div class="ci"><dt>Objective</dt><dd>Product consideration, judged on high-intent rate</dd></div>
-        <div class="ci"><dt>Primary ICP</dt><dd>Finance Leaders, the economic buyer</dd></div>
-        <div class="ci"><dt>Lead positioning hypothesis</dt><dd>Real-time visibility</dd></div>
-        <div class="ci"><dt>Evidence available</dt><dd>A simulated baseline: 3 audiences across their channels</dd></div>
-      </dl>
-    </div>
-
-    <article class="wstage">
-      <div class="wstage-h"><span class="wstage-n">1</span><b>Baseline</b><em class="st st-sim">SIMULATED</em><em class="st st-code">CODE</em></div>
-      <dl class="wgrid">
-        <dt>What we knew</dt><dd>Finance Leaders are the primary ICP and real-time visibility is the lead positioning hypothesis. Every audience had only received its default message.</dd>
-        <dt>What SignalLoop concluded</dt><dd>Controllers led on CTR (8.7% vs 6.3%), but Finance Leaders led on high-intent rate, the signal this objective is judged on (1.1% vs 0.73%). For Finance Leaders, email had the highest high-intent rate (2.8%), while LinkedIn would deliver more high-intent visits per experiment (114 vs 72). Three of their four message hypotheses were untested.</dd>
-        <dt>What changed</dt><dd>Judged on intent rather than clicks, the priority moved from the audience that clicks most to the audience that buys.</dd>
-        <dt>Why the next decision followed</dt><dd class="next">The biggest unknown was the message, not the audience or the channel.</dd>
-      </dl>
-    </article>
-
-    <article class="wstage">
-      <div class="wstage-h"><span class="wstage-n">2</span><b>Next-best test</b><em class="st st-ai">AI · MARKETING AGENT</em><em class="st st-human">PMM APPROVES</em></div>
-      <dl class="wgrid">
-        <dt>What we knew</dt><dd>The baseline findings, plus the strategy: ICP, buying roles, positioning and message hypotheses.</dd>
-        <dt>What SignalLoop concluded</dt><dd>Test <b>Finance Leaders × Email × Real-time visibility</b>, keeping the thought leadership format so the result isolates the message. Trade-off: email reaches fewer people than LinkedIn but gives the clearest read on intent from the primary ICP. Medium confidence, because the audience and channel signal is clear but the message is untested. <span class="cond">(condensed)</span></dd>
-        <dt>What changed</dt><dd>The knowledge gap became explicit: does the lead positioning message beat category-standard cost control with the buyer?</dd>
-        <dt>Why the next decision followed</dt><dd class="next">The result would be read in advance: a significant lift supports scaling the message; no difference moves testing to Time savings.</dd>
-      </dl>
-      <div class="contrast">
-        <div><span class="k">Same evidence, asked for Awareness</span>The same test. Reasoning: email's qualified reach rate (31.2%) makes it the efficient place to test the message first.</div>
-        <div><span class="k">Same evidence, asked for Conversion</span>The same test. Reasoning: email converts far better than LinkedIn (0.9% vs 0.13%), so the evidence guardrail is reachable sooner.</div>
-      </div>
-      <p class="aside">Honest read: in this run the objective changed the reasoning, not the test. For awareness, where scale should
-      count for more, a PMM could reasonably push back and ask for LinkedIn. That challenge belongs to the PMM, which is why approval
-      sits with them.</p>
-    </article>
-
-    <article class="wstage">
-      <div class="wstage-h"><span class="wstage-n">3</span><b>Creative execution</b><em class="st st-ai">AI · CONTENT AGENT</em><em class="st st-human">PMM APPROVES</em></div>
-      <dl class="wgrid">
-        <dt>What we knew</dt><dd>The approved test, the buyer's job to be done, the positioning, the competitive alternative and the proof rules.</dd>
-        <dt>What SignalLoop concluded</dt><dd>An email that argues for steering spend before it happens, contrasted with expense reports and legacy cards, and no numbers or customer names.</dd>
-        <dt>What changed</dt><dd>Only the message. The format stayed thought leadership, and the Content Agent couldn't change the strategy.</dd>
-      </dl>
-      <div class="mail">
-        <div class="mail-head">
-          <div class="mail-from"><span class="avatar">R</span><div><b>Ramp</b><div class="mut">To: Dana Whitfield, NorthPeak (sample contact)</div></div></div>
-          <div class="mail-subject">Stop managing spend in the rearview mirror</div>
-          <div class="mail-pre">Waiting until month-end to see your company's financial health is a strategy built on hindsight.</div>
-        </div>
-        <div class="mail-body">
-          <p>Hi <mark class="merge">Dana</mark>,</p>
-          <p>Waiting until month-end to see your company's financial health is a strategy built on hindsight. When you rely on
-          manual expense reports and legacy card systems, you are always operating with incomplete data.</p>
-          <p>True financial control requires a shift from reactive review to proactive steering. By setting policies and limits
-          directly within your payment flow, you can guide employee spend before it happens. This visibility allows you to plan
-          with confidence, knowing exactly where your budget stands at any moment.</p>
-          <p>Moving away from manual reconciliation doesn't just save time; it gives you the clarity needed to lead your company's
-          growth without slowing your teams down.</p>
-          <span class="mail-cta">See how it works</span>
-        </div>
-        <div class="mail-foot">AI output as generated. Preview for a sample contact; not sent.</div>
-      </div>
-    </article>
-
-    <article class="wstage result">
-      <div class="wstage-h"><span class="wstage-n">4</span><b>Performance readout</b><em class="st st-sim">SIMULATED RESULT</em><em class="st st-code">CODE</em></div>
-      <dl class="wgrid">
-        <dt>What we knew</dt><dd>Finance Leaders on email, split 50/50: the new variant against the current control, "Cut the spend nobody approved" (cost control, thought leadership).</dd>
-        <dt>What SignalLoop concluded</dt><dd>High-intent rate <b>4.8%</b> (59 of 1,219 reached) vs <b>3.0%</b> (41 of 1,355): +1.81 points. The evidence guardrail was met (59 and 41 high-intent visits; 15 needed each) and the difference is significant at about 95%. <b>Decision: adopt the new variant.</b></dd>
-        <dt>What changed</dt><dd>Real-time visibility became the control for Finance Leaders on email. CTR rose too (14.8% vs 8.1%), but the decision was made on intent.</dd>
-        <dt>Why the next decision followed</dt><dd class="next">One channel doesn't prove a message everywhere, and two message hypotheses were still untested.</dd>
-      </dl>
-    </article>
-
-    <article class="wstage">
-      <div class="wstage-h"><span class="wstage-n">5</span><b>The next recommendation inherits the learning</b><em class="st st-ai">AI · MARKETING AGENT</em></div>
-      <dl class="wgrid">
-        <dt>What we knew</dt><dd>Experiment 2's result, which the agent is required to cite, plus everything before it.</dd>
-        <dt>What SignalLoop concluded</dt><dd>Test the same message on <b>LinkedIn</b>, Finance Leaders' highest-volume channel (114 expected high-intent visits per experiment), against LinkedIn's cost-control control. The trade-off is a lower rate than email in exchange for a scalable path. Medium confidence. <span class="cond">(condensed)</span></dd>
-        <dt>What changed</dt><dd>The question moved from "which message?" to "does the winning message hold at scale?"</dd>
-        <dt>Why the next decision followed</dt><dd class="next">If supported: adopt real-time visibility across Finance Leaders' channels, then test formats such as customer stories. If not: keep cost control on LinkedIn and test whether another format carries the message on social.</dd>
-      </dl>
-      <p class="aside">One evidence line compared the email result with cost control pooled across all channels (4.8% vs 1.2%), which
-      isn't like for like. Spotting that is part of the PMM's review.</p>
-    </article>
-
-    <details class="shots"><summary>See this session in the product (5 screenshots)</summary>
-      <div class="shot-grid">
-        <div class="report"><div class="lab">Baseline <em class="badge">simulated</em><span>code</span></div>
-          <img src="img/walk-baseline.jpg" width="1400" height="1040" alt="Baseline results judged on high-intent rate: Controllers lead on CTR but Finance Leaders lead on high-intent rate" loading="lazy"></div>
-        <div class="report"><div class="lab">Next-best test <em class="st st-ai">AI</em><span>Marketing Agent</span></div>
-          <img src="img/walk-recommendation.jpg" width="1400" height="2111" alt="Marketing Agent recommendation: Finance Leaders on email with real-time visibility, with trade-off, confidence, knowledge gap and evidence from strategy and results" loading="lazy"></div>
-        <div class="report"><div class="lab">Creative execution <em class="st st-ai">AI</em><span>Content Agent</span></div>
-          <img src="img/walk-content.jpg" width="1400" height="1784" alt="Content Agent email previewed for a sample contact, next to the new variant versus current control experiment" loading="lazy"></div>
-        <div class="report"><div class="lab">Readout <em class="badge">simulated</em><span>code</span></div>
-          <img src="img/walk-readout.jpg" width="1400" height="1975" alt="Experiment readout: adopt the new variant, 4.8 percent versus 3.0 percent high-intent rate, guardrail met and significant" loading="lazy"></div>
-        <div class="report"><div class="lab">Next recommendation <em class="st st-ai">AI</em><span>Marketing Agent</span></div>
-          <img src="img/walk-next.jpg" width="1400" height="2196" alt="The next recommendation cites experiment 2 and tests the winning message on LinkedIn" loading="lazy"></div>
-      </div>
-    </details>
-  </section>
-
-
-
-  <section id="pmm">
-    <div class="kicker">What I designed as the PMM</div>
-    <h2>The system exists because of product marketing decisions, not the other way round.</h2>
-    <div class="dgrid pmmgrid">
-      <article class="dcard"><div class="dcard-k">The PMM workflow</div><p>Strategy, evidence, recommendation, approval, content, experiment, learning, in that order.</p></article>
-      <article class="dcard"><div class="dcard-k">The context AI needs</div><p>Objective, ICP, buying roles, jobs to be done, positioning, proof, competitive alternative and message hypotheses, not just metrics.</p></article>
-      <article class="dcard"><div class="dcard-k">Analytics vs judgment</div><p>Code calculates every number; the agent only interprets them and has to cite them.</p></article>
-      <article class="dcard"><div class="dcard-k">The experiment framework</div><p>One audience and channel per test, changing only the message or only the format against the current control, with what would support or reject the hypothesis stated up front.</p></article>
-      <article class="dcard"><div class="dcard-k">Segments and message hypotheses</div><p>Role-based segments for Ramp, business-stage segments for Square, each with a lead positioning hypothesis to test.</p></article>
-      <article class="dcard"><div class="dcard-k">Objective logic</div><p>Each objective has its own success signal, so the same evidence can justify a different test.</p></article>
-      <article class="dcard"><div class="dcard-k">Evidence requirements</div><p>A result is called only when it meets the evidence guardrail and is statistically significant; otherwise SignalLoop says there isn't enough evidence.</p></article>
-      <article class="dcard"><div class="dcard-k">Agent responsibilities</div><p>The Marketing Agent owns the next-best test. The Content Agent executes it and can't change it.</p></article>
-      <article class="dcard"><div class="dcard-k">Human approval boundaries</div><p>A PMM approves the recommendation and the content before anything runs.</p></article>
-      <article class="dcard"><div class="dcard-k">Simulation safeguards</div><p>The agents never see the simulation model, and every simulated number is labeled as simulated.</p></article>
-      <article class="dcard wide"><div class="dcard-k">What should not use AI</div><p>Positioning, ICP selection, proof claims, metric calculation and declaring winners stay out of the model's hands.</p></article>
-    </div>
-  </section>
-
-  <section id="ai">
-    <div class="kicker">AI system design</div>
-    <h2>Each part has one job, and the PMM owns the decision.</h2>
-    <div class="sys">
-      <div class="sysrow"><div><em class="st st-code">CODE</em><b>Deterministic analytics</b></div><div><span class="sys-q">Measures known facts</span>
-        <p>Rates on each objective's signal, pooled history, channel leaders, test-versus-control comparisons, the evidence guardrail and significance. The model never calculates these.</p></div></div>
-      <div class="sysrow"><div><em class="st st-ai">AI</em><b>Marketing Agent</b></div><div><span class="sys-q">Interprets evidence and chooses the next learning opportunity</span>
-        <p>Returns a decision with why, the trade-off, confidence, the knowledge gap and how the result will be read. Code rejects a recommendation that doesn't cite both strategy and evidence, or that ignores the last result.</p></div></div>
-      <div class="sysrow"><div><em class="st st-ai">AI</em><b>Content Agent</b></div><div><span class="sys-q">Executes against the approved experiment</span>
-        <p>Plans and writes the variant for the approved audience, channel, message and format, within brand voice and proof rules.</p></div></div>
-      <div class="sysrow"><div><em class="st st-human">PMM</em><b>Product marketer</b></div><div><span class="sys-q">Controls strategy and approves decisions</span>
-        <p>Sets the objective, ICP, positioning and message hypotheses, validates assumptions, and approves each recommendation and piece of content.</p></div></div>
-    </div>
-    <blockquote class="pull">AI does not replace PMM judgment. It compresses the analysis between evidence and the next decision.</blockquote>
-    <div class="boundary">
-      <div class="no"><h3>AI should not own</h3><ul>
-        <li>Positioning strategy</li>
-        <li>Final ICP selection</li>
-        <li>Which claims and proof can be used</li>
-        <li>Approving experiments, content and launches</li>
-        <li>Calculating metrics or declaring winners</li></ul></div>
-      <div class="yes"><h3>AI can own</h3><ul>
-        <li>Reading evidence against the strategy</li>
-        <li>Weighing trade-offs and naming what is still unknown</li>
-        <li>Recommending the next test, with its evidence cited</li>
-        <li>Drafting content inside an approved strategy</li></ul></div>
-    </div>
-    <div class="tech">
-      <div class="tech-t">Implementation details, for technical reviewers</div>
-      <details class="more"><summary>Architecture</summary>
-        <div class="stackrows">
-          <div class="srow"><b>Page</b><span>Static case study and demo. Opening the page makes no API calls; only running a step does.</span></div>
-          <div class="srow"><b>API</b><span>Vercel Functions for running an experiment, getting or re-running a recommendation, creating content and starting over, with per-visitor rate limits and daily caps.</span></div>
-          <div class="srow"><b>Models</b><span>Groq (openai/gpt-oss-120b) for tool calls and content; Gemini (gemini-3.1-flash-lite) for the Marketing Agent's final decision, the largest request. Each falls back to the other.</span></div>
-          <div class="srow"><b>CRM</b><span>HubSpot API: fictional contacts, a persona property and one audience list per segment.</span></div>
-          <div class="srow"><b>Storage</b><span>Upstash Redis for each visitor's experiment history and the usage limits.</span></div>
-        </div>
-      </details>
-      <details class="more"><summary>How the agents are constrained</summary>
-        <div class="two">
-          <div><h3 class="mini-h">Marketing Agent</h3><ul class="mini">
-            <li>Reads strategy and results only through read-only tools</li>
-            <li>Cites 3 to 6 items: at least one strategy input and one measured metric</li>
-            <li>Must cite the last experiment's result</li>
-            <li>The channel must be available to the chosen audience</li>
-            <li>Each test changes exactly one thing versus the current control: the message or the format</li>
-            <li>Confidence capped at medium before three experiments</li>
-            <li>No internal ids in anything a marketer reads</li></ul></div>
-          <div><h3 class="mini-h">Content Agent</h3><ul class="mini">
-            <li>Cannot change the audience, channel, message or format</li>
-            <li>No numbers or statistics, so no unverifiable claims</li>
-            <li>Can't reuse a topic already tested with the audience</li>
-            <li>Personalization by first name only, and only in email</li>
-            <li>No links or placeholders; the call to action is a button</li></ul></div>
-        </div>
-        <p class="aside">Output that fails a check is sent back once with the errors, then to the fallback model, and otherwise fails visibly. Unchecked output is never shown.</p>
-      </details>
-      <details class="more"><summary>Evidence and statistics</summary>
-        <ul class="mini">
-          <li>Each objective is judged on one primary signal, as a rate of the people reached.</li>
-          <li>Prototype evidence guardrail: at least 30 qualified views or engagements, 20 clicks, 15 high-intent visits or 10 conversions per variant before a difference is judged.</li>
-          <li>A difference is called only if it also passes a two-proportion z-test at about 95% confidence (|z| ≥ 1.96). Otherwise the result is "no clear difference" or "not enough evidence", and the observed gap is still shown.</li>
-          <li>The guardrail is a fixed floor, not a power calculation. A production system would size each test in advance from the baseline rate, the minimum detectable effect, the significance level and statistical power.</li>
-        </ul>
-      </details>
-      <details class="more"><summary>Simulated response model</summary>
-        <p>Each audience has a hidden response profile by channel, message and format for every signal: email reaches fewer
-        people with higher intent, social reaches more with lower intent, and repeating a message wears it down. The agents
-        only ever see measured results, so a good recommendation has to be inferred from evidence.</p>
-      </details>
-      <p class="aside">Source and setup: <a href="https://github.com/shivagoel5/signalloop">github.com/shivagoel5/signalloop</a></p>
-    </div>
-  </section>
-
-  <section id="markets">
-    <div class="kicker">Adapting to different markets</div>
-    <h2>The decision framework stays consistent; the segmentation logic changes with the market.</h2>
-    <div class="seglogic">
-      <div class="seg z"><h3>Ramp scenario</h3>
-        <div class="by">Role-based segmentation</div>
-        <p class="seg-why">Spend management involves distinct jobs and buying roles: owning the budget, closing the books and making purchases.</p>
-        <ul><li><b>Finance Leaders</b>: economic buyer, primary ICP</li><li><b>Controllers</b>: champion, secondary ICP</li><li><b>Employee Spenders</b>: end users, not buyers</li></ul>
-      </div>
-      <div class="seg s"><h3>Square scenario</h3>
-        <div class="by">Business-maturity segmentation</div>
-        <p class="seg-why">An owner-operator often holds every role, so needs shift with the business's stage more than with job title.</p>
-        <ul><li><b>New Sellers</b>: secondary ICP</li><li><b>Growing Businesses</b>: primary ICP</li><li><b>Multi-Location Operators</b>: secondary ICP</li></ul>
-      </div>
-    </div>
-    <p class="disclaim">The segments, ICP, positioning and message hypotheses behind both scenarios are working hypotheses based on
-    public product information. They are not either company's internal segmentation, research or strategy.</p>
-  </section>
-
-  <section id="live">
-    <div class="kicker">Live demo</div>
-    <h2>Try the decision loop yourself.</h2>
-    <p>Pick a scenario and an objective, then step through the loop. You approve each recommendation and piece of content
-    before anything runs, and you can change the objective at the recommendation step to see how the same evidence leads to
-    a different test.</p>
-    <p class="aside">Reviewing as a PMM? I'd value your view on four questions: is this problem painful enough, are these
-    the right inputs and trade-offs, what evidence would earn your trust, and where would it fit in your workflow?</p>
+  <section id="try" class="home-sec">
+    <h2>See SignalLoop make a decision.</h2>
+    <p class="sec-lede">Pick a company, set the campaign goal and run one full cycle. Campaign results are simulated;
+    recommendations and content are generated live by AI.</p>
     <div class="demo" id="demo">
       <div class="demo-top">
         <div class="demo-bar">
-          <div class="demo-pick" id="demo-f-company" role="radiogroup" aria-label="Company scenario">
-            <button type="button" class="pick" data-company="ramp" role="radio" aria-checked="false" title="Audiences by role (demonstration assumption)">Ramp</button>
-            <button type="button" class="pick" data-company="square" role="radio" aria-checked="false" title="Audiences by business stage (demonstration assumption)">Square</button>
+          <div class="scn-tabs" role="tablist" aria-label="Scenario">
+            <button type="button" role="tab" class="scn on" data-company="ramp" aria-selected="true">Ramp<span>Spend management</span></button>
+            <button type="button" role="tab" class="scn" data-company="square" aria-selected="false">Square<span>SMB commerce</span></button>
+            <button type="button" role="tab" class="scn scn-compare" data-company="compare" aria-selected="false">Compare</button>
           </div>
           <div class="demo-tools">
-            <label class="obj" id="demo-f-objective" for="demo-objective">Campaign objective <select id="demo-objective"></select></label>
+            <label class="obj" id="demo-goal" for="demo-objective" hidden>Goal <select id="demo-objective"></select></label>
             <button type="button" class="btn ghostd sm" id="demo-reset">Start over</button>
           </div>
         </div>
-        <div class="labels" id="demo-labels" aria-label="Where each part comes from"></div>
-        <ol class="stepper" id="demo-stepper" aria-label="Steps in one campaign cycle"></ol>
+        <ol class="stepper" id="demo-stepper" aria-label="One campaign cycle"></ol>
       </div>
       <div class="stage-scroll" id="demo-scroll">
         <div class="stage" id="demo-panel"></div>
         <div id="demo-history" hidden></div>
       </div>
       <div class="stage-bar" id="demo-actionbar" hidden></div>
-      <script type="application/json" id="demo-static">{"companies":{"ramp":{"name":"Ramp","audiences":[{"id":"finance_leader","name":"Finance Leaders","channels":["email","linkedin","blog"]},{"id":"controller","name":"Controllers","channels":["email","linkedin","blog"]},{"id":"employee_spender","name":"Employee Spenders","channels":["email","blog"]}]},"square":{"name":"Square","audiences":[{"id":"new_seller","name":"New Sellers","channels":["email","instagram","facebook"]},{"id":"growing_business","name":"Growing Businesses","channels":["email","instagram","blog"]},{"id":"multi_location","name":"Multi-Location Operators","channels":["email","linkedin","facebook"]}]}},"objectives":[{"id":"awareness","label":"Awareness","metric":"Qualified reach rate"},{"id":"engagement","label":"Engagement","metric":"Engagement rate"},{"id":"traffic","label":"Traffic","metric":"CTR"},{"id":"product_consideration","label":"Product consideration","metric":"High-intent rate"},{"id":"conversion","label":"Conversion","metric":"Conversion rate"}],"defaultObjective":"product_consideration","maxExperiments":12,"measurementVersion":3,"labels":{"delivery":"SIMULATED","performance":"SIMULATED","analytics":"CODE","marketing":"AI","contentPlanning":"AI","contentGeneration":"AI","history":"STORED"}}</script>
-    </div>
-    <p class="demo-note">Every response signal is simulated and nothing is sent. HubSpot audience updates are live. Analytics
-    run in code; the recommendations and content are AI. The Ramp and Square strategy inputs are working hypotheses.</p>
-  </section>
-
-  <section id="real">
-    <div class="kicker">What is real vs simulated</div>
-    <h2>Simulation runs the workflow. It isn't a business result.</h2>
-    <ul class="rs">
-      <li><em class="st st-live">REAL INTEGRATION</em><span>HubSpot API creates fictional contacts and audience lists.</span></li>
-      <li><em class="st st-human">PMM CONTEXT</em><span>Strategy inputs are working hypotheses based on public product information.</span></li>
-      <li><em class="st st-code">DETERMINISTIC CODE</em><span>Rates, pooling, comparisons, the evidence guardrail and significance.</span></li>
-      <li><em class="st st-ai">AI-GENERATED</em><span>Marketing Agent recommendations and Content Agent output.</span></li>
-      <li><em class="st st-sim">SIMULATED</em><span>Delivery, and every response signal: reach, engagement, clicks, high-intent visits and conversions.</span></li>
-    </ul>
-    <p class="aside">Simulation lets the full decision loop run without presenting fictional performance as a business result.</p>
-  </section>
-
-  <section id="production">
-    <div class="kicker">Before production</div>
-    <h2>Four things production would require.</h2>
-    <div class="pgrid">
-      <div class="pitem"><b>Real signals</b><span>Campaign, web analytics, CRM and pipeline data in place of the simulator.</span></div>
-      <div class="pitem"><b>Real experiment design</b><span>Sample sizes set in advance from the baseline rate, minimum detectable effect, significance level and power, replacing the prototype's fixed guardrail.</span></div>
-      <div class="pitem"><b>Governance</b><span>Approval roles, claims review, privacy, and ongoing evaluation of agent quality.</span></div>
-      <div class="pitem"><b>Validated strategy</b><span>ICP, positioning and message hypotheses from real research, and optimization toward pipeline and revenue.</span></div>
+      <script type="application/json" id="demo-static">{"companies":{"ramp":{"name":"Ramp","audiences":[{"id":"finance_leader","name":"Finance Leaders","channels":["email","linkedin","blog"]},{"id":"controller","name":"Controllers","channels":["email","linkedin","blog"]},{"id":"employee_spender","name":"Employee Spenders","channels":["email","blog"]}],"context":{"market":"Spend management for finance teams","segmentation":"By role: who owns the budget, who runs the books, who spends","audiences":[{"id":"finance_leader","role":"Economic buyer","fit":"primary"},{"id":"controller","role":"Champion and day-to-day owner","fit":"secondary"},{"id":"employee_spender","role":"End user","fit":"user"}],"messages":[{"id":"cost_control","label":"Cost control","role":"category-standard message"},{"id":"real_time_visibility","label":"Real-time visibility","role":"lead positioning hypothesis for this campaign"},{"id":"time_savings","label":"Time savings","role":"established message"},{"id":"policy_compliance","label":"Policy compliance","role":"adoption message"}]}},"square":{"name":"Square","audiences":[{"id":"new_seller","name":"New Sellers","channels":["email","instagram","facebook"]},{"id":"growing_business","name":"Growing Businesses","channels":["email","instagram","blog"]},{"id":"multi_location","name":"Multi-Location Operators","channels":["email","linkedin","facebook"]}],"context":{"market":"Commerce and payments for small businesses","segmentation":"By business stage: starting out, growing, multi-location","audiences":[{"id":"new_seller","role":"Owner-operator","fit":"secondary"},{"id":"growing_business","role":"Owner-operator with a small team","fit":"primary"},{"id":"multi_location","role":"Operator or operations lead","fit":"secondary"}],"messages":[{"id":"ease_of_setup","label":"Ease of setup","role":"established message"},{"id":"sell_everywhere","label":"Sell everywhere","role":"lead positioning hypothesis for this campaign"},{"id":"grow_revenue","label":"Grow revenue","role":"category-standard message"},{"id":"run_operations","label":"Run operations","role":"expansion message"}]}}},"objectives":[{"id":"awareness","label":"Awareness","metric":"Qualified reach rate"},{"id":"engagement","label":"Engagement","metric":"Engagement rate"},{"id":"traffic","label":"Traffic","metric":"CTR"},{"id":"product_consideration","label":"Product consideration","metric":"High-intent rate"},{"id":"conversion","label":"Conversion","metric":"Conversion rate"}],"defaultObjective":"product_consideration","maxExperiments":12,"measurementVersion":3,"labels":{"delivery":"SIMULATED","performance":"SIMULATED","analytics":"CODE","marketing":"AI","contentPlanning":"AI","contentGeneration":"AI","history":"STORED"}}</script>
     </div>
   </section>
 
-  <section id="validate">
-    <div class="kicker">What I still need to validate</div>
-    <h2>The assumptions that need product marketers, not more code.</h2>
-    <p>I haven't interviewed PMMs about SignalLoop yet, so nothing here is presented as a finding. Before production, these
-    assumptions need testing:</p>
-    <ul class="vlist">
-      <li><b>The problem:</b> PMMs struggle more with deciding what to test next than with producing content.</li>
-      <li><b>The inputs:</b> these strategy inputs are the ones PMMs actually use, and teams can keep them current.</li>
-      <li><b>Trust:</b> what evidence a PMM needs before acting on an AI recommendation, and whether cited strategy plus metrics is enough.</li>
-      <li><b>The signals:</b> objective-specific signals match how marketing teams judge and report campaigns.</li>
-      <li><b>The workflow:</b> where approval belongs when PMM, demand generation and content teams share a campaign.</li>
-      <li><b>The scenarios:</b> whether the Ramp and Square working hypotheses resemble real buying committees and segments.</li>
-    </ul>
-  </section>
-
-  <section class="closing">
-    <div class="kicker">The takeaway</div>
-    <h2>SignalLoop reflects how I approach AI-enabled product marketing.</h2>
-    <ul class="principles">
-      <li>Start from the decision that matters, not the content to produce.</li>
-      <li>Give AI the strategy, not just the metrics.</li>
-      <li>Judge each campaign on the signal its objective needs.</li>
-      <li>Let code measure and AI interpret, and keep a PMM accountable for the call.</li>
-      <li>Say "not enough evidence" when that is the truth.</li>
-    </ul>
-    <div class="ctas" style="margin-top:22px">
-      <a class="btn ghostd" href="#live">Try the live demo</a>
-      <a class="btn ghostd" href="https://github.com/shivagoel5/signalloop">View source on GitHub</a>
+  <section id="decides" class="home-sec">
+    <h2>Four decisions, one loop.</h2>
+    <p class="sec-lede">Every recommendation answers the questions a product marketer asks after the campaign report.</p>
+    <div class="caps">
+      <div class="capc"><b>Who to target</b><p>Weighs response against who actually buys, not just who clicks.</p></div>
+      <div class="capc"><b>Which channel</b><p>Balances reach against the quality of response your goal needs.</p></div>
+      <div class="capc"><b>What message</b><p>Tests your positioning one message at a time against what works today.</p></div>
+      <div class="capc"><b>What content</b><p>Drafts the campaign for the approved test. You review it before it runs.</p></div>
+    </div>
+    <div class="deeper">
+      <a class="deep" href="/how-it-works"><b>How it works</b><span>The loop step by step, where AI helps, where you approve, and one full recorded cycle.</span><em>Explore →</em></a>
+      <a class="deep" href="/behind-the-build"><b>Behind the build</b><span>Why I built it, the product decisions, what's real vs simulated, the architecture and its limits.</span><em>Read →</em></a>
     </div>
   </section>
 
   <footer>
-    <div>Full source: <a href="https://github.com/shivagoel5/signalloop">github.com/shivagoel5/signalloop</a></div>
+    <div class="foot-row"><b>SignalLoop</b> is an interactive product prototype designed and built by Shiva Goel. <a href="https://github.com/shivagoel5/signalloop">Source on GitHub</a></div>
     <div class="disc">Independent portfolio project, not affiliated with or endorsed by Ramp or Square. Company names are used
     as illustrative scenarios and belong to their owners. The audience segments, ICP, positioning and message hypotheses are the
     author's working hypotheses based on public product information, not either company's internal strategy. All campaign
@@ -933,34 +127,7 @@
   </footer>
 
 </div>
-<div id="lb" role="dialog" aria-label="Report preview, click or press Escape to close"><img alt=""></div>
-<script>
-(function(){
-  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if(!reduce && 'IntersectionObserver' in window){
-    var els=[].slice.call(document.querySelectorAll('section, .hero'));
-    els.forEach(function(el){el.classList.add('rv')});
-    var io=new IntersectionObserver(function(es){es.forEach(function(x){
-      if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target)}})},{threshold:.08});
-    els.forEach(function(el){io.observe(el)});
-  }
-  var ids=['problem','hypothesis','loop','walkthrough','pmm','ai','live','real'];
-  var links={};ids.forEach(function(id){links[id]=document.querySelector('.nav a[href="#'+id+'"]')});
-  if('IntersectionObserver' in window){
-    var spy=new IntersectionObserver(function(es){es.forEach(function(x){
-      var a=links[x.target.id];if(!a)return;
-      if(x.isIntersecting){for(var k in links){links[k]&&links[k].classList.remove('on')}a.classList.add('on')}
-    })},{rootMargin:'-30% 0px -60% 0px'});
-    ids.forEach(function(id){var el=document.getElementById(id);el&&spy.observe(el)});
-  }
-  var lb=document.getElementById('lb'),lbimg=lb.querySelector('img');
-  document.querySelectorAll('.report img').forEach(function(img){
-    img.addEventListener('click',function(){lbimg.src=img.src;lb.classList.add('open')});
-  });
-  function close(){lb.classList.remove('open');lbimg.src=''}
-  lb.addEventListener('click',close);
-  addEventListener('keydown',function(e){if(e.key==='Escape')close()});
-})();
-</script>
+<div id="lb" role="dialog" aria-label="Screenshot preview, click or press Escape to close"><img alt=""></div>
+<script src="/site.js"></script>
 <script src="demo.js"></script>
 </body></html>

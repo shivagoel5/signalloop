@@ -4,11 +4,11 @@
 
 **Code measures. AI interprets. PMM approves. AI executes.**
 
-### 👉 [View the case study and live demo](https://signalloop-dun.vercel.app)
+### 👉 [Try SignalLoop](https://signalloop-dun.vercel.app) · [How it works](https://signalloop-dun.vercel.app/how-it-works) · [Behind the build](https://signalloop-dun.vercel.app/behind-the-build)
 
-A product marketing portfolio project by **Shiva Goel**.
+An interactive product prototype designed and built by **Shiva Goel**.
 
-- **Role:** PMM workflow and decision design, experiment framework, AI system design, implementation (AI-assisted), case study
+- **Role:** PMM workflow and decision design, experiment framework, AI system design, implementation (AI-assisted), product storytelling
 - **Status:** working prototype. Campaign response is simulated, strategy inputs are working hypotheses, and the idea has not yet been validated with PMM interviews
 
 ---
@@ -99,9 +99,13 @@ No PMM interviews are reported here yet. Before production, these assumptions ne
 
 ```text
 signalloop/
-├── docs/                      # Case study page and live demo (static, served by Vercel)
-│   ├── index.html
-│   ├── demo.js
+├── docs/                      # The site (static, served by Vercel with clean URLs)
+│   ├── index.html             # Product page and live demo
+│   ├── how-it-works.html
+│   ├── behind-the-build.html
+│   ├── styles.css             # Shared styles
+│   ├── site.js                # Shared page behavior
+│   ├── demo.js                # Live demo
 │   └── img/
 ├── api/                       # Vercel Functions: session, run, strategy, content, reset
 ├── lib/
@@ -168,7 +172,7 @@ Without an AI key, the demo still runs baselines and analytics, and clearly repo
 
    Optionally pass a company and objective, for example `npm run try:loop -- square traffic`.
 
-5. Preview the site and live demo at `http://localhost:8888/#live`:
+5. Preview the site and live demo at `http://localhost:8888/#try`:
 
    ```bash
    npm run dev

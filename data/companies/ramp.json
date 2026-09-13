@@ -101,6 +101,8 @@
     "proof_rules": "Never invent customer names, statistics, quotes or product features."
   },
   "strategy": {
+    "market": "Spend management for finance teams",
+    "segmentation": "By role: who owns the budget, who runs the books, who spends",
     "basis": "Working hypotheses for this demonstration, based on Ramp's public product description. They are not Ramp's internal ICP, research, segmentation or positioning.",
     "icp": "Finance teams at growing companies whose spend is outpacing manual controls: expense reports, shared cards and a month-end scramble.",
     "positioning": "Finance automation that gives companies control over spend without slowing the business down.",

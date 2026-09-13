@@ -445,6 +445,18 @@ test("page: built-in demo settings match the API, and opening the page makes no 
     assert.equal(settings.measurementVersion, view.measurementVersion);
     const { crm, ...labels } = view.labels;
     assert.deepEqual(settings.labels, labels);
+    const profile = PROFILES[company];
+    assert.deepEqual(settings.companies[company].context, {
+      market: profile.strategy.market,
+      segmentation: profile.strategy.segmentation,
+      audiences: profile.personas.map((p) => ({ id: p.id, role: p.buying_role.split(":")[0], fit: p.icp_fit })),
+      messages: profile.messaging_angles.map((a) => ({ id: a.id, label: a.label, role: profile.strategy.message_hypotheses[a.id]?.role ?? null })),
+    }, "the scenario context shown before any request matches the company profile");
+  }
+  assert.match(html, /id="try"/, "the home page has the live demo");
+  for (const page of ["how-it-works.html", "behind-the-build.html"]) {
+    const other = readFileSync(new URL(`../docs/${page}`, import.meta.url), "utf8");
+    assert.match(other, /href="\/#try"/, `${page} links back to the live demo`);
   }
   // The only session read in the demo script is the refresh used when the browser's saved copy is out of date.
   assert.match(html, /<script src="demo.js"><\/script>/);
