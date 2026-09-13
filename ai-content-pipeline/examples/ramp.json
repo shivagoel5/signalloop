@@ -29,8 +29,22 @@
       "newsletter": {
         "subject": "See spend as it happens, not at month-end",
         "preview": "Control that scales with the company.",
-        "body": "Hi {first_name},\n\nThe spend that hurts is the spend you only see after the statement closes. This week's post shows how finance leaders move control to the point of purchase, with limits, approvals, and policy built in, so they see every dollar in real time and catch off-policy spend before it adds up.\n\n\u2192 Read the post"
-      }
+        "body": "Hi {first_name},\n\nThe spend that hurts is the spend you only see after the statement closes. This week's post shows how finance leaders move control to the point of purchase, with limits, approvals, and policy built in, so they see every dollar in real time and catch off-policy spend before it adds up.\n\n→ Read the post"
+      },
+      "short_name": "Finance Leaders",
+      "channels": [
+        "email",
+        "linkedin",
+        "blog"
+      ],
+      "default_angle": "cost_control",
+      "default_content_type": "thought_leadership",
+      "profile_summary": "CFOs and VPs of Finance who own budget, forecasting and financial control as the company grows.",
+      "pain_points": [
+        "Finding out about spend after it happens",
+        "Duplicate software and off-policy purchases",
+        "Forecasting with incomplete data"
+      ]
     },
     {
       "id": "controller",
@@ -46,8 +60,22 @@
       "newsletter": {
         "subject": "Close the books without chasing receipts",
         "preview": "Less reconciliation, more analysis.",
-        "body": "Hi {first_name},\n\nIf month-end still means chasing receipts and recoding transactions by hand, this one is for you. Our new post breaks down how accounting teams automate receipt capture, coding, and reconciliation, so the close gets faster and your team spends its time on analysis instead of cleanup.\n\n\u2192 Read the post"
-      }
+        "body": "Hi {first_name},\n\nIf month-end still means chasing receipts and recoding transactions by hand, this one is for you. Our new post breaks down how accounting teams automate receipt capture, coding, and reconciliation, so the close gets faster and your team spends its time on analysis instead of cleanup.\n\n→ Read the post"
+      },
+      "short_name": "Controllers",
+      "channels": [
+        "email",
+        "linkedin",
+        "blog"
+      ],
+      "default_angle": "time_savings",
+      "default_content_type": "how_to_guide",
+      "profile_summary": "Controllers and accounting leads responsible for an accurate, on-time month-end close.",
+      "pain_points": [
+        "Chasing missing receipts",
+        "Manual transaction coding",
+        "Slow reconciliation"
+      ]
     },
     {
       "id": "employee_spender",
@@ -63,8 +91,21 @@
       "newsletter": {
         "subject": "Buy what you need, without the expense report",
         "preview": "Clear rules, fast approvals.",
-        "body": "Hi {first_name},\n\nNeed software, travel, or supplies for your team and not sure what's allowed? This week we show how clear spending rules, built right into your card and requests, take the guesswork out of buying. Get what you need in minutes, snap the receipt, and skip the expense report.\n\n\u2192 Read the post"
-      }
+        "body": "Hi {first_name},\n\nNeed software, travel, or supplies for your team and not sure what's allowed? This week we show how clear spending rules, built right into your card and requests, take the guesswork out of buying. Get what you need in minutes, snap the receipt, and skip the expense report.\n\n→ Read the post"
+      },
+      "short_name": "Employee Spenders",
+      "channels": [
+        "email",
+        "blog"
+      ],
+      "default_angle": "policy_compliance",
+      "default_content_type": "how_to_guide",
+      "profile_summary": "Employees on any team who need to buy software, travel or supplies to do their jobs.",
+      "pain_points": [
+        "Unclear spending rules",
+        "Slow approvals",
+        "Tedious expense reports"
+      ]
     }
   ],
   "optimization": {
@@ -80,5 +121,74 @@
       "Stop Finding Out About Spend at Month-End"
     ],
     "rationale": "Click-through is strongest with the finance-leader segment on visibility-and-control framing, so the next slate leans into real-time spend and a faster close rather than generic expense tips."
+  },
+  "brand_context": {
+    "voice": "Sharp, credible and practical. Speaks to finance and operations people as peers. No hype.",
+    "positioning": "Finance automation that gives companies control over spend without slowing the business down.",
+    "proof_rules": "Never invent customer names, statistics, quotes or product features."
+  },
+  "messaging_angles": [
+    {
+      "id": "cost_control",
+      "label": "Cost control",
+      "description": "Cut wasted and duplicate spend and save money."
+    },
+    {
+      "id": "real_time_visibility",
+      "label": "Real-time visibility",
+      "description": "See spend as it happens instead of at month-end."
+    },
+    {
+      "id": "time_savings",
+      "label": "Time savings",
+      "description": "Remove manual receipts, coding and reconciliation work."
+    },
+    {
+      "id": "policy_compliance",
+      "label": "Policy compliance",
+      "description": "Keep spend in policy without slowing people down."
+    }
+  ],
+  "content_types": [
+    {
+      "id": "thought_leadership",
+      "label": "Thought leadership"
+    },
+    {
+      "id": "how_to_guide",
+      "label": "How-to guide"
+    },
+    {
+      "id": "customer_story",
+      "label": "Customer story"
+    },
+    {
+      "id": "product_update",
+      "label": "Product update"
+    }
+  ],
+  "content_constraints": {
+    "email": {
+      "format": "Marketing email",
+      "max_words": 140,
+      "subject_max_chars": 60
+    },
+    "linkedin": {
+      "format": "LinkedIn post",
+      "max_words": 220
+    },
+    "instagram": {
+      "format": "Instagram caption",
+      "max_words": 120
+    },
+    "facebook": {
+      "format": "Facebook post",
+      "max_words": 150
+    },
+    "blog": {
+      "format": "Blog post excerpt",
+      "max_words": 350
+    },
+    "general": "One clear CTA per piece. No invented statistics, customer names or quotes."
   }
 }

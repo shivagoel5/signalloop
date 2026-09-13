@@ -6,9 +6,9 @@
     "title": "What changes as your business grows from first sale to multiple locations",
     "outline": [
       "The myth: every growth problem is a sales problem",
-      "Stage 1 \u2014 taking your first payments without a complicated setup",
-      "Stage 2 \u2014 selling in person and online without running two businesses",
-      "Stage 3 \u2014 keeping inventory, staff, and reporting in sync across locations",
+      "Stage 1 — taking your first payments without a complicated setup",
+      "Stage 2 — selling in person and online without running two businesses",
+      "Stage 3 — keeping inventory, staff, and reporting in sync across locations",
       "The through-line: the right system for the stage you're in",
       "Choosing the one thing to fix this quarter"
     ],
@@ -29,8 +29,22 @@
       "newsletter": {
         "subject": "Your first sale can happen today",
         "preview": "Simple setup. Start selling.",
-        "body": "Hi {first_name},\n\nGetting set up to take payments can feel like a project of its own. It doesn't have to be. This week's post shows the simplest path to your first sales, with a setup you can finish in an afternoon, so you can focus on customers instead of software.\n\n\u2192 Read the post"
-      }
+        "body": "Hi {first_name},\n\nGetting set up to take payments can feel like a project of its own. It doesn't have to be. This week's post shows the simplest path to your first sales, with a setup you can finish in an afternoon, so you can focus on customers instead of software.\n\n→ Read the post"
+      },
+      "short_name": "New Sellers",
+      "channels": [
+        "email",
+        "instagram",
+        "facebook"
+      ],
+      "default_angle": "ease_of_setup",
+      "default_content_type": "how_to_guide",
+      "profile_summary": "First-time sellers and side businesses taking their first payments.",
+      "pain_points": [
+        "Setup feels complicated",
+        "Not sure which tools they need",
+        "Limited time and budget"
+      ]
     },
     {
       "id": "growing_business",
@@ -46,8 +60,22 @@
       "newsletter": {
         "subject": "Sell in person and online without doubling the work",
         "preview": "One catalog. One view of your sales.",
-        "body": "Hi {first_name},\n\nYour customers want to buy from you at the counter, on your website, and everywhere in between. Our new post breaks down how growing businesses run every channel from one place, with one catalog and one view of what's selling, so more channels mean more revenue, not more admin.\n\n\u2192 Read the post"
-      }
+        "body": "Hi {first_name},\n\nYour customers want to buy from you at the counter, on your website, and everywhere in between. Our new post breaks down how growing businesses run every channel from one place, with one catalog and one view of what's selling, so more channels mean more revenue, not more admin.\n\n→ Read the post"
+      },
+      "short_name": "Growing Businesses",
+      "channels": [
+        "email",
+        "instagram",
+        "blog"
+      ],
+      "default_angle": "sell_everywhere",
+      "default_content_type": "customer_story",
+      "profile_summary": "Owners with steady sales who now sell both in person and online.",
+      "pain_points": [
+        "Running separate systems per channel",
+        "Not knowing what sells",
+        "Turning one-time buyers into repeat customers"
+      ]
     },
     {
       "id": "multi_location",
@@ -63,8 +91,22 @@
       "newsletter": {
         "subject": "Run every location like one business",
         "preview": "Inventory, staff, and reports in sync.",
-        "body": "Hi {first_name},\n\nEvery new location should add revenue, not chaos. This week we show how multi-location operators keep inventory, staff schedules, and reporting in sync across sites, so you can see the whole business at a glance and fix problems before they spread.\n\n\u2192 Read the post"
-      }
+        "body": "Hi {first_name},\n\nEvery new location should add revenue, not chaos. This week we show how multi-location operators keep inventory, staff schedules, and reporting in sync across sites, so you can see the whole business at a glance and fix problems before they spread.\n\n→ Read the post"
+      },
+      "short_name": "Multi-Location Operators",
+      "channels": [
+        "email",
+        "linkedin",
+        "facebook"
+      ],
+      "default_angle": "run_operations",
+      "default_content_type": "product_update",
+      "profile_summary": "Operators running several stores or sites who need them to work as one business.",
+      "pain_points": [
+        "Inventory out of sync across sites",
+        "Managing staff schedules",
+        "No single view of performance"
+      ]
     }
   ],
   "optimization": {
@@ -80,5 +122,74 @@
       "Sell Everywhere Without Doubling the Work"
     ],
     "rationale": "The growing-business segment drove the highest click-through, so the next slate leans into selling across channels and knowing your numbers rather than pure beginner content."
+  },
+  "brand_context": {
+    "voice": "Encouraging, plain-spoken and practical. Speaks to owner-operators who wear every hat.",
+    "positioning": "Commerce and payments tools that grow with a seller from first sale to multiple locations.",
+    "proof_rules": "Never invent customer names, statistics, quotes or product features."
+  },
+  "messaging_angles": [
+    {
+      "id": "ease_of_setup",
+      "label": "Ease of setup",
+      "description": "Start taking payments quickly without a complicated setup."
+    },
+    {
+      "id": "sell_everywhere",
+      "label": "Sell everywhere",
+      "description": "Sell in person and online from one place."
+    },
+    {
+      "id": "grow_revenue",
+      "label": "Grow revenue",
+      "description": "Turn steady sales into repeat customers and more revenue."
+    },
+    {
+      "id": "run_operations",
+      "label": "Run operations",
+      "description": "Keep inventory, staff and reporting in sync."
+    }
+  ],
+  "content_types": [
+    {
+      "id": "how_to_guide",
+      "label": "How-to guide"
+    },
+    {
+      "id": "customer_story",
+      "label": "Customer story"
+    },
+    {
+      "id": "checklist",
+      "label": "Checklist"
+    },
+    {
+      "id": "product_update",
+      "label": "Product update"
+    }
+  ],
+  "content_constraints": {
+    "email": {
+      "format": "Marketing email",
+      "max_words": 140,
+      "subject_max_chars": 60
+    },
+    "linkedin": {
+      "format": "LinkedIn post",
+      "max_words": 220
+    },
+    "instagram": {
+      "format": "Instagram caption",
+      "max_words": 120
+    },
+    "facebook": {
+      "format": "Facebook post",
+      "max_words": 150
+    },
+    "blog": {
+      "format": "Blog post excerpt",
+      "max_words": 350
+    },
+    "general": "One clear CTA per piece. No invented statistics, customer names or quotes."
   }
 }

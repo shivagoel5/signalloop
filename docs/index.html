@@ -1,11 +1,11 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="A product marketing case study by Shiva Goel: SignalLoop, a content system where human segmentation judgment drives an automated write, send, measure, improve loop. Demonstrated on Ramp and Square scenarios.">
-  <meta property="og:title" content="SignalLoop: a content system that learns from every send">
-  <meta property="og:description" content="Product marketing case study by Shiva Goel. Human judgment decides the segmentation; the system runs the loop.">
+  <meta name="description" content="A product marketing case study by Shiva Goel: SignalLoop, an AI-powered content experimentation system. Deterministic analytics measure audiences, channels and messaging; a Marketing Agent decides the next test and a Content Agent plans and writes it. Demonstrated on Ramp and Square scenarios.">
+  <meta property="og:title" content="SignalLoop: AI-powered content experimentation for product marketers">
+  <meta property="og:description" content="Product marketing case study by Shiva Goel. Code measures what happened; a Marketing Agent decides what to test next; a Content Agent creates it.">
   <meta property="og:type" content="article">
-<title>SignalLoop: a self-improving content engine by Shiva Goel</title>
+<title>SignalLoop: AI content experimentation by Shiva Goel</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -147,64 +147,63 @@
   .pick{font:inherit;font-size:14px;font-weight:700;color:var(--ink);background:#F4F6FE;border:1px solid var(--line);border-radius:10px;padding:8px 14px;cursor:pointer;text-align:left;line-height:1.35}
   .pick span{display:block;font-size:12px;font-weight:400;color:var(--mut)}
   .pick.on{border-color:var(--indigo);background:#E9ECFB;box-shadow:inset 0 0 0 1px var(--indigo)}
-  .pick:focus-visible,.btn.run:focus-visible{outline:2px solid var(--indigo);outline-offset:2px}
+  .pick:disabled{cursor:default;opacity:.7}
+  .obj{font-size:13px;font-weight:700;color:var(--mut);display:flex;align-items:center;gap:8px}
+  .obj select{font:inherit;font-size:14px;font-weight:600;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#F4F6FE}
+  .pick:focus-visible,.btn.run:focus-visible,.obj select:focus-visible,button.btn.ghostd:focus-visible{outline:2px solid var(--indigo);outline-offset:2px}
+  .labels{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 0}
+  .lbl{display:inline-flex;align-items:center;gap:6px;font-size:12px;border:1px solid var(--line);border-radius:999px;padding:3px 4px 3px 10px;color:var(--mut)}
+  .lbl b{font-size:10.5px;letter-spacing:.06em;border-radius:999px;padding:2px 8px;background:#EDEFFA;color:#303DAF}
+  .lbl-live b{background:#E2F3EB;color:#0B6B4C}
+  .lbl-simulated b,.lbl-mock b{background:#FCE8EF;color:#A61E4D}
+  .lbl-deterministic b,.lbl-stored b{background:#F1EFE8;color:#444441}
   .btn.run{font:inherit;font-size:14.5px;font-weight:700;background:var(--ink);color:#fff;border:0;cursor:pointer}
   .btn.run:hover{background:#262E66}
-  .btn.run:disabled{opacity:.65;cursor:progress}
-  .demo-steps{list-style:none;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:18px 0 0;padding:0;counter-reset:step}
-  .demo-steps li{counter-increment:step;font-size:13px;font-weight:700;color:var(--mut);border-top:3px solid var(--line);padding-top:8px;transition:color .2s ease,border-color .2s ease}
+  .btn.run:disabled{opacity:.6;cursor:default}
+  button.btn.ghostd{font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+  button.btn.ghostd:disabled{opacity:.6;cursor:default}
+  .demo-steps{list-style:none;display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin:18px 0 0;padding:0;counter-reset:step}
+  .demo-steps li{counter-increment:step;font-size:12.5px;font-weight:700;color:var(--mut);border-top:3px solid var(--line);padding-top:8px;transition:color .2s ease,border-color .2s ease}
   .demo-steps li::before{content:counter(step) " · "}
   .demo-steps li.active{color:var(--indigo);border-color:var(--indigo)}
   .demo-steps li.done{color:var(--green);border-color:var(--green)}
   .demo-steps li.fail{color:var(--signal);border-color:var(--signal)}
-  .demo-note{font-size:13px;color:var(--mut);margin:14px 0 0;max-width:none}
-  .demo-out{margin-top:16px;border-top:1px solid var(--line)}
-  .dhead{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:14px 0 2px}
-  .dhead b{font-size:16px;margin-right:6px}
-  .chip{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border-radius:999px;padding:3px 10px;background:#EDEFFA;color:#303DAF}
-  .chip.sim{background:#FCE8EF;color:#A61E4D}
-  .chip.live{background:#E2F3EB;color:var(--green)}
-  .dblock{padding:14px 0;border-bottom:1px dashed var(--line)}
-  .dblock:last-child{border-bottom:0}
-  .dlab{font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--indigo);margin-bottom:8px}
-  .dtitle{font-weight:700;font-size:15.5px;line-height:1.4}
-  .dsub{font-size:13px;color:var(--mut);margin-top:4px}
-  .dgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
-  .dcard{border:1px solid var(--line);border-top:3px solid var(--indigo);border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.45}
-  .dcard .who{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--indigo)}
-  .dcard .subj{font-weight:700;margin:5px 0 3px}
-  .dcard .pv{color:var(--mut);font-style:italic}
+  .demo-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:16px}
+  .demo-note{font-size:13px;color:var(--mut);margin:16px 0 0;max-width:none}
+  .demo-out{margin-top:10px}
+  .dblock{padding:16px 0;border-top:1px solid var(--line)}
+  .dlab{font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--indigo);margin-bottom:4px}
+  .dq{font-family:'Newsreader',Georgia,serif;font-size:19px;color:var(--ink);margin:0 0 10px}
+  .dsub{font-size:13px;color:var(--mut);margin-top:6px}
+  .dsubhead{margin-top:16px}
   .dtable-wrap{overflow-x:auto}
   .dtable{width:100%;border-collapse:collapse;font-size:13.5px}
   .dtable th{text-align:left;font-size:11.5px;color:var(--mut);font-weight:700;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
-  .dtable td{padding:8px;border-bottom:1px solid #EEF1FA}
+  .dtable td{padding:8px;border-bottom:1px solid #EEF1FA;vertical-align:top}
   .dtable .num{text-align:right;font-variant-numeric:tabular-nums}
-  .dtable tr.top td{background:#E9F6F0}
-  .dtable tr.top td:first-child{font-weight:700;color:var(--green)}
-  .dsum{background:#F7F8FE;border-left:3px solid var(--indigo);border-radius:8px;padding:10px 14px;margin-top:12px;font-size:14px}
-  .dsum p{font-size:14px;margin:0}
-  .dsum ul,.dlist{margin:6px 0 0;padding-left:18px;font-size:14px}
-  .dsum li,.dlist li{margin:4px 0}
-  .hls{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-  .hls span{font-size:13px;font-weight:600;background:#EDEFFA;color:#303DAF;border-radius:8px;padding:5px 10px}
-  .bars{display:grid;gap:8px;margin-top:10px}
-  .bar{display:grid;grid-template-columns:minmax(140px,260px) 1fr 56px;gap:10px;align-items:center;font-size:13px}
-  .bar .track{height:10px;background:#EEF1FA;border-radius:6px;overflow:hidden}
-  .bar .fill{height:100%;background:var(--indigo);border-radius:6px;transition:width .5s ease}
-  .bar.lead .fill{background:var(--green)}
-  .bar.lead .name{font-weight:700;color:var(--green)}
-  .bar .v{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
-  .crmlog{margin-top:10px;font-size:13px}
-  .crmlog summary{cursor:pointer;color:var(--indigo);font-weight:600}
-  .crmlog ul{margin:8px 0 0;padding-left:18px}
-  .crmlog li{margin:5px 0}
-  .crmlog code{font-size:12px;background:#F4F6FE;border-radius:4px;padding:1px 5px}
-  .derr{color:#A61E4D;background:#FCE8EF;border-radius:8px;padding:10px 14px;margin-top:14px;font-size:14px}
-  .dtable td.best{background:#E9F6F0;color:var(--green);font-weight:700}
-  .dsubhead{margin-top:18px}
-  @media(max-width:680px){.dgrid{grid-template-columns:1fr}.demo-steps{grid-template-columns:repeat(2,1fr)}
-    .dtable .hm{display:none}
-    .bar{grid-template-columns:1fr 70px 50px}}
+  .dtable tr.lead td{background:#E9F6F0}
+  .dsum{background:#F7F8FE;border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-top:12px;font-size:14px}
+  .dlist{margin:6px 0 0;padding-left:18px;font-size:14px}
+  .dlist li{margin:3px 0}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .ins{margin:6px 0 0;padding-left:18px;font-size:14.5px}
+  .ins li{margin:6px 0}
+  .via{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#303DAF;background:#EDEFFA;border-radius:999px;padding:3px 10px;margin-bottom:10px}
+  .kv{display:grid;grid-template-columns:170px 1fr;gap:6px 16px;margin:8px 0 0;font-size:14px}
+  .kv dt{font-weight:700;color:var(--mut);font-size:12.5px;padding-top:2px}
+  .kv dd{margin:0}
+  .kv .dlist{margin:0;padding-left:18px}
+  .agent{border:1px solid var(--line);border-radius:12px;padding:10px 14px;background:#F7F8FE}
+  .why{list-style:none;margin:6px 0 0;padding:0}
+  .why li{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:8px 0;font-size:14px}
+  .gen{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:#FBFBFE;margin-top:8px}
+  .gen-t{font-weight:700;font-size:16px;margin-bottom:6px}
+  .gen-b{white-space:pre-line;font-size:14.5px;line-height:1.6}
+  .timeline{margin:4px 0 0;padding-left:18px;font-size:14px}
+  .timeline li{margin:6px 0}
+  .derr{color:#A61E4D;background:#FCE8EF;border-radius:10px;padding:10px 14px;margin-top:14px;font-size:14px}
+  @media(max-width:680px){.demo-steps{grid-template-columns:repeat(3,1fr)}.two{grid-template-columns:1fr}
+    .kv{grid-template-columns:1fr;gap:2px}.kv dt{padding-top:8px}.dtable .hm{display:none}}
 </style></head>
 <body>
 <nav class="nav" aria-label="Case study sections"><div class="wrap"><div class="row">
@@ -216,16 +215,16 @@
 
   <header class="hero">
     <div class="eyebrow">A product marketing case study by Shiva Goel</div>
-    <h1>An AI system that writes, sends, and improves marketing content on its own</h1>
-    <p class="lede">Give it a topic and an audience. It drafts a blog, writes a tailored newsletter for
-    each persona, sends them through a CRM, tracks what performs, and uses the results to decide what to
-    publish next. The loop gets sharper every round.</p>
+    <h1>An AI content experimentation system for product marketers</h1>
+    <p class="lede">SignalLoop measures how each audience, channel and message is performing. A Marketing Agent
+    decides who to target next, where, and with which message, and a Content Agent plans and writes the variant
+    to test. Every experiment changes the next recommendation.</p>
     <div class="ctas">
       <a class="btn primary" href="#system">See how the system works</a>
       <a class="btn ghost" href="#live">Try the live demo</a>
       <a class="btn ghost" href="https://github.com/shivagoel5/signalloop">View source on GitHub</a>
     </div>
-    <div class="meta"><span>By <b>Shiva Goel</b></span><span>Demonstrated using <b>Ramp</b> and <b>Square</b> as company scenarios</span><span>Built with Python, Claude &amp; HubSpot</span></div>
+    <div class="meta"><span>By <b>Shiva Goel</b></span><span>Demonstrated using <b>Ramp</b> and <b>Square</b> as company scenarios</span><span>Built with HubSpot, Groq/Gemini agents &amp; Netlify</span></div>
   </header>
 
   <section id="glance">
@@ -236,11 +235,11 @@
       <div class="gitem"><div class="glabel">The hypothesis</div>
         <p>Wire the stages into one system and give the loop a memory, and engagement becomes <b>the signal that writes the next round</b>.</p></div>
       <div class="gitem"><div class="glabel">How it works</div>
-        <p>Write, send, measure, improve. <b>Every send teaches the next one.</b></p></div>
+        <p>Code measures what happened. <b>A Marketing Agent decides the next test; a Content Agent creates it.</b></p></div>
       <div class="gitem"><div class="glabel">The proof</div>
         <p>One engine, two markets: Ramp segments by <b>role</b>, Square by <b>business stage</b>.</p></div>
       <div class="gitem"><div class="glabel">Built with</div>
-        <p>Python, Claude, HubSpot, SQLite, Flask. The strategy lives in <b>one company-profile file</b>.</p></div>
+        <p>Netlify Functions, deterministic analytics, Groq and Gemini agents, HubSpot CRM. The strategy lives in <b>one company-profile file</b>.</p></div>
     </div>
   </section>
 
@@ -280,8 +279,8 @@
       </div>
       <div class="col machine">
         <h3>What the system runs</h3>
-        <ul><li>Drafting and persona variation</li><li>CRM execution and logging</li>
-        <li>Per-segment measurement</li><li>Synthesis and next-round recommendations</li></ul>
+        <ul><li>CRM execution and logging</li><li>Measurement and analytics (deterministic code)</li>
+        <li>Marketing Agent: the next audience, channel and message to test</li><li>Content Agent: the content plan and the variant</li></ul>
       </div>
     </div>
     <p class="land">This is not an AI that does marketing. It is marketing judgment, executed by a machine.</p>
@@ -290,8 +289,9 @@
   <section id="system">
     <div class="kicker">How it works</div>
     <h2>Every send teaches the next one.</h2>
-    <p>You give it one topic. It writes a version for each audience, sends them through the
-    CRM, and tracks what lands. What it learns decides what gets written next.</p>
+    <p>A campaign goes out to each audience through the CRM. Code measures what landed, by audience, channel,
+    message and content type. The Marketing Agent reads those results and decides the next test; the Content Agent
+    creates it. What the system learns decides what gets tested next.</p>
     <div class="fig"><svg style="width:100%;height:auto;display:block" viewBox="0 0 1000 660" xmlns="http://www.w3.org/2000/svg" font-family="'Schibsted Grotesk','Helvetica Neue',Arial,sans-serif" role="img" aria-label="The content flywheel: write, send, measure, improve; results feed the next round">
   <defs>
     <marker id="fwArrow" viewBox="0 0 12 12" refX="7" refY="6" markerWidth="22" markerHeight="22" markerUnits="userSpaceOnUse" orient="auto">
@@ -462,25 +462,31 @@
 
   <section id="live">
     <div class="kicker">Live demo</div>
-    <h2>Run the loop yourself</h2>
-    <p>Pick a company and run one full loop: generate the content, distribute it through HubSpot to email,
-    social and the blog, measure engagement on every channel, and decide what each audience should get next
-    and where. Every run is saved, so the recommendations shift as results pile up.</p>
+    <h2>Run the experiment loop yourself</h2>
+    <p>Start with a baseline campaign. SignalLoop measures how each audience and channel responds, then two AI
+    agents take over: the Marketing Agent decides who to target, where, and with which message, and the Content
+    Agent plans and writes the variant to test. Run that experiment and the next recommendation reacts to what happened.</p>
     <div class="demo" id="demo">
       <div class="demo-bar">
         <div class="demo-pick" role="radiogroup" aria-label="Company">
           <button type="button" class="pick on" data-company="ramp" role="radio" aria-checked="true">Ramp <span>segments by role</span></button>
           <button type="button" class="pick" data-company="square" role="radio" aria-checked="false">Square <span>segments by business stage</span></button>
         </div>
-        <button type="button" class="btn run" id="demo-run">Run the loop</button>
+        <label class="obj" for="demo-objective">Campaign objective <select id="demo-objective"></select></label>
       </div>
+      <div class="labels" id="demo-labels" aria-label="What is live, simulated or AI"></div>
       <ol class="demo-steps" id="demo-steps" aria-live="polite">
-        <li>Generate</li><li>Distribute</li><li>Measure</li><li>Optimize</li>
+        <li>Distribute</li><li>Measure</li><li>Analyze</li><li>Marketing Agent</li><li>Content Agent</li><li>Next experiment</li>
       </ol>
-      <div class="demo-out" id="demo-out" hidden></div>
-      <p class="demo-note" id="demo-note">Content comes from each company's profile. CRM calls are built exactly as
-      they would be sent to HubSpot. Email engagement is simulated and no emails are sent. LinkedIn, Instagram,
-      Facebook and blog figures are sample data standing in for HubSpot Social and website analytics.</p>
+      <div class="demo-actions">
+        <button type="button" class="btn run" id="demo-primary">Loading…</button>
+        <button type="button" class="btn ghostd" id="demo-reset">Start over</button>
+        <span class="dsub" id="demo-status" aria-live="polite"></span>
+      </div>
+      <div class="demo-out" id="demo-out"></div>
+      <p class="demo-note">Reach, clicks and CTR are simulated, and no emails or posts are sent. HubSpot contact and list
+      updates are real when the CRM label shows LIVE. Analytics are calculated by code; the Marketing and Content Agents
+      (Groq, with Gemini as fallback) only read those computed metrics and must cite them.</p>
     </div>
   </section>
 
@@ -505,7 +511,7 @@
 
   <!-- title -->
   <text x="40" y="58" font-size="26" font-weight="700" fill="#151B3B">Inside SignalLoop</text>
-  <text x="40" y="86" font-size="15" fill="#5C647E">A performance-driven content engine. The loop gets sharper every time it runs</text>
+  <text x="40" y="86" font-size="15" fill="#5C647E">Code measures; two agents decide and create. Every experiment informs the next</text>
 
   <!-- TOPIC input -->
   <g filter="url(#soft)">
@@ -526,8 +532,8 @@
   <circle cx="216" cy="262" r="14" fill="#3F4CCB"/>
   <text x="216" y="267" font-size="14" font-weight="700" fill="#FFFFFF" text-anchor="middle">1</text>
   <text x="240" y="267" font-size="16" font-weight="700" fill="#151B3B">GENERATE</text>
-  <text x="212" y="296" font-size="12.5" fill="#3E4560">Blog + 3 persona newsletters</text>
-  <text x="212" y="314" font-size="11" fill="#8A90A6">Claude · stored as JSON / Markdown</text>
+  <text x="212" y="296" font-size="12.5" fill="#3E4560">Content variant per audience</text>
+  <text x="212" y="314" font-size="11" fill="#8A90A6">Content Agent · plan, then copy</text>
   <!-- persona chips -->
   <g font-size="10.5" font-weight="600">
     <rect x="212" y="330" width="62" height="22" rx="11" fill="#E9ECFB"/>
@@ -548,10 +554,10 @@
   <circle cx="500" cy="262" r="14" fill="#3F4CCB"/>
   <text x="500" y="267" font-size="14" font-weight="700" fill="#FFFFFF" text-anchor="middle">2</text>
   <text x="524" y="267" font-size="16" font-weight="700" fill="#151B3B">DISTRIBUTE</text>
-  <text x="496" y="298" font-size="12.5" fill="#3E4560">Tag · segment · send · log</text>
-  <text x="496" y="320" font-size="11" fill="#8A90A6">HubSpot CRM</text>
+  <text x="496" y="298" font-size="12.5" fill="#3E4560">Tag · segment · test vs control</text>
+  <text x="496" y="320" font-size="11" fill="#8A90A6">HubSpot CRM (live)</text>
   <text x="496" y="338" font-size="11" fill="#8A90A6">Right variant → right segment</text>
-  <text x="496" y="356" font-size="11" fill="#8A90A6">Campaign logged for reporting</text>
+  <text x="496" y="356" font-size="11" fill="#8A90A6">Delivery simulated, never sent</text>
 
   <!-- arrow 2->3 -->
   <line x1="706" y1="317" x2="752" y2="317" stroke="#3F4CCB" stroke-width="2.5" marker-end="url(#arrow)"/>
@@ -563,10 +569,10 @@
   <circle cx="784" cy="262" r="14" fill="#3F4CCB"/>
   <text x="784" y="267" font-size="14" font-weight="700" fill="#FFFFFF" text-anchor="middle">3</text>
   <text x="808" y="267" font-size="16" font-weight="700" fill="#151B3B">MEASURE</text>
-  <text x="780" y="298" font-size="12.5" fill="#3E4560">Engagement per persona</text>
-  <text x="780" y="320" font-size="11" fill="#8A90A6">Open / click / unsub (simulated)</text>
-  <text x="780" y="338" font-size="11" fill="#8A90A6">Stored in SQLite for history</text>
-  <text x="780" y="356" font-size="11" fill="#8A90A6">AI performance summary</text>
+  <text x="780" y="298" font-size="12.5" fill="#3E4560">Reach · clicks · CTR</text>
+  <text x="780" y="320" font-size="11" fill="#8A90A6">Performance simulated</text>
+  <text x="780" y="338" font-size="11" fill="#8A90A6">Analytics engine (code)</text>
+  <text x="780" y="356" font-size="11" fill="#8A90A6">Leaders + significance</text>
 
   <!-- arrow 3->4 -->
   <line x1="990" y1="317" x2="1036" y2="317" stroke="#3F4CCB" stroke-width="2.5" marker-end="url(#arrow)"/>
@@ -578,31 +584,31 @@
   <circle cx="1068" cy="262" r="14" fill="#3F4CCB"/>
   <text x="1068" y="267" font-size="14" font-weight="700" fill="#FFFFFF" text-anchor="middle">4</text>
   <text x="1092" y="267" font-size="16" font-weight="700" fill="#151B3B">OPTIMIZE</text>
-  <text x="1064" y="298" font-size="12.5" fill="#3E4560">Next topics +</text>
-  <text x="1064" y="316" font-size="12.5" fill="#3E4560">A/B headlines</text>
-  <text x="1064" y="338" font-size="11" fill="#8A90A6">Reads the</text>
-  <text x="1064" y="354" font-size="11" fill="#8A90A6">engagement trend</text>
+  <text x="1064" y="298" font-size="12.5" fill="#3E4560">Marketing Agent</text>
+  <text x="1064" y="316" font-size="12.5" fill="#3E4560">picks next test</text>
+  <text x="1064" y="338" font-size="11" fill="#8A90A6">Cites the metrics</text>
+  <text x="1064" y="354" font-size="11" fill="#8A90A6">it retrieved</text>
 
   <!-- ===================== FEEDBACK LOOP ===================== -->
   <path d="M 1128 402 L 1128 500 Q 1128 522 1106 522 L 328 522 Q 306 522 306 500 L 306 402"
         fill="none" stroke="#D6336C" stroke-width="2.5" stroke-dasharray="7 5" class="flow" marker-end="url(#arrowDash)"/>
   <rect x="532" y="510" width="280" height="24" rx="12" fill="#FFFFFF"/>
-  <text x="672" y="527" font-size="12.5" font-weight="600" fill="#D6336C" text-anchor="middle">engagement feeds the next run</text>
+  <text x="672" y="527" font-size="12.5" font-weight="600" fill="#D6336C" text-anchor="middle">results feed the next experiment</text>
 
   <!-- footer note -->
-  <text x="40" y="600" font-size="11" fill="#8A90A6">Engagement metrics are simulated for demonstration</text>
+  <text x="40" y="600" font-size="11" fill="#8A90A6">Performance metrics are simulated; HubSpot CRM writes are live</text>
 </svg></div>
     <div class="stackrows">
-      <div class="srow"><b>Claude</b><span>content generation and performance synthesis</span></div>
-      <div class="srow"><b>HubSpot</b><span>campaign execution: contacts, segments, sends, logging</span></div>
-      <div class="srow"><b>SQLite</b><span>the memory: engagement history that persists across runs</span></div>
-      <div class="srow"><b>Python</b><span>the loop itself: orchestration of all four stages</span></div>
-      <div class="srow"><b>Flask</b><span>the window into it: dashboard and run reports</span></div>
+      <div class="srow"><b>Analytics engine</b><span>deterministic code: CTR, pooled history, efficiency and volume leaders, significance, insights</span></div>
+      <div class="srow"><b>Marketing Agent</b><span>AI (Groq, Gemini fallback): who, where, which angle and why, citing the metrics it read</span></div>
+      <div class="srow"><b>Content Agent</b><span>AI: the content plan first, then the variant to test</span></div>
+      <div class="srow"><b>HubSpot</b><span>live CRM: contacts, persona property, audience lists</span></div>
+      <div class="srow"><b>Netlify</b><span>the loop itself: API function, rate limits, experiment history in Blobs</span></div>
     </div>
-    <p style="font-size:15px;color:#4a4d52"><b>Three engineering decisions, each with a marketing reason:</b> the pipeline
-    ships with a built-in demo mode (anyone can run the full loop in one command, with the real Claude + HubSpot integrations in the code);
-    engagement is simulated over a full segment audience the way a real email tool reports it; and adding a company is a
-    single-file change, which is what makes it a reusable system, not a one-off.</p>
+    <p style="font-size:15px;color:#4a4d52"><b>Three design decisions, each with a marketing reason:</b> the AI never calculates
+    metrics (code does, and the agents must cite them, so every recommendation is traceable); the two agents have separate jobs,
+    so strategy (who, where, why) is never blurred with execution (what to say and how); and every experiment runs against a
+    control, so the system can tell a real win from noise before it changes course.</p>
   </section>
 
   
@@ -658,129 +664,209 @@
 <script>
 (function(){
   var demo=document.getElementById('demo');if(!demo)return;
-  var runBtn=document.getElementById('demo-run'),out=document.getElementById('demo-out'),note=document.getElementById('demo-note');
-  var picks=[].slice.call(demo.querySelectorAll('.pick')),steps=[].slice.call(demo.querySelectorAll('#demo-steps li'));
-  var company='ramp',busy=false;
+  var CH={email:'Email',linkedin:'LinkedIn',instagram:'Instagram',facebook:'Facebook',blog:'Blog'};
+  var LABEL_NAMES={crm:'HubSpot CRM',delivery:'Campaign delivery',performance:'Performance data',analytics:'Analytics',marketing:'Marketing recommendation',contentPlanning:'Content planning',contentGeneration:'Content generation',history:'Experiment history'};
+  function $(id){return document.getElementById(id)}
+  var out=$('demo-out'),primary=$('demo-primary'),resetBtn=$('demo-reset'),statusEl=$('demo-status'),objSel=$('demo-objective'),labelsEl=$('demo-labels');
+  var steps=[].slice.call(demo.querySelectorAll('#demo-steps li')),picks=[].slice.call(demo.querySelectorAll('.pick'));
+  var company='ramp',state=null,busy=false,sessionId=getSessionId();
 
+  function getSessionId(){
+    var id=null;try{id=localStorage.getItem('signalloop-session')}catch(e){}
+    if(!id||!/^[a-z0-9-]{16,64}$/i.test(id)){
+      id=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():('s-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,12));
+      try{localStorage.setItem('signalloop-session',id)}catch(e){}
+    }
+    return id;
+  }
   function el(tag,cls,text){var n=document.createElement(tag);if(cls)n.className=cls;if(text!=null)n.textContent=text;return n}
   function pct(x,d){return (x*100).toFixed(d==null?1:d)+'%'}
+  function pp(x){return (x>0?'+':'')+x+'pp'}
+  function find(list,id){return (list||[]).filter(function(x){return x.id===id})[0]}
+  function aud(id){var a=find(state&&state.audiences,id);return a?a.name:id}
+  function angle(id){var a=find(state&&state.angles,id);return a?a.label:id}
+  function ctype(id){var a=find(state&&state.contentTypes,id);return a?a.label:id}
   function wait(ms){return new Promise(function(r){setTimeout(r,ms)})}
-  function setSteps(upto,state){steps.forEach(function(s,i){s.className=i<upto?'done':(i===upto?state:'')})}
-  function block(label){var b=el('div','dblock');b.appendChild(el('div','dlab',label));out.appendChild(b);return b}
-  // numFrom: first right-aligned column; hideOnMobile: column indexes dropped on narrow screens.
+  function block(label,question){var b=el('section','dblock');b.appendChild(el('div','dlab',label));if(question)b.appendChild(el('div','dq',question));out.appendChild(b);return b}
   function table(head,rows,numFrom,hideOnMobile){
     var wrap=el('div','dtable-wrap'),t=el('table','dtable'),thead=el('thead'),tb=el('tbody'),hr=el('tr');
     function cls(i){return [i>=numFrom?'num':'',(hideOnMobile||[]).indexOf(i)>=0?'hm':''].join(' ').trim()||null}
     head.forEach(function(h,i){var th=el('th',cls(i),h);th.scope='col';hr.appendChild(th)});
     thead.appendChild(hr);t.appendChild(thead);
-    rows.forEach(function(r){var tr=el('tr',r.top?'top':null);r.cells.forEach(function(c,i){tr.appendChild(el('td',cls(i),c))});tb.appendChild(tr)});
+    rows.forEach(function(r){var tr=el('tr',r.cls||null);r.cells.forEach(function(c,i){tr.appendChild(el('td',cls(i),c))});tb.appendChild(tr)});
     t.appendChild(tb);wrap.appendChild(t);return wrap}
-  // Audience x channel grid; each audience's best channel this run is highlighted.
-  function matrix(channels,metrics){
-    var wrap=el('div','dtable-wrap'),t=el('table','dtable'),thead=el('thead'),tb=el('tbody'),hr=el('tr');
-    var th0=el('th',null,'Audience');th0.scope='col';hr.appendChild(th0);
-    channels.forEach(function(c){var th=el('th','num',c.label);th.scope='col';hr.appendChild(th)});
-    thead.appendChild(hr);t.appendChild(thead);
-    metrics.forEach(function(m){var tr=el('tr');tr.appendChild(el('td',null,m.persona));
-      channels.forEach(function(c){var cell=m.channels.filter(function(x){return x.channel===c.key})[0];
-        tr.appendChild(el('td','num'+(cell&&m.best_channel===c.key?' best':''),cell?cell.engaged+' · '+pct(cell.rate):'—'))});
-      tb.appendChild(tr)});
-    t.appendChild(tb);wrap.appendChild(t);return wrap}
-
-  function refreshCount(){
-    fetch('/api/run?company='+company).then(function(r){return r.ok?r.json():null}).then(function(h){
-      if(h&&!busy)runBtn.textContent=h.runs?'Run the loop (run #'+(h.runs+1)+')':'Run the loop';
-    }).catch(function(){});
+  function kv(parent,pairs){
+    var dl=el('dl','kv');
+    pairs.forEach(function(p){
+      if(p[1]==null||p[1]==='')return;
+      dl.appendChild(el('dt',null,p[0]));var dd=el('dd');
+      if(Array.isArray(p[1])){var ul=el('ul','dlist');p[1].forEach(function(x){ul.appendChild(el('li',null,x))});dd.appendChild(ul)}else dd.textContent=p[1];
+      dl.appendChild(dd)});
+    parent.appendChild(dl);return dl}
+  function setSteps(active,doneUpTo,failAt){steps.forEach(function(s,i){s.className=failAt===i?'fail':i<doneUpTo?'done':i===active?'active':''})}
+  function api(method,route,body){
+    var url='/api/'+route,init={method:method,headers:{'Content-Type':'application/json'}};
+    if(method==='GET')url+='?sessionId='+encodeURIComponent(sessionId)+'&company='+company;
+    else init.body=JSON.stringify(Object.assign({sessionId:sessionId,company:company},body||{}));
+    return fetch(url,init).then(function(r){return r.json().catch(function(){return {}}).then(function(b){return {ok:r.ok,status:r.status,body:b}})}).catch(function(){return {network:true}});
+  }
+  function clearError(){var e=demo.querySelector('.derr');if(e)e.remove()}
+  function showError(msg,body){
+    clearError();var box=el('div','derr',msg);
+    if(body&&body.attempts&&body.attempts.length){
+      box.appendChild(el('div','dsub','Tried: '+body.attempts.map(function(a){return a.provider?(a.provider+(a.status?' ('+a.status+')':'')):(a.errors||[]).join('; ')}).join(', ')));
+    }
+    demo.insertBefore(box,out);
   }
 
+  function nextAction(){
+    if(!state)return null;
+    if(state.experimentCount>=state.maxExperiments)return {label:'Session complete ('+state.maxExperiments+' experiments)',disabled:true};
+    if(state.experimentCount===0)return {label:'Run baseline experiment',route:'run'};
+    if(state.pendingPlan)return {label:'Run next experiment',route:'run'};
+    return {label:'Ask the agents what to test next',route:'plan'};
+  }
+  function syncControls(){
+    var a=nextAction();primary.textContent=a?a.label:'Loading…';
+    primary.disabled=busy||!a||!!a.disabled;resetBtn.disabled=busy||!state;objSel.disabled=busy;
+    picks.forEach(function(p){p.disabled=busy});
+  }
+
+  async function act(){
+    var a=nextAction();if(!a||a.disabled||busy)return;
+    busy=true;syncControls();clearError();
+    var isRun=a.route==='run',base=isRun?0:3;
+    statusEl.textContent=isRun?'Distributing and measuring…':'The Marketing Agent is analyzing the results, then the Content Agent will plan the variant…';
+    var request=api('POST',a.route,{objective:objSel.value});
+    for(var i=0;i<3;i++){setSteps(base+i,base+i);await wait(isRun?350:1100)}
+    var res=await request;
+    if(res.network){setSteps(-1,base,base);showError('Could not reach the demo API. The live demo runs on signalloop-shiva.netlify.app.');statusEl.textContent=''}
+    else if(!res.ok){setSteps(-1,base,base);showError(res.body.error||'Something went wrong.',res.body);statusEl.textContent=''}
+    else{state=res.body;render();setSteps(-1,isRun?3:6);statusEl.textContent=isRun?'Experiment '+state.experimentCount+' measured.':'Next experiment planned.'}
+    busy=false;syncControls();
+  }
+
+  function render(){
+    out.textContent='';renderLabels();
+    if(state.objective)objSel.value=state.objective.id;
+    if(!state.experimentCount){
+      out.appendChild(el('p','dsub','No experiments yet. Start with a baseline: every audience on each of its channels with its default message and content type.'));
+      return;
+    }
+    renderHistory();renderAnalyze();renderAudienceInsight();renderChannelInsight();
+    if(state.pendingPlan){renderMarketing(state.pendingPlan);renderContent(state.pendingPlan);renderNext(state.pendingPlan)}
+    else{var b=block('Marketing Agent','What should we do next?');b.appendChild(el('p','dsub','Results are in. Ask the agents what to test next; they read the computed metrics above and must cite them.'))}
+  }
+  function renderLabels(){
+    labelsEl.textContent='';
+    Object.keys(LABEL_NAMES).forEach(function(k){var v=state.labels[k];if(!v)return;var c=el('span','lbl lbl-'+v.toLowerCase());c.appendChild(el('span',null,LABEL_NAMES[k]));c.appendChild(el('b',null,v));labelsEl.appendChild(c)});
+  }
+  function renderHistory(){
+    var b=block('Experiment history','What have we tried?'),ol=el('ol','timeline');
+    state.experiments.forEach(function(e){
+      var li=el('li');
+      if(e.kind==='baseline'){li.appendChild(el('b',null,'Experiment '+e.experimentNumber+': baseline'));li.appendChild(document.createTextNode(' · '+e.cells.length+' audience and channel combinations with default messages'))}
+      else{
+        var t=e.cells.filter(function(c){return c.role==='test'})[0],k=e.cells.filter(function(c){return c.role==='control'})[0];
+        li.appendChild(el('b',null,'Experiment '+e.experimentNumber+': test vs control'));
+        li.appendChild(document.createTextNode(' · '+aud(t.audienceId)+' on '+CH[t.channel]+': '+angle(t.messagingAngle)+', '+ctype(t.contentType).toLowerCase()+' ('+pct(t.ctr)+') vs '+angle(k.messagingAngle)+', '+ctype(k.contentType).toLowerCase()+' ('+pct(k.ctr)+')'));
+        if(e.hypothesis)li.appendChild(el('div','dsub','Hypothesis: '+e.hypothesis));
+      }
+      ol.appendChild(li)});
+    b.appendChild(ol);
+  }
+  function renderAnalyze(){
+    var a=state.analytics,L=a.latest,b=block('Analyze','What happened in experiment '+L.experimentNumber+'?');
+    b.appendChild(table(['Role','Audience','Channel','Angle','Content type','Reach','Clicks','CTR','vs previous'],L.cells.map(function(c){
+      return {cells:[c.role,aud(c.audienceId),CH[c.channel],angle(c.messagingAngle),ctype(c.contentType),String(c.reach),String(c.clicks),pct(c.ctr),c.changeVsPreviousPp==null?'—':pp(c.changeVsPreviousPp)]}}),5,[0,4,8]));
+    if(L.testVsControl){
+      var t=L.testVsControl;
+      b.appendChild(el('div','dsum',t.significant?('Result: the '+t.winner+' variant won ('+pp(t.deltaPp)+' CTR for the test, z = '+t.z+').'):('Result: too close to call ('+pp(t.deltaPp)+' CTR for the test; '+t.reason+').')));
+    }
+    b.appendChild(el('div','dlab dsubhead','Pooled across all experiments'));
+    b.appendChild(table(['Audience','Reach','Clicks','CTR','vs other audiences'],a.audiences.filter(function(x){return x.reach>0}).map(function(x){
+      return {cells:[x.name,String(x.reach),String(x.clicks),pct(x.ctr),x.vsOthers?pp(x.vsOthers.deltaPp)+(x.vsOthers.significant?'':' (not significant)'):'—']}}),1));
+    var two=el('div','two');two.appendChild(dimTable('Messaging angle',a.angles.tested));two.appendChild(dimTable('Content type',a.contentTypes.tested));b.appendChild(two);
+  }
+  function dimTable(title,rows){var w=el('div');w.appendChild(el('div','dlab dsubhead',title+', all audiences'));w.appendChild(table([title,'Reach','CTR'],rows.map(function(r){return {cells:[r.label,String(r.reach),pct(r.ctr)]}}),1));return w}
+  function insightList(b,items,empty){
+    if(!items.length){if(empty)b.appendChild(el('p','dsub',empty));return}
+    var ul=el('ul','ins');items.forEach(function(i){ul.appendChild(el('li',null,i.text))});b.appendChild(ul);
+  }
+  function renderAudienceInsight(){var b=block('Audience insight','How is each audience behaving?');insightList(b,state.analytics.insights.audience,'Not enough data for audience patterns yet.')}
+  function renderChannelInsight(){
+    var a=state.analytics,b=block('Channel insight','How are the channels behaving?'),rows=[];
+    state.audiences.forEach(function(p){
+      var x=a.byAudience[p.id],L=x.channelLeaders;
+      x.channels.forEach(function(c){
+        var tags=[];
+        if(L.efficiency&&L.efficiency.channel===c.channel)tags.push('Efficiency leader');
+        if(L.volume&&L.volume.channel===c.channel)tags.push('Volume leader');
+        rows.push({cls:tags.length?'lead':'',cells:[p.name,c.label,c.tested?pct(c.ctr):'—',c.tested?String(c.expectedClicksPerExperiment):'—',tags.join(' · ')]});
+      })});
+    b.appendChild(table(['Audience','Channel','CTR','Clicks per experiment','Leader'],rows,2));
+    b.appendChild(el('div','dsub','Efficiency leader = highest CTR. Volume leader = most expected clicks per experiment. The Marketing Agent weighs them against the campaign objective.'));
+    insightList(b,a.insights.channel);
+  }
+  function toolsLine(x){
+    return el('div','dsub','Data it retrieved: '+x.toolCalls.map(function(c){return c.name+(c.suppliedBySystem?' (supplied by the system)':'')}).join(', '));
+  }
+  function renderMarketing(plan){
+    var m=plan.marketing,r=m.recommendation,b=block('Marketing Agent','What should we do next?');
+    b.appendChild(el('div','via','AI · '+m.provider+' · '+m.model));
+    var card=el('div','agent');
+    kv(card,[['Target audience',aud(r.priorityAudience)],['Channel',CH[r.recommendedChannel]],['Messaging angle',angle(r.recommendedAngle)],['Content type',ctype(r.recommendedContentType)],
+      ['Decision',r.decisionType+' · '+r.confidence+' confidence'],['Hypothesis',r.hypothesis],['Trade-off',r.tradeoff],['Reasoning',r.reasoning]]);
+    b.appendChild(card);
+    b.appendChild(el('div','dlab dsubhead','Why SignalLoop recommended this'));
+    var ul=el('ul','why');
+    m.evidence.forEach(function(e){
+      var li=el('li');li.appendChild(el('div',null,e.statement));
+      if(e.metric){var parts=[e.metric.label];if(e.metric.reach)parts.push(pct(e.metric.ctr)+' CTR','clicks '+e.metric.clicks+' of '+e.metric.reach+' reached');if(e.metric.deltaPp!=null)parts.push(pp(e.metric.deltaPp));li.appendChild(el('div','dsub',parts.join(' · ')))}
+      ul.appendChild(li)});
+    b.appendChild(ul);b.appendChild(toolsLine(m));
+  }
+  function renderContent(plan){
+    var c=plan.content,p=c.contentPlan,r=plan.marketing.recommendation,b=block('Content Agent','What should we create?');
+    b.appendChild(el('div','via','AI · '+c.provider+' · '+c.model));
+    b.appendChild(el('div','dlab dsubhead','Content plan'));
+    kv(b,[['Audience',aud(r.priorityAudience)],['Objective',state.objective.label],['Channel',CH[r.recommendedChannel]],['Audience insight',p.audienceInsight],['Content angle',p.contentAngle],
+      ['Topic',p.topic],['Format',p.format],['Hook',p.hook],['Headline',p.headline],['Primary message',p.keyMessage],['Supporting points',p.supportingPoints],['Tone',p.tone],['CTA',p.cta],['Content brief',p.contentBrief]]);
+    b.appendChild(el('div','dlab dsubhead','Generated content'));
+    var g=el('div','gen');g.appendChild(el('div','gen-t',c.generatedContent.title));g.appendChild(el('div','gen-b',c.generatedContent.body));b.appendChild(g);
+    b.appendChild(toolsLine(c));
+  }
+  function renderNext(plan){
+    var b=block('Next experiment','What exactly are we testing?');
+    b.appendChild(table(['Role','Audience','Channel','Angle','Content type','Headline','Audience split'],plan.spec.cells.map(function(c){
+      return {cells:[c.role,aud(c.audienceId),CH[c.channel],angle(c.messagingAngle),ctype(c.contentType),c.variant.headline,Math.round(c.share*100)+'%']}}),6,[3,4,6]));
+    b.appendChild(el('div','dsum','Hypothesis: '+plan.marketing.recommendation.hypothesis));
+    var btn=el('button','btn run','Run next experiment');btn.type='button';btn.style.marginTop='12px';btn.addEventListener('click',act);b.appendChild(btn);
+  }
+
+  async function load(){
+    busy=true;syncControls();clearError();out.textContent='';statusEl.textContent='';
+    var res=await api('GET','session');busy=false;
+    if(res.network||!res.ok){state=null;showError(res.network?'The live demo runs on the deployed site at signalloop-shiva.netlify.app.':(res.body.error||'Could not load the session.'));syncControls();return}
+    state=res.body;
+    if(!objSel.options.length)state.objectives.forEach(function(o){var op=el('option',null,o.label);op.value=o.id;objSel.appendChild(op)});
+    render();setSteps(-1,state.pendingPlan?6:(state.experimentCount?3:0));syncControls();
+  }
+
+  primary.addEventListener('click',act);
+  resetBtn.addEventListener('click',async function(){
+    if(busy)return;busy=true;syncControls();clearError();
+    var res=await api('POST','reset',{objective:objSel.value});busy=false;
+    if(res.ok){state=res.body;render();setSteps(-1,0);statusEl.textContent='Session cleared.'}else showError((res.body&&res.body.error)||'Could not reset.');
+    syncControls();
+  });
+  objSel.addEventListener('change',function(){if(state&&state.pendingPlan)statusEl.textContent='The new objective applies to the next plan the agents make.'});
   picks.forEach(function(b){b.addEventListener('click',function(){
     if(busy)return;company=b.getAttribute('data-company');
     picks.forEach(function(x){var on=x===b;x.classList.toggle('on',on);x.setAttribute('aria-checked',on?'true':'false')});
-    refreshCount();
+    load();
   })});
-
-  function render(d){
-    out.textContent='';out.hidden=false;
-    var head=el('div','dhead');head.appendChild(el('b',null,'Run #'+d.loop.run_number+' · '+d.company));
-    head.appendChild(el('span','chip'+(d.mode.crm==='live'?' live':''),d.mode.crm==='live'?'HubSpot CRM: live':'HubSpot CRM: mock'));
-    head.appendChild(el('span','chip','Content: '+d.mode.content));
-    head.appendChild(el('span','chip sim','Engagement: simulated'));
-    head.appendChild(el('span','chip sim','Social & blog: sample data'));
-    out.appendChild(head);
-
-    var b1=block('1 · Generate');
-    b1.appendChild(el('div','dtitle',d.blog.title));
-    b1.appendChild(el('div','dsub','Blog: '+d.blog.outline_points+'-point outline · '+d.blog.words+'-word draft · one newsletter per audience'));
-    var g=el('div','dgrid');
-    d.newsletters.forEach(function(n){var c=el('div','dcard');c.appendChild(el('div','who',n.persona));c.appendChild(el('div','subj',n.subject));c.appendChild(el('div','pv',n.preview));g.appendChild(c)});
-    b1.appendChild(g);
-
-    var b2=block('2 · Distribute');
-    b2.appendChild(table(['Audience','Channels','Segment size','CRM contacts'],d.distribution.map(function(r){
-      return {cells:[r.persona,r.channels.join(' · '),String(r.segment_size),String(r.crm_contacts)]}}),2,[2]));
-    var log=el('details','crmlog');
-    log.appendChild(el('summary',null,d.crm.request_count+' HubSpot API calls ('+d.crm.mode+') · '+d.crm.simulated_sends+' email sends simulated'));
-    var ul=el('ul');
-    d.crm.requests.forEach(function(r){var li=el('li');li.appendChild(el('code',null,r.method+' '+r.path));
-      li.appendChild(document.createTextNode(' × '+r.count+' · '+r.status));ul.appendChild(li)});
-    ul.appendChild(el('li',null,'No emails are sent: HubSpot\'s email-sending API needs a paid add-on, so sends are simulated.'));
-    log.appendChild(ul);b2.appendChild(log);
-    b2.appendChild(el('div','dsub','Sources: '+d.channels.map(function(c){return c.label+' ('+c.source+')'}).join(' · ')));
-
-    var b3=block('3 · Measure');
-    var top=d.metrics.reduce(function(a,m){return m.click_rate>a.click_rate?m:a});
-    b3.appendChild(table(['Audience','Delivered','Open','Click','Unsub'],d.metrics.map(function(m){
-      return {top:m===top,cells:[m.persona,String(m.delivered),pct(m.open_rate),pct(m.click_rate),pct(m.unsub_rate,2)]}}),1,[1]));
-    var sum=el('div','dsum');sum.appendChild(el('p',null,d.summary.summary));
-    var recs=el('ul');d.summary.recommendations.forEach(function(r){recs.appendChild(el('li',null,r))});
-    sum.appendChild(recs);b3.appendChild(sum);
-    b3.appendChild(el('div','dlab dsubhead','Engagement by channel (people engaged · rate)'));
-    b3.appendChild(matrix(d.channels,d.metrics));
-
-    var b4=block('4 · Optimize');
-    b4.appendChild(el('div','dsub','Next topic and best channel for each audience, based on every saved run:'));
-    var topics=el('ul','dlist');d.optimization.by_audience.forEach(function(a){var li=el('li');
-      li.appendChild(el('b',null,a.persona+' → '+a.best_channel_label+': '));li.appendChild(document.createTextNode(a.next_topic));topics.appendChild(li)});
-    b4.appendChild(topics);
-    var hls=el('div','hls');d.optimization.headline_variants.forEach(function(h){hls.appendChild(el('span',null,h))});
-    b4.appendChild(hls);b4.appendChild(el('div','dsub','Why: '+d.optimization.rationale));
-
-    var b5=block('↻ Loop memory');
-    b5.appendChild(el('div','dsub','Average email click rate by audience across '+d.loop.run_number+' saved run'+(d.loop.run_number===1?'':'s')+'. The leader is what the next slate leans into.'));
-    var max=Math.max.apply(null,d.loop.averages.map(function(a){return a.avg_click}))||1,bars=el('div','bars');
-    d.loop.averages.forEach(function(a){
-      var row=el('div','bar'+(a.persona===d.loop.leader?' lead':'')),track=el('div','track'),fill=el('div','fill');
-      fill.style.width=(a.avg_click/max*100)+'%';track.appendChild(fill);
-      row.appendChild(el('span','name',a.persona));row.appendChild(track);row.appendChild(el('span','v',pct(a.avg_click)));
-      bars.appendChild(row)});
-    b5.appendChild(bars);
-
-    note.textContent=(d.mode.crm==='live'
-      ?'Contacts, the persona property and audience lists were written to a real HubSpot account. '
-      :'CRM calls are built exactly as they would be sent to HubSpot, in mock mode until the account is connected. ')
-      +'Email engagement is simulated and no emails are sent. LinkedIn, Instagram, Facebook and blog figures are sample data standing in for HubSpot Social and website analytics.';
-  }
-
-  runBtn.addEventListener('click',async function(){
-    if(busy)return;busy=true;runBtn.disabled=true;runBtn.textContent='Running…';
-    var old=demo.querySelector('.derr');if(old)old.remove();
-    var request=fetch('/api/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({company:company})})
-      .then(function(r){return r.json().catch(function(){return {}}).then(function(body){return {ok:r.ok,status:r.status,body:body}})})
-      .catch(function(){return {network:true}});
-    var failedAt=steps.length-1;
-    try{
-      for(var i=0;i<steps.length;i++){setSteps(i,'active');await wait(420)}
-      var res=await request;
-      if(res.network)throw new Error('The live demo runs on the deployed site. Open signalloop-shiva.netlify.app to try it.');
-      if(!res.ok)throw new Error(res.body.error||(res.status===429?'Too many runs in a short time. Wait a minute and try again.':'The run failed. Please try again.'));
-      setSteps(steps.length,'');render(res.body);
-    }catch(e){
-      steps[failedAt].className='fail';
-      demo.insertBefore(el('div','derr',e.message),note);
-    }finally{busy=false;runBtn.disabled=false;runBtn.textContent='Run again'}
-  });
-
-  refreshCount();
+  load();
 })();
 </script>
 </body></html>

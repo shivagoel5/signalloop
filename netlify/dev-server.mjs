@@ -3,7 +3,7 @@
 
 import http from "node:http";
 import { readFile } from "node:fs/promises";
-import handler from "./functions/run.mjs";
+import handler from "./functions/api.mjs";
 
 const root = new URL("../docs/", import.meta.url);
 const port = Number(process.env.PORT) || 8888;
@@ -12,7 +12,7 @@ const types = { ".html": "text/html; charset=utf-8", ".js": "text/javascript", "
 http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${port}`);
 
-  if (url.pathname === "/api/run") {
+  if (url.pathname.startsWith("/api/")) {
     const body = req.method === "POST" ? await readBody(req) : undefined;
     const response = await handler(new Request(url, {
       method: req.method,
