@@ -668,20 +668,21 @@
       if(Array.isArray(p[1])){var ul=el('ul','dlist');p[1].forEach(function(x){ul.appendChild(el('li',null,x))});dd.appendChild(ul)}else dd.textContent=p[1];
       dl.appendChild(dd)});
     parent.appendChild(dl);return dl}
-  function setSteps(active,doneUpTo,failAt){steps.forEach(function(s,i){s.className=failAt===i?'fail':i<doneUpTo?'done':i===active?'active':''})}
+  var localSteps=[];
+  function setSteps(active,doneUpTo,failAt){[steps,localSteps].forEach(function(list){list.forEach(function(s,i){s.className=failAt===i?'fail':i<doneUpTo?'done':i===active?'active':''})})}
   function api(method,route,body){
     var url='/api/'+route,init={method:method,headers:{'Content-Type':'application/json'}};
     if(method==='GET')url+='?sessionId='+encodeURIComponent(sessionId)+'&company='+company;
     else init.body=JSON.stringify(Object.assign({sessionId:sessionId,company:company},body||{}));
     return fetch(url,init).then(function(r){return r.json().catch(function(){return {}}).then(function(b){return {ok:r.ok,status:r.status,body:b}})}).catch(function(){return {network:true}});
   }
-  function clearError(){var e=demo.querySelector('.derr');if(e)e.remove()}
-  function showError(msg,body){
-    clearError();var box=el('div','derr',msg);
+  function clearError(){demo.querySelectorAll('.derr,.dprogress').forEach(function(e){e.remove()});localSteps=[]}
+  function showError(msg,body,where){
+    demo.querySelectorAll('.derr').forEach(function(e){e.remove()});var box=el('div','derr',msg);
     if(body&&body.attempts&&body.attempts.length){
       box.appendChild(el('div','dsub','Tried: '+body.attempts.map(function(a){return a.provider?(a.provider+(a.status?' ('+a.status+')':'')):(a.errors||[]).join('; ')}).join(', ')));
     }
-    demo.insertBefore(box,out);
+    if(where)where.appendChild(box);else demo.insertBefore(box,out);
   }
 
   function nextAction(){
@@ -697,27 +698,44 @@
     picks.forEach(function(p){p.disabled=busy});
   }
 
-  async function act(){
+  // Pressed from a results block (where), the progress bar, status and errors show in that block and the
+  // view stays on it while the results refresh. Pressed from the controls, they show at the top.
+  async function act(where){
     var a=nextAction();if(!a||a.disabled||busy)return;
     busy=true;syncControls();clearError();
-    var isRun=a.route==='run',base=isRun?0:3;
-    statusEl.textContent=isRun?'Distributing and measuring…':'The Marketing Agent is analyzing the results, then the Content Agent will plan the variant…';
+    var isRun=a.route==='run',base=isRun?0:3,btn=where&&where.querySelector('.btn.run');
+    var working=isRun?'Distributing and measuring…':'The Marketing Agent is analyzing the results, then the Content Agent will plan the variant…';
+    statusEl.textContent=working;
+    if(where){
+      if(btn)btn.disabled=true;
+      var progress=el('div','dprogress'),bar=$('demo-steps').cloneNode(true);
+      bar.removeAttribute('id');bar.removeAttribute('aria-live');
+      progress.appendChild(bar);progress.appendChild(el('div','dsub',working));where.appendChild(progress);
+      localSteps=[].slice.call(bar.children);
+    }
     var request=api('POST',a.route,{objective:objSel.value});
     for(var i=0;i<3;i++){setSteps(base+i,base+i);await wait(isRun?350:1100)}
     var res=await request;
-    if(res.network){setSteps(-1,base,base);showError('Could not reach the demo API. The live demo runs on signalloop-shiva.netlify.app.');statusEl.textContent=''}
-    else if(!res.ok){setSteps(-1,base,base);showError(res.body.error||'Something went wrong.',res.body);statusEl.textContent=''}
-    else{state=res.body;render();setSteps(-1,isRun?3:6);statusEl.textContent=isRun?'Experiment '+state.experimentCount+' measured.':'Next experiment planned.'}
+    if(res.network||!res.ok){
+      setSteps(-1,base,base);statusEl.textContent='';
+      if(where){var s=where.querySelector('.dprogress .dsub');if(s)s.remove();if(btn)btn.disabled=false}
+      showError(res.network?'Could not reach the demo API. The live demo runs on signalloop-shiva.netlify.app.':(res.body.error||'Something went wrong.'),res.body,where&&where.querySelector('.dprogress'));
+    }else{
+      var label=where&&where.querySelector('.dlab').textContent,anchor=where&&where.getBoundingClientRect().top;
+      state=res.body;localSteps=[];render();setSteps(-1,isRun?3:6);
+      statusEl.textContent=isRun?'Experiment '+state.experimentCount+' measured.':'Next experiment planned.';
+      if(where){
+        // Keep the visitor where they were: the plan replaces the block in place; a run adds its results above.
+        var blocks=[].slice.call(out.querySelectorAll('.dblock'));
+        var target=blocks.filter(function(b){return b.querySelector('.dlab').textContent===label})[0]||blocks[blocks.length-1];
+        if(isRun)target.insertBefore(el('div','dsum','Experiment '+state.experimentCount+' measured. The experiment history, Analyze and insight sections above now include its results.'),target.querySelector('.dsub'));
+        scrollBy(0,target.getBoundingClientRect().top-anchor);
+      }
+    }
     busy=false;syncControls();
   }
 
-  // Buttons at the bottom of the results take the visitor back up to the controls, where progress and errors show, then act.
-  function actFromResults(){
-    var smooth=!matchMedia('(prefers-reduced-motion: reduce)').matches;
-    scrollTo({top:demo.getBoundingClientRect().top+scrollY-80,behavior:smooth?'smooth':'auto'});
-    act();
-  }
-  function resultsButton(parent,label){var btn=el('button','btn run',label);btn.type='button';btn.style.marginTop='12px';btn.addEventListener('click',actFromResults);parent.appendChild(btn)}
+  function resultsButton(parent,label){var btn=el('button','btn run',label);btn.type='button';btn.style.marginTop='12px';btn.addEventListener('click',function(){act(parent)});parent.appendChild(btn)}
 
   function render(){
     out.textContent='';renderLabels();
@@ -826,7 +844,7 @@
     render();setSteps(-1,state.pendingPlan?6:(state.experimentCount?3:0));syncControls();
   }
 
-  primary.addEventListener('click',act);
+  primary.addEventListener('click',function(){act()});
   resetBtn.addEventListener('click',async function(){
     if(busy)return;busy=true;syncControls();clearError();
     var res=await api('POST','reset',{objective:objSel.value});busy=false;
