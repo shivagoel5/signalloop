@@ -1,4 +1,5 @@
-// SignalLoop live demo: one campaign cycle at a time. Set the goal -> what happened -> next test -> campaign ->
+// SignalLoop live demo: one campaign cycle at a time. Every visit starts blank on a screen that introduces the two
+// companies; nothing from an earlier visit is shown. Set the goal -> what happened -> next test -> campaign ->
 // what happened and what SignalLoop learned -> the next test. Ramp and Square run on the same product, and Compare
 // shows them side by side. Opening the page or switching tabs makes no request: only loading past results,
 // recommending a test, creating the campaign, running it and starting over call the API. The session is fetched
@@ -18,15 +19,11 @@
   var STATIC=JSON.parse($('demo-static').textContent);
   var panel=$('demo-panel'),scroller=$('demo-scroll'),actionbar=$('demo-actionbar'),stepper=$('demo-stepper'),historyEl=$('demo-history'),resetBtn=$('demo-reset'),objSel=$('demo-objective'),goalBox=$('demo-goal');
   var tabs=[].slice.call(demo.querySelectorAll('.scn'));
-  var company='ramp',state=null,busy=false,viewing=null,historyOpen=false,lastShown=null,sessionId=getSessionId();
+  var company=null,memory={},state=null,busy=false,viewing=null,historyOpen=false,lastShown=null,sessionId=getSessionId();
 
+  // A new session for every visit, so the demo always opens blank.
   function getSessionId(){
-    var id=null;try{id=localStorage.getItem('signalloop-session')}catch(e){}
-    if(!id||!/^[a-z0-9-]{16,64}$/i.test(id)){
-      id=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():('s-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,12));
-      try{localStorage.setItem('signalloop-session',id)}catch(e){}
-    }
-    return id;
+    return (window.crypto&&crypto.randomUUID)?crypto.randomUUID():('s-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,12));
   }
   function el(tag,cls,text){var n=document.createElement(tag);if(cls)n.className=cls;if(text!=null)n.textContent=text;return n}
   function pct(x){x=x||0;return (x*100).toFixed(x<0.01?2:1)+'%'}
@@ -68,12 +65,10 @@
     return fetch(url,init).then(function(r){return r.json().catch(function(){return {}}).then(function(b){return {ok:r.ok,status:r.status,body:b}})}).catch(function(){return {network:true}});
   }
 
-  // --- state: saved in this browser, refreshed from the server only when it turns out to be stale ---
-  function storageKey(){return 'signalloop-state-'+sessionId+'-'+company}
-  function saveState(){try{localStorage.setItem(storageKey(),JSON.stringify(state))}catch(e){}}
-  function savedState(){
-    try{var s=JSON.parse(localStorage.getItem(storageKey())||'null');return s&&s.companyKey===company&&s.measurementVersion===STATIC.measurementVersion?s:null}catch(e){return null}
-  }
+  // --- state: kept for this visit only (switching companies keeps each one's progress), refreshed from the server
+  // only when it turns out to be stale ---
+  function saveState(){memory[company]=state}
+  function savedState(){return memory[company]||null}
   function emptyState(){
     var info=STATIC.companies[company];
     return {company:info.name,companyKey:company,objective:objSel.value?find(STATIC.objectives,objSel.value):null,objectives:STATIC.objectives,
@@ -93,13 +88,13 @@
 
   // --- rendering ---
   function renderAll(){
-    var comparing=company==='compare';
+    var comparing=company==='compare',starting=!company;
     tabs.forEach(function(t){var on=t.getAttribute('data-company')===company;t.classList.toggle('on',on);t.setAttribute('aria-selected',on?'true':'false')});
     demo.classList.toggle('comparing',comparing);
     if(state&&state.objective)objSel.value=state.objective.id;
-    goalBox.hidden=comparing||stageOf()==='setup';
-    resetBtn.hidden=comparing;stepper.hidden=comparing;
-    if(comparing){renderCompare()}else{renderStepper();renderPanel();renderHistory()}
+    goalBox.hidden=comparing||starting||stageOf()==='setup';
+    resetBtn.hidden=comparing||starting;stepper.hidden=comparing||starting;
+    if(starting)renderStart();else if(comparing)renderCompare();else{renderStepper();renderPanel();renderHistory()}
     syncControls();
   }
   function syncControls(){
@@ -421,6 +416,29 @@
     }
   }
 
+  // Start: what the demo is, in plain words, and the two companies to choose from.
+  function renderStart(){
+    panel.textContent='';actionbar.textContent='';actionbar.hidden=true;historyEl.hidden=true;
+    panel.appendChild(el('div','stage-k','Start here'));
+    panel.appendChild(el('h3','stage-h','Choose a company to run SignalLoop on'));
+    panel.appendChild(el('p','stage-intro','Ramp and Square are real companies, used here as practice scenarios. For each one we wrote a simple marketing plan: who buys, where to reach them and which messages to try. The plans are our assumptions, not the companies\' own.'));
+    var grid=el('div','starts');
+    ['ramp','square'].forEach(function(k){
+      var info=STATIC.companies[k],b=el('button','start-card');b.type='button';
+      b.appendChild(el('span','start-k','Company'));
+      b.appendChild(el('b',null,info.name));
+      b.appendChild(el('span','start-m',info.context.market));
+      b.appendChild(el('span','start-a','Audiences: '+info.audiences.map(function(a){return a.name}).join(', ')));
+      b.appendChild(el('span','start-go','Run SignalLoop for '+info.name+' →'));
+      b.addEventListener('click',function(){switchTo(k)});
+      grid.appendChild(b);
+    });
+    panel.appendChild(grid);
+    var cmp=el('button','start-compare','Or compare the two companies side by side →');cmp.type='button';
+    cmp.addEventListener('click',function(){switchTo('compare')});panel.appendChild(cmp);
+    scroller.scrollTop=0;lastShown='start';
+  }
+
   // Compare: the same product on two markets, side by side.
   function renderCompare(){
     panel.textContent='';actionbar.textContent='';actionbar.hidden=true;historyEl.hidden=true;
@@ -581,11 +599,9 @@
       STATIC.objectives.forEach(function(o){var op=el('option',null,o.label+' · '+o.metric);op.value=o.id;objSel.appendChild(op)});
       objSel.value='';
     }
-    if(company==='compare'){state=null;viewing=null;renderAll();return}
-    // A session this browser already started for the company is picked up again.
-    var saved=savedState();
-    state=saved||emptyState();viewing=null;renderAll();
-    if(saved&&saved.experimentCount)note('Picked up your saved '+saved.company+' session. Use Start over to begin again.');
+    if(!company||company==='compare'){state=null;viewing=null;renderAll();return}
+    // Switching back to a company during this visit keeps its progress.
+    state=savedState()||emptyState();viewing=null;renderAll();
   }
   function switchTo(key){if(busy)return;company=key;load()}
   resetBtn.addEventListener('click',async function(){

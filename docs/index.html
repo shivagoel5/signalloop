@@ -65,16 +65,23 @@
   </section>
 
   <section id="try" class="home-sec">
-    <h2>See SignalLoop make a decision.</h2>
-    <p class="sec-lede">Pick a company, set the campaign goal and run one full cycle. Campaign results are simulated;
-    recommendations and content are generated live by AI.</p>
+    <h2>Try SignalLoop on two real companies.</h2>
+    <div class="howdemo">
+      <div class="hd"><span class="cn">1</span><b>Pick a company</b><span>Ramp or Square, with a simple marketing plan we wrote for each: who buys, where to reach them and what to say.</span></div>
+      <div class="hd"><span class="cn">2</span><b>Set the campaign goal</b><span>Awareness, engagement, traffic, product consideration or conversion.</span></div>
+      <div class="hd"><span class="cn">3</span><b>Run one campaign cycle</b><span>See how the last campaign did, get SignalLoop's pick for the next one, review the drafted campaign, then see the result.</span></div>
+    </div>
+    <p class="demo-disclose">Campaign results are simulated. Recommendations and campaign copy are written live by AI.</p>
     <div class="demo" id="demo">
       <div class="demo-top">
         <div class="demo-bar">
-          <div class="scn-tabs" role="tablist" aria-label="Scenario">
-            <button type="button" role="tab" class="scn on" data-company="ramp" aria-selected="true">Ramp<span>Spend management</span></button>
-            <button type="button" role="tab" class="scn" data-company="square" aria-selected="false">Square<span>SMB commerce</span></button>
-            <button type="button" role="tab" class="scn scn-compare" data-company="compare" aria-selected="false">Compare</button>
+          <div class="scn-group">
+            <span class="scn-label">Company</span>
+            <div class="scn-tabs" role="tablist" aria-label="Company">
+              <button type="button" role="tab" class="scn" data-company="ramp" aria-selected="false">Ramp<span>Spend management</span></button>
+              <button type="button" role="tab" class="scn" data-company="square" aria-selected="false">Square<span>Small-business payments</span></button>
+              <button type="button" role="tab" class="scn scn-compare" data-company="compare" aria-selected="false">Compare both</button>
+            </div>
           </div>
           <div class="demo-tools">
             <label class="obj" id="demo-goal" for="demo-objective" hidden>Goal <select id="demo-objective"></select></label>
