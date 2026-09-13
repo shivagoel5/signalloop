@@ -37,12 +37,12 @@
   function aud(id){var a=find(state&&state.audiences,id);return a?a.name:id}
   function angle(id){var a=find(state&&state.angles,id);return a?a.label:id}
   function ctype(id){var a=find(state&&state.contentTypes,id);return a?a.label:id}
-  // Describes a row from its own data: which experiment a new variant is for, and where the control's
-  // best-so-far variant came from. Works for measured cells and for cells in a pending plan.
+  // Describes a row from its own data: which experiment a new variant is for, and where the current
+  // control came from. Works for measured cells and for cells in a pending plan.
   function variantLabel(c){
     var id=c.contentVariantId||(c.variant&&c.variant.contentVariantId)||'',from=/^exp(\d+)-test$/.exec(id);
     if(c.role==='test')return 'New variant'+(from?' · experiment '+from[1]:'');
-    if(c.role==='control')return 'Best so far · '+(from?'from experiment '+from[1]:'original message');
+    if(c.role==='control')return 'Current control · '+(from?'from experiment '+from[1]:'original message');
     return 'Original message';
   }
   function table(head,rows,numFrom,hideOnMobile){
@@ -224,10 +224,10 @@
     var t=L.testVsControl,test=L.cells.filter(function(c){return c.role==='test'})[0],ctrl=L.cells.filter(function(c){return c.role==='control'})[0];
     var won=t.significant&&t.deltaPp>0,lost=t.significant&&t.deltaPp<0;
     var box=el('div','verdict'+(won?' win':lost?' lose':''));
-    box.appendChild(el('div','verdict-h',won?'The new variant won':lost?'The best-so-far variant held on':'Too close to call'));
+    box.appendChild(el('div','verdict-h',won?'The new variant won':lost?'The current control held on':'Too close to call'));
     box.appendChild(el('div','dsub',t.significant
-      ?'The new variant\'s CTR was '+pp(t.deltaPp)+' against the best so far, a difference large enough to trust.'
-      :'The new variant\'s CTR was '+pp(t.deltaPp)+' against the best so far; '+t.reason+'.'));
+      ?'The new variant\'s CTR was '+pp(t.deltaPp)+' against the current control, a difference large enough to trust.'
+      :'The new variant\'s CTR was '+pp(t.deltaPp)+' against the current control; '+t.reason+'.'));
     var g=el('div','versus');
     [test,ctrl].forEach(function(c){
       if(!c)return;
@@ -283,7 +283,7 @@
     d.appendChild(el('p','dsub','What the agent looked at: '+looked(c)));
     side.appendChild(d);
     grid.appendChild(side);panel.appendChild(grid);
-    if(live)action('Run as experiment '+n,'run','Updates HubSpot, then measures a simulated response: the new variant for half of '+aud(r.priorityAudience)+', the best so far for the other half.');
+    if(live)action('Run as experiment '+n,'run','Updates HubSpot, then measures a simulated response: the new variant for half of '+aud(r.priorityAudience)+', the current control for the other half.');
   }
 
   // --- channel previews ---
@@ -366,7 +366,7 @@
       }else{
         var t=e.cells.filter(function(c){return c.role==='test'})[0],k=e.cells.filter(function(c){return c.role==='control'})[0];
         li.appendChild(el('b',null,'Experiment '+e.experimentNumber+': '+aud(t.audienceId)+' on '+CH[t.channel]));
-        li.appendChild(document.createTextNode(' · new variant ('+angle(t.messagingAngle)+', '+ctype(t.contentType).toLowerCase()+') '+pct(t.ctr)+' vs best so far ('+angle(k.messagingAngle)+', '+ctype(k.contentType).toLowerCase()+') '+pct(k.ctr)));
+        li.appendChild(document.createTextNode(' · new variant ('+angle(t.messagingAngle)+', '+ctype(t.contentType).toLowerCase()+') '+pct(t.ctr)+' vs current control ('+angle(k.messagingAngle)+', '+ctype(k.contentType).toLowerCase()+') '+pct(k.ctr)));
         if(e.hypothesis)li.appendChild(el('div','dsub','Hypothesis: '+e.hypothesis));
       }
       ol.appendChild(li);

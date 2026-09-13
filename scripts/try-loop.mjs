@@ -67,7 +67,7 @@ try {
 
   const [test, control] = plan.spec.cells;
   const variantLabel = (c) => `${angleLabel(profile, c.messagingAngle)}, ${contentTypeLabel(profile, c.contentType).toLowerCase()}`;
-  console.log(`\n4. Next experiment on ${CHANNEL_LABELS[test.channel]}: ${variantLabel(test)} (new variant) vs ${variantLabel(control)} (best so far), 50/50`);
+  console.log(`\n4. Next experiment on ${CHANNEL_LABELS[test.channel]}: ${variantLabel(test)} (new variant) vs ${variantLabel(control)} (current control), 50/50`);
 } catch (err) {
   console.log(`\nPlanning failed: ${err.message}`);
   for (const a of err.attempts ?? err.details?.attempts ?? []) console.log(`   - ${JSON.stringify(a).slice(0, 240)}`);
