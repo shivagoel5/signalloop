@@ -69,7 +69,7 @@ const contentOutput = {
 };
 
 // Fake OpenAI-compatible provider: one tool call, then a final JSON decision.
-function fakeProviders({ failGroq = false, badEvidenceTimes = 0, decision = marketingDecision, content = contentOutput } = {}) {
+function fakeProviders({ failGroq = false, failGemini = false, badEvidenceTimes = 0, decision = marketingDecision, content = contentOutput } = {}) {
   const calls = [];
   let badLeft = badEvidenceTimes;
   const fetchImpl = async (url, init) => {
@@ -77,6 +77,7 @@ function fakeProviders({ failGroq = false, badEvidenceTimes = 0, decision = mark
     const provider = url.includes("groq") ? "groq" : "gemini";
     calls.push({ provider, tools: Boolean(body.tools), schema: body.response_format?.json_schema?.name ?? null, auth: init.headers.Authorization });
     if (provider === "groq" && failGroq) return new Response('{"error":{"message":"rate limited"}}', { status: 429 });
+    if (provider === "gemini" && failGemini) return new Response('{"error":{"message":"unavailable"}}', { status: 503 });
     let message;
     if (body.tools) {
       message = body.messages.some((m) => m.role === "tool")
@@ -187,7 +188,9 @@ test("plan: the Marketing Agent reasons from strategy and evidence, then the Con
   assert.equal(control.role, "control");
   assert.equal(control.channel, "linkedin");
   assert.equal(control.messagingAngle, "cost_control", "control reuses the best existing variant");
-  assert.ok(calls.every((c) => c.provider === "groq"));
+  assert.equal(plan.marketing.provider, "gemini", "the Marketing Agent's decision goes to Gemini first");
+  assert.ok(calls.filter((c) => c.schema === "marketing_recommendation").every((c) => c.provider === "gemini"));
+  assert.ok(calls.filter((c) => c.schema !== "marketing_recommendation").every((c) => c.provider === "groq"), "tool calls and content stay on Groq");
   assert.ok(calls.some((c) => c.schema === "marketing_recommendation") && calls.some((c) => c.schema === "content_plan"));
 });
 
@@ -248,6 +251,15 @@ test("fallback: Groq rate limit switches to Gemini", async () => {
   assert.equal(plan.marketing.provider, "gemini");
   assert.ok(calls.some((c) => c.provider === "groq") && calls.some((c) => c.provider === "gemini"));
   assert.ok(plan.llmTrace.some((t) => t.provider === "groq" && t.status === 429));
+});
+
+test("fallback: if Gemini fails on the Marketing Agent's decision, Groq makes it", async () => {
+  const session = await baselineSession();
+  const { calls, fetchImpl } = fakeProviders({ failGemini: true });
+  const { plan } = await recommendStrategy({ profile: ramp, session, llm: llmWith(fetchImpl) });
+  assert.equal(plan.marketing.provider, "groq");
+  assert.ok(calls.some((c) => c.provider === "gemini" && c.schema === "marketing_recommendation"), "Gemini was tried first");
+  assert.ok(plan.llmTrace.some((t) => t.provider === "gemini" && t.status === 503));
 });
 
 test("fallback: Gemini can continue a conversation whose tool calls came from Groq", async () => {

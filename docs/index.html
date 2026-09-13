@@ -774,7 +774,7 @@
         <div class="stackrows">
           <div class="srow"><b>Page</b><span>Static case study and demo. Opening the page makes no API calls; only running a step does.</span></div>
           <div class="srow"><b>API</b><span>Vercel Functions for running an experiment, getting or re-running a recommendation, creating content and starting over, with per-visitor rate limits and daily caps.</span></div>
-          <div class="srow"><b>Models</b><span>Groq (openai/gpt-oss-120b) first, with Gemini (gemini-3.1-flash-lite) as the fallback when Groq is rate-limited or fails.</span></div>
+          <div class="srow"><b>Models</b><span>Groq (openai/gpt-oss-120b) for tool calls and content; Gemini (gemini-3.1-flash-lite) for the Marketing Agent's final decision, the largest request. Each falls back to the other.</span></div>
           <div class="srow"><b>CRM</b><span>HubSpot API: fictional contacts, a persona property and one audience list per segment.</span></div>
           <div class="srow"><b>Storage</b><span>Upstash Redis for each visitor's experiment history and the usage limits.</span></div>
         </div>

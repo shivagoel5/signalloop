@@ -60,7 +60,7 @@ Language models are unreliable at arithmetic, can't be audited, and can "find" p
 | Campaign delivery | **SIMULATED**: no emails or posts are sent |
 | Response signals (reach, engagement, clicks, high-intent visits, conversions) | **SIMULATED** by `lib/sim-truth.mjs`, which the agents never see |
 | Analytics, evidence guardrail and significance | **CODE**: deterministic |
-| Marketing recommendation, content plan and asset | **AI** (Groq, with Gemini as fallback) |
+| Marketing recommendation, content plan and asset | **AI**: the Marketing Agent's final decision runs on Gemini first; tool calls and content run on Groq first; each falls back to the other |
 | Experiment history | **STORED** per visitor session in Upstash Redis (expires after 30 days without use) |
 
 No performance number in this project comes from a real campaign.
@@ -128,8 +128,8 @@ signalloop/
 
 | Variable | Purpose |
 |---|---|
-| `GROQ_API_KEY` | Primary AI provider (mark as Sensitive) |
-| `GEMINI_API_KEY` | Fallback AI provider when Groq fails or is rate limited (Sensitive) |
+| `GROQ_API_KEY` | AI provider for tool calls and content, and fallback for the Marketing Agent's decision (mark as Sensitive) |
+| `GEMINI_API_KEY` | AI provider for the Marketing Agent's decision, and fallback for everything else (Sensitive) |
 | — | Models are set in code, in `lib/llm.mjs` (`openai/gpt-oss-120b` on Groq, `gemini-3.1-flash-lite` on Gemini); no variable is needed |
 | `HUBSPOT_ACCESS_TOKEN` | HubSpot service key (Sensitive) with scopes `crm.objects.contacts.read`, `crm.objects.contacts.write`, `crm.lists.read`, `crm.lists.write`, `crm.schemas.contacts.read`, `crm.schemas.contacts.write` |
 | `HUBSPOT_MODE` | `live` to write to HubSpot; anything else uses mock mode |
