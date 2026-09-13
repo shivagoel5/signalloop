@@ -9,12 +9,13 @@ import { HubSpotClient } from "../lib/hubspot.mjs";
 import { LLMClient } from "../lib/llm.mjs";
 import { AgentError } from "../lib/agents/run-agent.mjs";
 import { similarity } from "../lib/agents/content.mjs";
-import { compareRates, computeAnalytics, twoProportionZ } from "../lib/analytics.mjs";
+import { MIN_EVENTS, compareRates, computeAnalytics, twoProportionZ } from "../lib/analytics.mjs";
 import { baselineSpec, createContent, newSession, planNextExperiment, recommendStrategy, runExperiment } from "../lib/loop.mjs";
-import { clickProbability, makeRng, simulateCell } from "../lib/simulator.mjs";
+import { MEASUREMENT_VERSION, clickProbability, makeRng, simulateCell } from "../lib/simulator.mjs";
 import { TRUTH } from "../lib/sim-truth.mjs";
 
 const ramp = PROFILES.ramp;
+const round4 = (x) => Math.round(x * 10000) / 10000;
 
 const marketingDecision = {
   priorityAudience: "finance_leader",
@@ -22,13 +23,22 @@ const marketingDecision = {
   recommendedAngle: "real_time_visibility",
   recommendedContentType: "thought_leadership",
   decisionType: "explore",
+  learned: "The baseline only tested cost control with Finance Leaders, so there is no message result for them yet.",
+  knowledgeGap: "Whether the lead positioning hypothesis, real-time visibility, moves Finance Leaders more than cost control.",
   hypothesis: "Finance Leaders will respond better to visibility messaging on LinkedIn than to the baseline cost-control message.",
-  reasoning: "LinkedIn delivers the most clicks per experiment for Finance Leaders, and visibility messaging has not been tested yet.",
+  reasoning: "Finance Leaders are the primary ICP and LinkedIn delivers the most traffic for them, while the lead positioning message is untested.",
+  alternatives: "Switching to Controllers would chase response from a secondary ICP, and changing the channel first would leave the message question open.",
   tradeoff: "The objective is traffic, so LinkedIn's click volume outweighs email's higher CTR.",
   confidence: "medium",
+  confidenceReason: "Only the baseline exists, so the evidence is directional rather than proven.",
+  supportIf: "The new variant's CTR beats the current control with enough evidence and a significant difference.",
+  rejectIf: "The current control wins significantly, or there is no clear difference with enough evidence.",
+  ifSupported: "Make real-time visibility the control for Finance Leaders and test it on email next.",
+  ifRejected: "Keep cost control as the control and test a customer story format next.",
   evidence: [
-    { metricId: "audience:finance_leader", statement: "Finance Leaders' pooled CTR across the baseline." },
-    { metricId: "audience_channel:finance_leader:linkedin", statement: "LinkedIn's expected clicks per experiment for Finance Leaders." },
+    { ref: "ctx:audience:finance_leader", statement: "Finance Leaders are the primary ICP and the economic buyer." },
+    { ref: "audience:finance_leader", statement: "Finance Leaders' pooled results across the baseline." },
+    { ref: "audience_channel:finance_leader:linkedin", statement: "LinkedIn's expected clicks per experiment for Finance Leaders." },
   ],
 };
 
@@ -73,10 +83,10 @@ function fakeProviders({ failGroq = false, badEvidenceTimes = 0, decision = mark
         ? { role: "assistant", content: "I have what I need." }
         : { role: "assistant", content: null, tool_calls: [{ id: "call_1", type: "function", function: { name: body.tools[0].function.name, arguments: "{}" } }] };
     } else if (body.response_format?.json_schema?.name === "marketing_recommendation") {
-      let d = decision;
+      let d = typeof decision === "function" ? decision() : decision;
       if (badLeft > 0) {
         badLeft -= 1;
-        d = { ...decision, evidence: [{ metricId: "made:up", statement: "Invented" }, { metricId: "also:fake", statement: "Invented" }] };
+        d = { ...d, evidence: [{ ref: "made:up", statement: "Invented" }, { ref: "also:fake", statement: "Invented" }, { ref: "ctx:nothing", statement: "Invented" }] };
       }
       message = { role: "assistant", content: JSON.stringify(d) };
     } else {
@@ -96,52 +106,78 @@ async function baselineSession(objectiveId = "traffic") {
 }
 
 // --- Simulator ---
-test("simulator: reproducible from a seed, reach bounded by the addressable audience", () => {
+test("simulator: reproducible from a seed, with every response signal bounded by the one before it", () => {
   const cell = { audienceId: "finance_leader", channel: "linkedin", messagingAngle: "cost_control", contentType: "thought_leadership" };
   const a = simulateCell({ companyKey: "ramp", cell, share: 0.5, rng: makeRng(5) });
   const b = simulateCell({ companyKey: "ramp", cell, share: 0.5, rng: makeRng(5) });
   assert.deepEqual(a, b);
   assert.ok(a.reach <= Math.ceil(TRUTH.ramp.finance_leader.addressable.linkedin * 0.5 * 1.08));
-  assert.ok(a.clicks <= a.reach);
+  assert.ok(a.clicks <= a.reach && a.engagements <= a.reach && a.qualifiedViews <= a.reach);
+  assert.ok(a.highIntent <= a.clicks && a.conversions <= a.highIntent);
 });
 
-test("simulator: marketing decisions change the outcome (hidden best angle has higher click probability)", () => {
+test("simulator: marketing decisions change the outcome, and repeating a message wears it down", () => {
   const base = { audienceId: "finance_leader", channel: "email", contentType: "thought_leadership" };
   assert.ok(clickProbability("ramp", { ...base, messagingAngle: "real_time_visibility" }) > clickProbability("ramp", { ...base, messagingAngle: "cost_control" }));
+  const cell = { ...base, messagingAngle: "cost_control" };
+  assert.ok(clickProbability("ramp", cell, 3) < clickProbability("ramp", cell, 0));
 });
 
 // --- Analytics ---
-test("analytics: significance test and too-close-to-call rules", () => {
-  assert.equal(twoProportionZ({ clicks: 10, reach: 100 }, { clicks: 10, reach: 100 }), 0);
-  assert.ok(compareRates({ clicks: 120, reach: 1000 }, { clicks: 60, reach: 1000 }).significant);
-  assert.equal(compareRates({ clicks: 12, reach: 100 }, { clicks: 6, reach: 100 }).reason, "not enough clicks yet");
-  assert.equal(compareRates({ clicks: 52, reach: 1000 }, { clicks: 50, reach: 1000 }).tooCloseToCall, true);
+test("analytics: the observed difference, the evidence guardrail and significance are reported separately", () => {
+  assert.equal(twoProportionZ({ events: 10, reach: 100 }, { events: 10, reach: 100 }), 0);
+  const clear = compareRates({ clicks: 120, reach: 1000 }, { clicks: 60, reach: 1000 });
+  assert.equal(clear.status, "significant");
+  const thin = compareRates({ clicks: 5, reach: 120 }, { clicks: 20, reach: 129 });
+  assert.equal(thin.status, "not_enough_evidence", "a large observed gap below the guardrail is not a result");
+  assert.equal(thin.significant, false);
+  assert.ok(thin.deltaPp < -10, "the observed difference is still reported");
+  assert.equal(thin.minEvents, MIN_EVENTS.clicks);
+  assert.equal(compareRates({ clicks: 52, reach: 1000 }, { clicks: 50, reach: 1000 }).status, "no_clear_difference");
 });
 
-test("analytics: baseline produces efficiency and volume leaders and data-backed insights", async () => {
+test("analytics: baseline produces leaders on the primary signal and at most three learnings and gaps, all traceable", async () => {
   const session = await baselineSession();
   const a = computeAnalytics({ profile: ramp, experiments: session.experiments, objectiveId: "traffic" });
   const fl = a.byAudience.finance_leader;
   assert.equal(fl.channels.length, 3);
-  assert.ok(fl.channelLeaders.efficiency && fl.channelLeaders.volume);
-  assert.equal(fl.channelLeaders.efficiency.ctr, Math.max(...fl.channels.map((c) => c.ctr)));
-  assert.equal(fl.channelLeaders.volume.expectedClicksPerExperiment, Math.max(...fl.channels.map((c) => c.expectedClicksPerExperiment)));
+  assert.equal(fl.channelLeaders.efficiency.rate, Math.max(...fl.channels.map((c) => c.rate)));
+  assert.equal(fl.channelLeaders.volume.expectedPerExperiment, Math.max(...fl.channels.map((c) => c.expectedPerExperiment)));
   assert.deepEqual(fl.angles.untested.sort(), ["policy_compliance", "real_time_visibility", "time_savings"]);
-  for (const insight of [...a.insights.audience, ...a.insights.channel]) {
-    assert.ok(insight.metricIds.length && insight.metricIds.every((id) => a.metrics[id]), insight.text);
+  assert.ok(a.learnings.length <= 3 && a.knowledgeGaps.length <= 3);
+  for (const finding of [...a.learnings, ...a.knowledgeGaps, ...a.observations]) {
+    assert.ok(finding.metricIds.length && finding.metricIds.every((id) => a.metrics[id]), finding.text);
   }
 });
 
+test("analytics: each campaign objective is judged on its own primary signal", async () => {
+  const session = await baselineSession();
+  const traffic = computeAnalytics({ profile: ramp, experiments: session.experiments, objectiveId: "traffic" });
+  const consideration = computeAnalytics({ profile: ramp, experiments: session.experiments, objectiveId: "product_consideration" });
+  assert.equal(traffic.objective.primaryMetric, "clicks");
+  assert.equal(consideration.objective.primaryMetric, "highIntent");
+  for (const [a, field] of [[traffic, "clicks"], [consideration, "highIntent"]]) {
+    for (const aud of a.audiences) {
+      const m = a.metrics[aud.metricId];
+      assert.equal(aud.rate, round4(m[field] / m.reach));
+      assert.equal(aud.events, m[field]);
+    }
+  }
+  assert.notDeepEqual(traffic.audiences.map((x) => x.rate), consideration.audiences.map((x) => x.rate));
+});
+
 // --- Agents and the loop ---
-test("plan: Marketing Agent then Content Agent produce a test-vs-control next experiment", async () => {
+test("plan: the Marketing Agent reasons from strategy and evidence, then the Content Agent executes it", async () => {
   const session = await baselineSession();
   const { calls, fetchImpl } = fakeProviders();
   const llm = llmWith(fetchImpl);
   const { plan } = await planNextExperiment({ profile: ramp, session, llm });
 
   assert.equal(plan.marketing.recommendation.recommendedChannel, "linkedin");
-  assert.ok(plan.marketing.evidence.every((e) => e.metric), "every evidence item resolves to a real metric");
-  assert.ok(plan.marketing.toolCalls.some((c) => c.name === "getCampaignObjective"));
+  assert.equal(plan.marketing.objectiveId, "traffic");
+  assert.ok(plan.marketing.evidence.every((e) => e.metric || e.context), "every evidence item resolves to a metric or a strategy item");
+  assert.ok(plan.marketing.evidence.some((e) => e.context?.label?.startsWith("Finance Leaders")));
+  assert.ok(plan.marketing.toolCalls.some((c) => c.name === "getStrategyContext"));
   assert.equal(plan.content.contentPlan.headline, "Your spend report is already outdated");
 
   const [testCell, control] = plan.spec.cells;
@@ -172,7 +208,7 @@ test("plan in two steps: the recommendation waits for review before any content 
   assert.ok(session.pendingPlan.content.sampleContact.firstName, "a sample contact for the preview");
 });
 
-test("run N+1 executes exactly the planned experiment and feeds analytics", async () => {
+test("run N+1 executes exactly the planned experiment, and its result is stated without overclaiming", async () => {
   const session = await baselineSession();
   await planNextExperiment({ profile: ramp, session, llm: llmWith(fakeProviders().fetchImpl) });
   const spec = session.pendingPlan.spec;
@@ -180,11 +216,29 @@ test("run N+1 executes exactly the planned experiment and feeds analytics", asyn
 
   assert.equal(experiment.experimentNumber, 2);
   assert.equal(experiment.kind, "test_vs_control");
+  assert.equal(experiment.measurementVersion, MEASUREMENT_VERSION);
   assert.equal(session.pendingPlan, null);
-  assert.equal(experiment.marketingAgentRecommendation.hypothesis, marketingDecision.hypothesis);
+  assert.equal(experiment.marketingAgentRecommendation.knowledgeGap, marketingDecision.knowledgeGap);
   assert.equal(experiment.dataSource.performance, "simulated");
-  assert.ok(analytics.latest.testVsControl, "test vs control comparison computed");
+  const result = analytics.latest.testVsControl;
+  assert.ok(["adopt_new_variant", "keep_control", "not_enough_evidence"].includes(result.decision));
+  assert.doesNotMatch(result.summary, /too close to call/i);
+  assert.ok(analytics.learnings.some((l) => l.kind === "latest_test"));
   assert.ok(analytics.byAudience.finance_leader.angles.tested.some((x) => x.id === "real_time_visibility"));
+});
+
+test("learning loop: the next recommendation must build on the last experiment's result", async () => {
+  const session = await baselineSession();
+  await planNextExperiment({ profile: ramp, session, llm: llmWith(fakeProviders().fetchImpl) });
+  await runExperiment({ profile: ramp, companyKey: "ramp", session, spec: session.pendingPlan.spec, hubspot: new HubSpotClient(), seed: 12 });
+  const next = { ...marketingDecision, recommendedChannel: "email" };
+  await assert.rejects(
+    recommendStrategy({ profile: ramp, session, llm: llmWith(fakeProviders({ decision: next }).fetchImpl) }),
+    (err) => err instanceof AgentError && /cite the result of experiment 2/.test(JSON.stringify(err.details)),
+  );
+  const building = { ...next, evidence: [...next.evidence, { ref: "experiment:2:test_vs_control", statement: "The result of the visibility test on LinkedIn." }] };
+  await recommendStrategy({ profile: ramp, session, llm: llmWith(fakeProviders({ decision: building }).fetchImpl) });
+  assert.ok(session.pendingPlan.marketing.evidence.some((e) => e.metric?.id === "experiment:2:test_vs_control"));
 });
 
 test("fallback: Groq rate limit switches to Gemini", async () => {
@@ -212,7 +266,7 @@ test("fallback: Gemini can continue a conversation whose tool calls came from Gr
     { role: "assistant", content: "", tool_calls: [{ id: "fc_groq_1", type: "function", function: { name: "getAudiencePerformance", arguments: "{}" } }] },
     { role: "tool", tool_call_id: "fc_groq_1", name: "getAudiencePerformance", content: "{}" },
   ];
-  const tools = [{ type: "function", function: { name: "getAudiencePerformance", description: "CTR per audience.", parameters: { type: "object", properties: {} } } }];
+  const tools = [{ type: "function", function: { name: "getAudiencePerformance", description: "Results per audience.", parameters: { type: "object", properties: {} } } }];
   const { provider } = await llmWith(fetchImpl).chat({ messages: history, tools });
   assert.equal(provider, "gemini");
   assert.equal(sent[0].body.messages[1].tool_calls[0].extra_content, undefined, "Groq requests are unchanged");
@@ -221,19 +275,11 @@ test("fallback: Gemini can continue a conversation whose tool calls came from Gr
 
 test("validation: evidence not returned by tools is rejected, repaired, and fails loudly if it persists", async () => {
   const repaired = await planNextExperiment({ profile: ramp, session: await baselineSession(), llm: llmWith(fakeProviders({ badEvidenceTimes: 1 }).fetchImpl) });
-  assert.ok(repaired.plan.marketing.evidence.every((e) => e.metric));
+  assert.ok(repaired.plan.marketing.evidence.every((e) => e.metric || e.context));
 
   await assert.rejects(
     planNextExperiment({ profile: ramp, session: await baselineSession(), llm: llmWith(fakeProviders({ badEvidenceTimes: 5 }).fetchImpl) }),
     (err) => err instanceof AgentError,
-  );
-});
-
-test("validation: channel must be available for the audience", async () => {
-  const bad = { ...marketingDecision, priorityAudience: "employee_spender", recommendedChannel: "linkedin" };
-  await assert.rejects(
-    planNextExperiment({ profile: ramp, session: await baselineSession(), llm: llmWith(fakeProviders({ decision: bad }).fetchImpl) }),
-    (err) => err instanceof AgentError && JSON.stringify(err.details).includes("not available"),
   );
 });
 
@@ -244,13 +290,34 @@ async function expectPlanRejected(options, pattern) {
   );
 }
 
+test("validation: a recommendation must cite PMM strategy as well as campaign metrics", async () => {
+  const metricsOnly = { ...marketingDecision, evidence: [
+    { ref: "audience:finance_leader", statement: "Finance Leaders' pooled results." },
+    { ref: "audience_channel:finance_leader:linkedin", statement: "LinkedIn results for Finance Leaders." },
+    { ref: "audience:controller", statement: "Controllers' pooled results." },
+  ] };
+  await expectPlanRejected({ decision: metricsOnly }, /at least one PMM strategy item/);
+});
+
+test("validation: channel must be available for the audience", async () => {
+  await expectPlanRejected({ decision: { ...marketingDecision, priorityAudience: "employee_spender", recommendedChannel: "linkedin" } }, /not available/);
+});
+
 test("validation: a test identical to its control is rejected", async () => {
   // After the baseline, the control for Finance Leaders on LinkedIn is cost control + thought leadership.
   await expectPlanRejected({ decision: { ...marketingDecision, recommendedAngle: "cost_control" } }, /control for finance_leader on linkedin/);
 });
 
+test("validation: a test that changes both the message and the format is rejected, so results stay attributable", async () => {
+  await expectPlanRejected({ decision: { ...marketingDecision, recommendedContentType: "customer_story" } }, /change only the messaging angle or only the content type/);
+});
+
 test("validation: high confidence is rejected before three experiments", async () => {
   await expectPlanRejected({ decision: { ...marketingDecision, confidence: "high" } }, /confidence must be low or medium/);
+});
+
+test("validation: internal ids in the marketer-facing text are rejected", async () => {
+  await expectPlanRejected({ decision: { ...marketingDecision, knowledgeGap: "Whether real_time_visibility beats cost_control for this audience." } }, /internal id/);
 });
 
 test("validation: content with numbers or invented stats is rejected", async () => {
@@ -297,7 +364,8 @@ test("api: session lifecycle, AI-not-configured state, and input checks", async 
     const runBody = await run.json();
     assert.equal(runBody.experimentCount, 1);
     assert.equal(runBody.objective.id, "awareness");
-    assert.ok(runBody.analytics.insights);
+    assert.equal(runBody.objective.metric.id, "qualifiedViews");
+    assert.ok(Array.isArray(runBody.analytics.learnings) && Array.isArray(runBody.analytics.knowledgeGaps));
 
     assert.equal((await call("run", {})).status, 409, "next run needs content");
     assert.equal((await call("content", {})).status, 409, "content needs a recommendation");
@@ -316,7 +384,7 @@ test("api: session lifecycle, AI-not-configured state, and input checks", async 
   }
 });
 
-test("api: recommendation, then content, then the planned run", async () => {
+test("api: recommendation, re-run for another objective on the same evidence, then content and the planned run", async () => {
   const sessionId = "api-test-session-0002";
   const call = (route, body) => handler(new Request(`http://localhost/api/${route}`, {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sessionId, company: "ramp", ...body }),
@@ -326,10 +394,19 @@ test("api: recommendation, then content, then the planned run", async () => {
   globalThis.fetch = fakeProviders().fetchImpl;
   try {
     assert.equal((await call("run", { objective: "traffic" })).status, 200);
-    const strategy = await (await call("strategy", {})).json();
+    const strategy = await (await call("strategy", { objective: "traffic" })).json();
     assert.equal(strategy.pendingPlan.stage, "strategy");
     assert.equal((await call("run", {})).status, 409, "cannot run before the content exists");
-    const content = await call("content", {});
+
+    const again = await (await call("strategy", { objective: "conversion" })).json();
+    assert.equal(again.pendingPlan.marketing.objectiveId, "traffic", "without refresh, the existing recommendation is returned");
+    assert.equal((await call("content", { objective: "conversion" })).status, 422, "content waits for a recommendation made for the current objective");
+    const rerun = await (await call("strategy", { objective: "conversion", refresh: true })).json();
+    assert.equal(rerun.pendingPlan.marketing.objectiveId, "conversion");
+    assert.deepEqual(rerun.pendingPlan.alternatives.map((x) => x.objectiveId), ["traffic"]);
+    assert.equal(rerun.experimentCount, 1, "the same evidence: no new experiment ran");
+
+    const content = await call("content", { objective: "conversion" });
     assert.equal(content.status, 200);
     const body = await content.json();
     assert.equal(body.pendingPlan.spec.cells.length, 2);
@@ -353,6 +430,7 @@ test("page: built-in demo settings match the API, and opening the page makes no 
     assert.deepEqual(settings.objectives, view.objectives);
     assert.equal(settings.defaultObjective, view.objective.id);
     assert.equal(settings.maxExperiments, view.maxExperiments);
+    assert.equal(settings.measurementVersion, view.measurementVersion);
     const { crm, ...labels } = view.labels;
     assert.deepEqual(settings.labels, labels);
   }

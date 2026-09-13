@@ -19,9 +19,9 @@
       "name": "Finance Leader (CFO / VP Finance)",
       "segment": "persona_finance_leader",
       "newsletter": {
-        "subject": "See spend as it happens, not at month-end",
+        "subject": "Cut the spend nobody approved",
         "preview": "Control that scales with the company.",
-        "body": "Hi {first_name},\n\nThe spend that hurts is the spend you only see after the statement closes. This week's post shows how finance leaders move control to the point of purchase, with limits, approvals, and policy built in, so they see every dollar in real time and catch off-policy spend before it adds up.\n\n→ Read the post"
+        "body": "Hi {first_name},\n\nDuplicate software, forgotten subscriptions and off-policy purchases quietly add up as a company grows. This week's post shows how finance leaders cut wasted spend with limits, approvals and policy built into every purchase, so budgets hold without slowing teams down.\n\n→ Read the post"
       },
       "short_name": "Finance Leaders",
       "channels": [
@@ -36,7 +36,10 @@
         "Finding out about spend after it happens",
         "Duplicate software and off-policy purchases",
         "Forecasting with incomplete data"
-      ]
+      ],
+      "icp_fit": "primary",
+      "buying_role": "Economic buyer: owns the budget and signs off on finance software",
+      "jtbd": "When the company is growing faster than its spend controls, I want to see and steer spend before it happens, so I can plan with confidence without slowing teams down."
     },
     {
       "id": "controller",
@@ -60,7 +63,10 @@
         "Chasing missing receipts",
         "Manual transaction coding",
         "Slow reconciliation"
-      ]
+      ],
+      "icp_fit": "secondary",
+      "buying_role": "Champion and day-to-day owner: evaluates the workflow and influences the purchase",
+      "jtbd": "When month-end arrives, I want receipts, coding and reconciliation to already be done, so I can close on time and spend my team's time on analysis."
     },
     {
       "id": "employee_spender",
@@ -83,13 +89,52 @@
         "Unclear spending rules",
         "Slow approvals",
         "Tedious expense reports"
-      ]
+      ],
+      "icp_fit": "user",
+      "buying_role": "End user: shapes adoption but does not buy",
+      "jtbd": "When I need to buy something for work, I want to know what's allowed and get it quickly, so I can do my job without an expense report."
     }
   ],
   "brand_context": {
     "voice": "Sharp, credible and practical. Speaks to finance and operations people as peers. No hype.",
     "positioning": "Finance automation that gives companies control over spend without slowing the business down.",
     "proof_rules": "Never invent customer names, statistics, quotes or product features."
+  },
+  "strategy": {
+    "basis": "Working hypotheses for this demonstration, based on Ramp's public product description. They are not Ramp's internal ICP, research, segmentation or positioning.",
+    "icp": "Finance teams at growing companies whose spend is outpacing manual controls: expense reports, shared cards and a month-end scramble.",
+    "positioning": "Finance automation that gives companies control over spend without slowing the business down.",
+    "value_proposition": "Control spend before it happens, and close the books with far less manual work.",
+    "proof_points": [
+      "Cards with limits and policies set in advance",
+      "Approval workflows built into purchase requests",
+      "Automated receipt capture, transaction coding and reconciliation",
+      "Accounting integrations that keep the books current"
+    ],
+    "competitive_alternative": "The status quo: expense reports, legacy corporate cards, approvals over email and manual reconciliation at month-end.",
+    "message_hypotheses": {
+      "real_time_visibility": {
+        "role": "lead positioning hypothesis for this campaign",
+        "hypothesis": "Buyers value seeing and steering spend as it happens more than cutting costs after the fact."
+      },
+      "cost_control": {
+        "role": "category-standard message",
+        "hypothesis": "Savings matter to budget owners, but most spend tools claim them, so the message may not differentiate."
+      },
+      "time_savings": {
+        "role": "established message",
+        "hypothesis": "Removing manual close work resonates with the people who do it; it has been the default message for Controllers."
+      },
+      "policy_compliance": {
+        "role": "adoption message",
+        "hypothesis": "Clear rules at the point of purchase matter most to employees and to the finance teams enforcing policy."
+      }
+    },
+    "constraints": [
+      "No numeric claims, customer names or quotes: proof comes from product capabilities",
+      "Email reaches only opted-in CRM contacts, so its audience is smaller than social",
+      "Each experiment tests one audience on one channel against its current control, changing only the message or only the format"
+    ]
   },
   "messaging_angles": [
     {

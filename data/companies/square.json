@@ -36,7 +36,10 @@
         "Setup feels complicated",
         "Not sure which tools they need",
         "Limited time and budget"
-      ]
+      ],
+      "icp_fit": "secondary",
+      "buying_role": "Owner-operator: decides alone and quickly, but with a small budget",
+      "jtbd": "When I'm ready to start selling, I want to take payments without a complicated setup, so I can focus on my first customers."
     },
     {
       "id": "growing_business",
@@ -60,7 +63,10 @@
         "Running separate systems per channel",
         "Not knowing what sells",
         "Turning one-time buyers into repeat customers"
-      ]
+      ],
+      "icp_fit": "primary",
+      "buying_role": "Owner-operator with a small team: decides, with input from a manager",
+      "jtbd": "When I start selling in more places, I want one system for payments, catalog and sales, so growth doesn't double my admin."
     },
     {
       "id": "multi_location",
@@ -84,13 +90,52 @@
         "Inventory out of sync across sites",
         "Managing staff schedules",
         "No single view of performance"
-      ]
+      ],
+      "icp_fit": "secondary",
+      "buying_role": "Operator or operations lead: higher value, but evaluates across sites over a longer decision",
+      "jtbd": "When I add a location, I want inventory, staff and reporting to stay in sync, so every site runs like one business."
     }
   ],
   "brand_context": {
     "voice": "Encouraging, plain-spoken and practical. Speaks to owner-operators who wear every hat.",
     "positioning": "Commerce and payments tools that grow with a seller from first sale to multiple locations.",
     "proof_rules": "Never invent customer names, statistics, quotes or product features."
+  },
+  "strategy": {
+    "basis": "Working hypotheses for this demonstration, based on Square's public product description. They are not Square's internal ICP, research, segmentation or positioning.",
+    "icp": "Sellers with steady sales who are expanding how and where they sell, and are outgrowing separate tools for each channel.",
+    "positioning": "Commerce and payments tools that grow with a seller from first sale to multiple locations.",
+    "value_proposition": "One system for payments, selling channels and operations that keeps up as the business grows.",
+    "proof_points": [
+      "Take payments in person and online",
+      "One catalog across selling channels",
+      "Inventory, staff and reporting tools",
+      "Invoices and an online store"
+    ],
+    "competitive_alternative": "Separate tools for each channel: a standalone card reader, a separate online store and spreadsheets for inventory.",
+    "message_hypotheses": {
+      "sell_everywhere": {
+        "role": "lead positioning hypothesis for this campaign",
+        "hypothesis": "Sellers expanding their channels value running everything from one place more than any single feature."
+      },
+      "ease_of_setup": {
+        "role": "established message",
+        "hypothesis": "A simple start matters most to new sellers, but it undersells the platform to growing businesses."
+      },
+      "grow_revenue": {
+        "role": "category-standard message",
+        "hypothesis": "Every commerce tool promises growth, so it may not differentiate without proof."
+      },
+      "run_operations": {
+        "role": "expansion message",
+        "hypothesis": "Keeping sites in sync matters most once a seller runs more than one location."
+      }
+    },
+    "constraints": [
+      "No numeric claims, customer names or quotes: proof comes from product capabilities",
+      "Email reaches only opted-in CRM contacts, so its audience is smaller than social",
+      "Each experiment tests one audience on one channel against its current control, changing only the message or only the format"
+    ]
   },
   "messaging_angles": [
     {

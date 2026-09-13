@@ -6,6 +6,18 @@
     "positioning": "The one-line positioning.",
     "proof_rules": "Never invent customer names, statistics, quotes or product features."
   },
+  "strategy": {
+    "basis": "Where these strategy inputs come from (for example: working hypotheses from public information, or validated research).",
+    "icp": "The ideal customer profile in one sentence.",
+    "positioning": "The one-line positioning.",
+    "value_proposition": "The core value proposition.",
+    "proof_points": ["Product capability that proves the value proposition"],
+    "competitive_alternative": "What buyers do today instead (status quo or competitor category).",
+    "message_hypotheses": {
+      "angle_id": { "role": "lead positioning hypothesis", "hypothesis": "What we believe this message does for buyers." }
+    },
+    "constraints": ["A rule every experiment and piece of content must respect"]
+  },
   "messaging_angles": [
     { "id": "angle_id", "label": "Angle label", "description": "What this message emphasizes." }
   ],
@@ -33,6 +45,9 @@
       "default_content_type": "how_to_guide",
       "profile_summary": "Who this audience is.",
       "pain_points": ["Pain point"],
+      "icp_fit": "primary | secondary | user",
+      "buying_role": "Economic buyer, champion, influencer or end user, and what that means here",
+      "jtbd": "When [situation], I want [motivation], so I can [outcome].",
       "newsletter": {
         "subject": "Baseline subject line",
         "preview": "Baseline preview text",
