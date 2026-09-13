@@ -110,7 +110,7 @@ signalloop/
 |---|---|
 | `GROQ_API_KEY` | Primary AI provider (mark as Sensitive) |
 | `GEMINI_API_KEY` | Fallback AI provider when Groq fails or is rate limited (Sensitive) |
-| `GROQ_MODEL`, `GEMINI_MODEL` | Optional model overrides (defaults `openai/gpt-oss-120b`, `gemini-3.1-flash-lite`) |
+| — | Models are set in code, in `lib/llm.mjs` (`openai/gpt-oss-120b` on Groq, `gemini-3.1-flash-lite` on Gemini); no variable is needed |
 | `HUBSPOT_ACCESS_TOKEN` | HubSpot service key (Sensitive) with scopes `crm.objects.contacts.read`, `crm.objects.contacts.write`, `crm.lists.read`, `crm.lists.write`, `crm.schemas.contacts.read`, `crm.schemas.contacts.write` |
 | `HUBSPOT_MODE` | `live` to write to HubSpot; anything else uses mock mode |
 | `KV_REST_API_URL`, `KV_REST_API_TOKEN` | Upstash Redis for experiment history and usage limits. Added automatically when Upstash Redis is connected from the Vercel Marketplace; `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` also work |
