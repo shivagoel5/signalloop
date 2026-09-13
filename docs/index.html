@@ -711,6 +711,14 @@
     busy=false;syncControls();
   }
 
+  // Buttons at the bottom of the results take the visitor back up to the controls, where progress and errors show, then act.
+  function actFromResults(){
+    var smooth=!matchMedia('(prefers-reduced-motion: reduce)').matches;
+    scrollTo({top:demo.getBoundingClientRect().top+scrollY-80,behavior:smooth?'smooth':'auto'});
+    act();
+  }
+  function resultsButton(parent,label){var btn=el('button','btn run',label);btn.type='button';btn.style.marginTop='12px';btn.addEventListener('click',actFromResults);parent.appendChild(btn)}
+
   function render(){
     out.textContent='';renderLabels();
     if(state.objective)objSel.value=state.objective.id;
@@ -720,7 +728,7 @@
     }
     renderHistory();renderAnalyze();renderAudienceInsight();renderChannelInsight();
     if(state.pendingPlan){renderMarketing(state.pendingPlan);renderContent(state.pendingPlan);renderNext(state.pendingPlan)}
-    else{var b=block('Marketing Agent','What should we do next?');b.appendChild(el('p','dsub','Results are in. Ask the agents what to test next; they read the computed metrics above and must cite them.'))}
+    else{var b=block('Marketing Agent','What should we do next?');b.appendChild(el('p','dsub','Results are in. Ask the agents what to test next; they read the computed metrics above and must cite them.'));resultsButton(b,'Ask the agents what to test next')}
   }
   function renderLabels(){
     labelsEl.textContent='';
@@ -806,7 +814,7 @@
     b.appendChild(table(['Role','Audience','Channel','Angle','Content type','Headline','Audience split'],plan.spec.cells.map(function(c){
       return {cells:[c.role,aud(c.audienceId),CH[c.channel],angle(c.messagingAngle),ctype(c.contentType),c.variant.headline,Math.round(c.share*100)+'%']}}),6,[3,4,6]));
     b.appendChild(el('div','dsum','Hypothesis: '+plan.marketing.recommendation.hypothesis));
-    var btn=el('button','btn run','Run next experiment');btn.type='button';btn.style.marginTop='12px';btn.addEventListener('click',act);b.appendChild(btn);
+    resultsButton(b,'Run next experiment');
   }
 
   async function load(){

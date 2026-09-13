@@ -171,6 +171,29 @@ test("fallback: Groq rate limit switches to Gemini", async () => {
   assert.ok(plan.llmTrace.some((t) => t.provider === "groq" && t.status === 429));
 });
 
+test("fallback: Gemini can continue a conversation whose tool calls came from Groq", async () => {
+  const sent = [];
+  const fetchImpl = async (url, init) => {
+    const body = JSON.parse(init.body);
+    sent.push({ provider: url.includes("groq") ? "groq" : "gemini", body });
+    if (url.includes("groq")) return new Response('{"error":{"message":"rate limited"}}', { status: 429 });
+    // Mirrors Gemini 3: tool calls in the history must carry a thought signature.
+    const unsigned = body.messages.some((m) => m.tool_calls?.some((c) => !c.extra_content?.google?.thought_signature));
+    if (unsigned) return new Response('{"error":{"message":"Function call is missing a thought_signature"}}', { status: 400 });
+    return new Response(JSON.stringify({ choices: [{ message: { role: "assistant", content: "I have what I need." } }] }), { status: 200 });
+  };
+  const history = [
+    { role: "user", content: "Check audience performance." },
+    { role: "assistant", content: "", tool_calls: [{ id: "fc_groq_1", type: "function", function: { name: "getAudiencePerformance", arguments: "{}" } }] },
+    { role: "tool", tool_call_id: "fc_groq_1", name: "getAudiencePerformance", content: "{}" },
+  ];
+  const tools = [{ type: "function", function: { name: "getAudiencePerformance", description: "CTR per audience.", parameters: { type: "object", properties: {} } } }];
+  const { provider } = await llmWith(fetchImpl).chat({ messages: history, tools });
+  assert.equal(provider, "gemini");
+  assert.equal(sent[0].body.messages[1].tool_calls[0].extra_content, undefined, "Groq requests are unchanged");
+  assert.equal(history[1].tool_calls[0].extra_content, undefined, "the stored history is not mutated");
+});
+
 test("validation: evidence not returned by tools is rejected, repaired, and fails loudly if it persists", async () => {
   const repaired = await planNextExperiment({ profile: ramp, session: await baselineSession(), llm: llmWith(fakeProviders({ badEvidenceTimes: 1 }).fetchImpl) });
   assert.ok(repaired.plan.marketing.evidence.every((e) => e.metric));

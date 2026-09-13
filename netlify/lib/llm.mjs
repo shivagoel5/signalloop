@@ -76,7 +76,7 @@ export class LLMClient {
   }
 
   async #request(p, { messages, tools, jsonSchema, maxTokens }) {
-    const body = { model: p.model, messages, max_tokens: maxTokens, temperature: 0.3 };
+    const body = { model: p.model, messages: p.name === "gemini" ? withThoughtSignatures(messages) : messages, max_tokens: maxTokens, temperature: 0.3 };
     if (tools?.length) {
       body.tools = tools;
       body.tool_choice = "auto";
@@ -106,6 +106,23 @@ export class LLMClient {
     if (!message) throw new Error(`${p.name} returned no message`);
     return { message, usage: data.usage };
   }
+}
+
+// Gemini 3 models reject earlier tool calls that carry no thought signature. That happens when Groq
+// made the calls and then failed mid-agent, so Gemini takes over the conversation. Gemini accepts
+// this placeholder signature for tool calls it did not generate; its own calls keep their signature.
+const PLACEHOLDER_THOUGHT_SIGNATURE = "skip_thought_signature_validator";
+
+export function withThoughtSignatures(messages) {
+  return messages.map((m) => {
+    if (m.role !== "assistant" || !m.tool_calls?.length) return m;
+    return {
+      ...m,
+      tool_calls: m.tool_calls.map((c) => (c.extra_content?.google?.thought_signature
+        ? c
+        : { ...c, extra_content: { ...c.extra_content, google: { ...c.extra_content?.google, thought_signature: PLACEHOLDER_THOUGHT_SIGNATURE } } })),
+    };
+  });
 }
 
 // Parse a JSON object from model text, tolerating code fences.
