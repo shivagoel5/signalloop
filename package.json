@@ -2,17 +2,14 @@
   "name": "signalloop",
   "private": true,
   "type": "module",
-  "description": "SignalLoop: AI-assisted marketing experimentation. Deterministic analytics, a Marketing Agent and a Content Agent on Netlify Functions.",
+  "description": "SignalLoop: a product marketing prototype that recommends the next audience, channel and message to test. Deterministic analytics, a Marketing Agent and a Content Agent, deployed on Vercel.",
   "scripts": {
-    "dev": "node --env-file-if-exists=.env netlify/dev-server.mjs",
-    "check:ai": "node --env-file-if-exists=.env netlify/scripts/check-providers.mjs",
-    "try:loop": "node --env-file-if-exists=.env netlify/scripts/try-loop.mjs",
-    "test": "node --test netlify/test/*.test.mjs"
-  },
-  "dependencies": {
-    "@netlify/blobs": "^11.0.3"
+    "dev": "node --env-file-if-exists=.env scripts/dev-server.mjs",
+    "check:ai": "node --env-file-if-exists=.env scripts/check-providers.mjs",
+    "try:loop": "node --env-file-if-exists=.env scripts/try-loop.mjs",
+    "test": "node --test test/*.test.mjs"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22.9"
   }
 }

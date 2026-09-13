@@ -48,10 +48,10 @@ Language models are unreliable at arithmetic, can't be audited, and can "find" p
 |---|---|
 | HubSpot CRM (fictional sample contacts, `persona` property, audience lists) | **LIVE** when `HUBSPOT_MODE=live` and `HUBSPOT_ACCESS_TOKEN` are set; mock otherwise |
 | Campaign delivery | **SIMULATED**: no emails or posts are sent |
-| Performance data (reach, clicks) | **SIMULATED** by `netlify/lib/sim-truth.mjs`, which the agents never see |
+| Performance data (reach, clicks) | **SIMULATED** by `lib/sim-truth.mjs`, which the agents never see |
 | Analytics | **CODE**: deterministic |
 | Marketing recommendation, content plan and asset | **AI** (Groq, with Gemini as fallback) |
-| Experiment history | **STORED** per visitor session in Netlify Blobs |
+| Experiment history | **STORED** per visitor session in Upstash Redis (expires after 30 days without use) |
 
 No performance number in this project comes from a real campaign.
 
@@ -79,39 +79,49 @@ No performance number in this project comes from a real campaign.
 
 ```text
 signalloop/
-├── docs/index.html            # Case study and live demo page (published by Netlify)
-├── netlify/
-│   ├── functions/api.mjs      # API: session, run, strategy, content, reset
-│   ├── lib/
-│   │   ├── analytics.mjs      # Deterministic analytics engine
-│   │   ├── simulator.mjs      # Simulated audience response
-│   │   ├── sim-truth.mjs      # Hidden simulation model (never shown to agents)
-│   │   ├── loop.mjs           # Experiment loop: distribute, measure, plan
-│   │   ├── hubspot.mjs        # HubSpot CRM client (live or mock)
-│   │   ├── llm.mjs            # Groq and Gemini adapter with fallback
-│   │   ├── store.mjs          # Netlify Blobs storage
-│   │   └── agents/            # Marketing Agent, Content Agent, their tools and validation
-│   ├── test/                  # node:test suite
-│   └── dev-server.mjs         # Local preview server
+├── docs/                      # Case study page and live demo (static, served by Vercel)
+│   ├── index.html
+│   ├── demo.js
+│   └── img/
+├── api/                       # Vercel Functions: session, run, strategy, content, reset
+├── lib/
+│   ├── api.mjs                # Shared API handler: validation, rate limit, daily caps
+│   ├── analytics.mjs          # Deterministic analytics engine
+│   ├── simulator.mjs          # Simulated audience response
+│   ├── sim-truth.mjs          # Hidden simulation model (never shown to agents)
+│   ├── loop.mjs               # Experiment loop: distribute, measure, recommend, create
+│   ├── hubspot.mjs            # HubSpot CRM client (live or mock)
+│   ├── llm.mjs                # Groq and Gemini adapter with fallback
+│   ├── store.mjs              # Upstash Redis storage (in memory locally)
+│   └── agents/                # Marketing Agent, Content Agent, their tools and validation
 ├── data/
 │   ├── companies/             # Ramp and Square profiles, plus _template.json
 │   └── contacts.json          # 20 fictional sample contacts (@example.com)
+├── scripts/                   # Local preview server, provider check, terminal loop
+├── test/                      # node:test suite
 ├── assets/preview-flow.png    # Architecture diagram
-├── netlify.toml
+├── vercel.json
 └── package.json
 ```
 
-## Configuration (Netlify environment variables)
+## Configuration (Vercel environment variables)
 
 | Variable | Purpose |
 |---|---|
-| `GROQ_API_KEY` | Primary AI provider (secret) |
-| `GEMINI_API_KEY` | Fallback AI provider when Groq fails or is rate limited (secret) |
+| `GROQ_API_KEY` | Primary AI provider (mark as Sensitive) |
+| `GEMINI_API_KEY` | Fallback AI provider when Groq fails or is rate limited (Sensitive) |
 | `GROQ_MODEL`, `GEMINI_MODEL` | Optional model overrides (defaults `openai/gpt-oss-120b`, `gemini-3.1-flash-lite`) |
-| `HUBSPOT_ACCESS_TOKEN` | HubSpot service key (secret) with scopes `crm.objects.contacts.read`, `crm.objects.contacts.write`, `crm.lists.read`, `crm.lists.write`, `crm.schemas.contacts.read`, `crm.schemas.contacts.write` |
+| `HUBSPOT_ACCESS_TOKEN` | HubSpot service key (Sensitive) with scopes `crm.objects.contacts.read`, `crm.objects.contacts.write`, `crm.lists.read`, `crm.lists.write`, `crm.schemas.contacts.read`, `crm.schemas.contacts.write` |
 | `HUBSPOT_MODE` | `live` to write to HubSpot; anything else uses mock mode |
+| `KV_REST_API_URL`, `KV_REST_API_TOKEN` | Upstash Redis for experiment history and usage limits. Added automatically when Upstash Redis is connected from the Vercel Marketplace; `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` also work |
 
-Without an AI key, the demo still runs baselines and analytics, and clearly reports that the agents are not connected.
+Without an AI key, the demo still runs baselines and analytics, and clearly reports that the agents are not connected. On Vercel the API needs Upstash Redis; locally, without it, history is kept in memory.
+
+## Deploy on Vercel
+
+1. Import this GitHub repository as a new Vercel project (Framework Preset: Other). `vercel.json` serves `docs/` and deploys the functions in `api/`.
+2. In the project's Storage tab, add **Upstash Redis** from the Marketplace and connect it to the project.
+3. Add the environment variables above, then redeploy.
 
 ## Run locally (Node 22.9+)
 

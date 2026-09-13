@@ -2,7 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-import handler from "../functions/api.mjs";
+import handler from "../lib/api.mjs";
+import { openStore } from "../lib/store.mjs";
 import { PROFILES } from "../lib/company.mjs";
 import { HubSpotClient } from "../lib/hubspot.mjs";
 import { LLMClient } from "../lib/llm.mjs";
@@ -340,7 +341,7 @@ test("api: recommendation, then content, then the planned run", async () => {
 });
 
 test("page: built-in demo settings match the API, and opening the page makes no API request", async () => {
-  const html = readFileSync(new URL("../../docs/index.html", import.meta.url), "utf8");
+  const html = readFileSync(new URL("../docs/index.html", import.meta.url), "utf8");
   const match = html.match(/<script type="application\/json" id="demo-static">([\s\S]*?)<\/script>/);
   assert.ok(match, "docs/index.html embeds the demo settings");
   const settings = JSON.parse(match[1]);
@@ -357,7 +358,59 @@ test("page: built-in demo settings match the API, and opening the page makes no 
   }
   // The only session read in the demo script is the refresh used when the browser's saved copy is out of date.
   assert.match(html, /<script src="demo.js"><\/script>/);
-  const script = readFileSync(new URL("../../docs/demo.js", import.meta.url), "utf8");
+  const script = readFileSync(new URL("../docs/demo.js", import.meta.url), "utf8");
   assert.equal(script.match(/api\('GET','session'\)/g)?.length, 1);
   assert.match(script, /async function refreshFromServer\(\)\{\s*var res=await api\('GET','session'\)/);
+});
+
+// --- Vercel deployment ---
+test("store: Upstash REST commands for history, counters and expiry", async () => {
+  const data = new Map();
+  const calls = [];
+  const fetchImpl = async (url, init) => {
+    assert.equal(url, "https://example-redis.upstash.io");
+    assert.equal(init.headers.Authorization, "Bearer test-token");
+    const [command, key, value] = JSON.parse(init.body);
+    calls.push(command);
+    let result = null;
+    if (command === "GET") result = data.has(key) ? data.get(key) : null;
+    if (command === "SET") { data.set(key, value); result = "OK"; }
+    if (command === "INCR") { const n = Number(data.get(key) ?? 0) + 1; data.set(key, String(n)); result = n; }
+    if (command === "EXPIRE") result = 1;
+    return new Response(JSON.stringify({ result }), { status: 200 });
+  };
+  const store = openStore({ env: { KV_REST_API_URL: "https://example-redis.upstash.io/", KV_REST_API_TOKEN: "test-token" }, fetchImpl });
+  assert.equal(await store.get("sessions/missing/ramp", { type: "json" }), null);
+  await store.setJSON("sessions/a/ramp", { experiments: [1] }, { ttlSeconds: 60 });
+  assert.deepEqual(await store.get("sessions/a/ramp", { type: "json" }), { experiments: [1] });
+  assert.equal(await store.incr("usage/ai/today", 3600), 1);
+  assert.equal(await store.incr("usage/ai/today", 3600), 2);
+  assert.deepEqual(calls, ["GET", "SET", "GET", "INCR", "EXPIRE", "INCR"], "the expiry is set once, when a counter is created");
+  assert.throws(() => openStore({ env: { VERCEL: "1" } }), /Storage is not configured/);
+});
+
+test("vercel routes: each api/ file exposes its method, and a visitor is rate limited per IP", async () => {
+  const routes = {
+    session: await import("../api/session.mjs"),
+    run: await import("../api/run.mjs"),
+    strategy: await import("../api/strategy.mjs"),
+    content: await import("../api/content.mjs"),
+    reset: await import("../api/reset.mjs"),
+  };
+  assert.equal(typeof routes.session.GET, "function");
+  for (const name of ["run", "strategy", "content", "reset"]) assert.equal(typeof routes[name].POST, "function", `${name} handles POST`);
+
+  const minute = () => Math.floor(Date.now() / 60000);
+  const started = minute();
+  const statuses = [];
+  for (let i = 0; i < 31; i++) {
+    const req = new Request("https://signalloop.example/api/session?sessionId=rate-limit-check-0001&company=ramp", {
+      headers: { "x-forwarded-for": `203.0.113.7, 10.0.0.${i}` },
+    });
+    statuses.push((await routes.session.GET(req)).status);
+  }
+  if (minute() === started) {
+    assert.equal(statuses.filter((s) => s === 200).length, 30);
+    assert.equal(statuses.at(-1), 429);
+  }
 });

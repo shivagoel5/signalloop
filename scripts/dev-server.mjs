@@ -1,9 +1,9 @@
-// Local preview without the Netlify CLI: serves docs/ and routes /api/run to the function.
-// Run history is kept in memory for as long as this process runs.
+// Local preview: serves docs/ and sends /api/* requests to the same handler the Vercel functions use.
+// Without Upstash credentials, run history is kept in memory for as long as this process runs.
 
 import http from "node:http";
 import { readFile } from "node:fs/promises";
-import handler from "./functions/api.mjs";
+import handler from "../lib/api.mjs";
 
 const root = new URL("../docs/", import.meta.url);
 const port = Number(process.env.PORT) || 8888;

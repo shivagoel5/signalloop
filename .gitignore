@@ -1,10 +1,11 @@
-# Secrets (HubSpot key and other tokens belong in Netlify environment variables)
+# Secrets (HubSpot key and other tokens belong in Vercel environment variables)
 .env
 .env.*
 !.env.example
 
-# Node / Netlify
+# Node / Vercel
 node_modules/
+.vercel/
 .netlify/
 
 # Local editor and agent tooling

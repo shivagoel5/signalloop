@@ -390,7 +390,7 @@
       note('The copy of this demo saved in your browser was out of date, so it has been refreshed. Continue from here.');
     }else if(res.network||!res.ok){
       progress.remove();syncControls();
-      var err=el('div','derr',res.network?'Could not reach the demo API. The live demo runs on signalloop-shiva.netlify.app.':(res.body.error||'Something went wrong.'));
+      var err=el('div','derr',res.network?'Could not reach the demo API. Please check your connection and try again.':(res.body.error||'Something went wrong.'));
       if(res.body&&res.body.attempts&&res.body.attempts.length){
         err.appendChild(el('div','dsub','Tried: '+res.body.attempts.map(function(a){return a.provider?(a.provider+(a.status?' ('+a.status+')':'')):(a.errors||[]).join('; ')}).join(', ')));
       }
