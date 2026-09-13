@@ -2,10 +2,10 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="A product marketing case study by Shiva Goel. SignalLoop is a working prototype that uses campaign evidence to recommend which audience, channel and message to test next, with code for the analysis, AI for interpretation and a marketer approving each step. Performance data is simulated; the prototype is being reviewed with product marketers.">
-  <meta property="og:title" content="SignalLoop: which audience, channel and message should a marketer test next?">
+  <meta property="og:title" content="SignalLoop: decide what to test next, before generating more content">
   <meta property="og:description" content="Product marketing case study by Shiva Goel: a hypothesis, one decision end to end, the trade-offs behind the design and what still needs validating. Performance data is simulated.">
   <meta property="og:type" content="article">
-<title>SignalLoop: deciding what to test next · Shiva Goel</title>
+<title>SignalLoop: decide what to test next · Shiva Goel</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -372,213 +372,119 @@
   .mini-h{font-family:'Schibsted Grotesk',Arial,sans-serif;font-size:14px;margin:4px 0 0}
   @media(max-width:680px){.chain li{grid-template-columns:1fr}.shot-grid,.dgrid,.qlist{grid-template-columns:1fr}
     .question{font-size:21px}.status-more{margin-left:0}.stc + .stc::before{display:none}}
+
+  /* readability pass: problem questions, three-part model, six-step walkthrough, status and production grids */
+  .asks{list-style:none;margin:6px 0 18px;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+  .asks li{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:15px;font-weight:600;color:var(--ink)}
+  .model{display:grid;grid-template-columns:1fr 34px 1fr 34px 1fr;align-items:stretch;margin-top:22px}
+  .mstep{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+  .mstep.ai{background:#F4F6FE;border-color:#C9CEF3}
+  .mstep h3{font-family:'Newsreader',Georgia,serif;font-size:21px;font-weight:500;line-height:1.2;margin:10px 0 6px}
+  .mstep p{font-size:14px;color:#4B5169;margin:0}
+  .marrow{display:flex;align-items:center;justify-content:center;color:var(--indigo);font-size:22px;font-weight:700}
+  .mhuman{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin-top:12px;background:var(--ink);color:#DDE1F5;border-radius:14px;padding:13px 18px;font-size:15px}
+  .mhuman .st{background:#fff;color:var(--ink)}
+  .mloop{font-size:14px;color:var(--mut);margin-top:10px}
+  .chain li{grid-template-columns:170px 1fr}
+  .chain li::before{content:counter(chain,decimal-leading-zero);width:28px;height:28px;left:-15px;font-size:11px}
+  .chain-q{display:block;font-size:12.5px;font-weight:400;color:var(--mut);margin-top:2px}
+  .disclaim{background:#FFF8E6;border:1px solid #F1DFB2;border-radius:10px;padding:10px 14px;font-size:14.5px;color:#5A4A1F;max-width:74ch}
+  .sgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px}
+  .scard{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .scard.sim{border-color:#F3C6D5;background:#FFF8FA}
+  .scard .st{font-size:11.5px;padding:3px 10px}
+  .scard b{display:block;margin-top:8px;font-size:15px}
+  .scard span{font-size:13.5px;color:#4B5169}
+  .pgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:20px}
+  .pitem{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .pitem b{display:block;font-size:15px;margin-bottom:4px}
+  .pitem span{font-size:13.5px;color:#4B5169}
+  .principles{margin:12px 0 0;padding-left:22px;font-size:17px;color:var(--ink)}
+  .principles li{margin:6px 0}
+  .dcard h3{margin-top:0}
+  @media(max-width:900px){.sgrid,.pgrid{grid-template-columns:1fr 1fr}}
+  @media(max-width:680px){.model{grid-template-columns:1fr}.marrow{height:26px;transform:rotate(90deg)}
+    .sgrid,.pgrid{grid-template-columns:1fr}.chain li{grid-template-columns:1fr}.mstep h3{font-size:19px}}
 </style></head>
 <body>
 <nav class="nav" aria-label="Case study sections"><div class="wrap"><div class="row">
   <span class="brand">SignalLoop</span>
-  <a href="#problem">Problem</a><a href="#walkthrough">Walkthrough</a><a href="#decisions">Decisions</a><a href="#validate">Validate</a><a href="#live">Live demo</a><a href="#real">Real vs simulated</a><a href="#built">How it's built</a>
+  <a href="#problem">Problem</a><a href="#model">Model</a><a href="#walkthrough">Walkthrough</a><a href="#decisions">Decisions</a><a href="#scenarios">Scenarios</a><a href="#live">Live demo</a><a href="#real">Real vs simulated</a>
   <span class="me">Shiva Goel</span>
 </div></div></nav>
 <div class="wrap">
 
   <header class="hero">
-    <div class="eyebrow">Product marketing case study · Shiva Goel</div>
-    <h1>Which audience, channel and message should a marketer test next?</h1>
-    <p class="lede">SignalLoop is a working prototype that turns campaign evidence into a recommendation for the next
-    experiment: who to reach, where, with which message, and why. I built it to test a hypothesis: as AI makes
-    content cheap to produce, the harder marketing problem is deciding what to create next.</p>
+    <div class="eyebrow">SignalLoop · a product marketing case study by Shiva Goel</div>
+    <h1>Decide what to test next, before generating more content.</h1>
+    <p class="lede">SignalLoop analyzes campaign evidence to recommend the next audience × channel × message
+    experiment, then generates the content needed to test it.</p>
     <div class="ctas">
-      <a class="btn primary" href="#walkthrough">See one decision, end to end</a>
-      <a class="btn ghost" href="#live">Try the live demo</a>
+      <a class="btn primary" href="#live">Try the live demo</a>
+      <a class="btn ghost" href="#model">See how it works</a>
     </div>
     <div class="meta">
-      <span><b>My role</b>Product strategy · PMM workflow design · experimentation logic · AI system design · implementation (AI-assisted) · case study</span>
-      <span><b>Status</b>Working prototype · simulated campaign data · seeking PMM feedback</span>
+      <span><b>My role</b>Product strategy · PMM workflow · experimentation logic · AI system design · implementation (AI-assisted)</span>
+      <span><b>Status</b>Working prototype · HubSpot CRM live · campaign performance simulated</span>
     </div>
   </header>
 
-  <section id="glance">
-    <div class="kicker">In 30 seconds</div>
-    <div class="ggrid">
-      <div class="gitem"><div class="glabel">The decision</div>
-        <p>Which <b>audience × channel × message</b> deserves the next experiment, given what past campaigns showed.</p></div>
-      <div class="gitem"><div class="glabel">What SignalLoop does</div>
-        <p>Code measures results. One AI agent <b>recommends the next test and cites its evidence</b>; another writes the variant. A marketer approves each step, and every test runs against the best version so far.</p></div>
-      <div class="gitem"><div class="glabel">What it demonstrates</div>
-        <p>Where <b>PMM judgment, deterministic analysis and AI</b> each belong in a marketing decision, and how to constrain AI so its recommendations can be checked.</p></div>
-    </div>
-    <div class="status" aria-label="What is real and what is simulated">
-      <span class="status-t">What's real</span>
-      <span class="stc"><span>HubSpot CRM</span><em class="st st-live">LIVE</em></span>
-      <span class="stc"><span>Campaign delivery</span><em class="st st-sim">SIMULATED</em></span>
-      <span class="stc"><span>Performance data</span><em class="st st-sim">SIMULATED</em></span>
-      <span class="stc"><span>Analytics</span><em class="st st-code">CODE</em></span>
-      <span class="stc"><span>Recommendation</span><em class="st st-ai">AI</em></span>
-      <span class="stc"><span>Content</span><em class="st st-ai">AI</em></span>
-      <a class="status-more" href="#real">Details</a>
-    </div>
-  </section>
-
   <section id="problem">
-    <div class="kicker">The problem I wanted to investigate</div>
-    <h2>If content is cheap to make, is deciding what to make the real bottleneck?</h2>
-    <p>Generative AI lowers the cost of producing another email, post or landing page. My hypothesis is that this moves
-    the hard part of product marketing upstream, to choosing which experiment deserves the next asset.</p>
-    <p class="question">Which audience × channel × message combination deserves the next experiment?</p>
-    <p>Answering that well means holding three questions at once:</p>
-    <div class="grid3">
-      <div class="tile"><h3>Who is responding?</h3>
-        <p>Compare audiences across every channel they use, not one channel at a time.</p></div>
-      <div class="tile"><h3>Is the difference real?</h3>
-        <p>Separate a gap worth acting on from noise in a small sample.</p></div>
-      <div class="tile"><h3>What hasn't been tried?</h3>
-        <p>Build on what was already tested instead of starting each campaign from scratch.</p></div>
-    </div>
-    <p class="aside">This is a hypothesis, not a validated finding. See <a href="#validate">what I want to validate</a>.</p>
+    <div class="kicker">The problem</div>
+    <h2>AI made content easy. It didn't make the next marketing decision obvious.</h2>
+    <p>Campaign metrics show what happened. They don't answer the questions that shape the next campaign:</p>
+    <ul class="asks"><li>Who should we target next?</li><li>Which channel deserves another test?</li><li>Which message should change?</li></ul>
+    <p>SignalLoop explores whether AI can help make that call from measured evidence, without letting the model invent
+    the analytics underneath. It's a hypothesis I'm testing with product marketers, not a validated finding.</p>
   </section>
 
-  <section id="how">
-    <div class="kicker">How SignalLoop makes the decision</div>
-    <h2>Each part of the decision has a clear owner.</h2>
-    <p>The marketer sets the rules and approves. Code measures. AI interprets the evidence and writes the variant.</p>
-    <div class="split">
-      <div class="col human">
-        <h3>The marketer</h3>
-        <ul><li>Defines segments, messaging angles and brand rules</li><li>Sets the campaign objective</li>
-        <li>Approves the recommendation before content is written</li><li>Approves the content before the test runs</li></ul>
-      </div>
-      <div class="col machine">
-        <h3>The system</h3>
-        <ul><li>Measures results and checks significance (code)</li><li>Recommends the next test, citing evidence (Marketing Agent)</li>
-        <li>Plans and writes the variant (Content Agent)</li><li>Tests it against the best version so far and records the result</li></ul>
-      </div>
+  <section id="model">
+    <div class="kicker">The model</div>
+    <h2>One decision, split three ways.</h2>
+    <div class="model">
+      <div class="mstep"><em class="st st-code">CODE</em><h3>What happened?</h3><p>Measures reach, clicks and CTR, and checks whether a difference is real.</p></div>
+      <div class="marrow" aria-hidden="true">→</div>
+      <div class="mstep ai"><em class="st st-ai">MARKETING AGENT</em><h3>What should we test next?</h3><p>Picks the audience, channel and message, citing the evidence.</p></div>
+      <div class="marrow" aria-hidden="true">→</div>
+      <div class="mstep ai"><em class="st st-ai">CONTENT AGENT</em><h3>What should we create to test it?</h3><p>Writes the variant within brand and channel rules.</p></div>
     </div>
-    <div class="fig"><svg style="width:100%;height:auto;display:block" viewBox="0 0 1280 560" xmlns="http://www.w3.org/2000/svg" font-family="'Schibsted Grotesk','Helvetica Neue',Arial,sans-serif" role="img" aria-labelledby="flowTitle flowDesc">
-  <title id="flowTitle">How SignalLoop runs an experiment loop</title>
-  <desc id="flowDesc">Company inputs feed a measurement engine written in code. The Marketing Agent reads the measurements and chooses the next strategy. The Content Agent turns it into a plan and an asset. The experiment runs through HubSpot, which is live, with a simulated audience response, and the results return to measurement for the next experiment.</desc>
-  <defs>
-    <marker id="flowArrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="10" markerHeight="10" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#3F4CCB"/></marker>
-    <marker id="flowArrowLoop" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="10" markerHeight="10" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#D6336C"/></marker>
-  </defs>
-  <rect width="1280" height="560" fill="#FFFFFF"/>
-  <text x="640" y="58" font-size="30" font-weight="700" fill="#151B3B" text-anchor="middle">How SignalLoop runs an experiment loop</text>
-  <text x="640" y="94" font-size="17" fill="#5C647E" text-anchor="middle">Code measures. The Marketing Agent chooses the strategy. The Content Agent creates the asset.</text>
-
-  <g>
-    <rect x="30" y="150" width="212" height="250" rx="16" fill="#FFFFFF" stroke="#DCE1F2" stroke-width="1.5"/>
-    <circle cx="62" cy="188" r="16" fill="#151B3B"/><text x="62" y="194" font-size="15" font-weight="700" fill="#FFFFFF" text-anchor="middle">1</text>
-    <text x="52" y="238" font-size="21" font-weight="700" fill="#151B3B">Inputs</text>
-    <text x="52" y="272" font-size="15" fill="#4B5169">Audiences, channels,</text>
-    <text x="52" y="294" font-size="15" fill="#4B5169">messaging angles,</text>
-    <text x="52" y="316" font-size="15" fill="#4B5169">campaign objective</text>
-    <rect x="52" y="346" width="152" height="28" rx="14" fill="#EEF0F4"/><text x="128" y="365" font-size="12" font-weight="700" fill="#4B5169" text-anchor="middle" letter-spacing="0.5">COMPANY PROFILE</text>
-  </g>
-
-  <g>
-    <rect x="282" y="150" width="212" height="250" rx="16" fill="#FFFFFF" stroke="#DCE1F2" stroke-width="1.5"/>
-    <circle cx="314" cy="188" r="16" fill="#151B3B"/><text x="314" y="194" font-size="15" font-weight="700" fill="#FFFFFF" text-anchor="middle">2</text>
-    <text x="304" y="238" font-size="21" font-weight="700" fill="#151B3B">Measure</text>
-    <text x="304" y="272" font-size="15" fill="#4B5169">Reach, clicks, CTR,</text>
-    <text x="304" y="294" font-size="15" fill="#4B5169">efficiency and volume</text>
-    <text x="304" y="316" font-size="15" fill="#4B5169">leaders, significance</text>
-    <rect x="304" y="346" width="70" height="28" rx="14" fill="#F1EFE8"/><text x="339" y="365" font-size="12" font-weight="700" fill="#444441" text-anchor="middle" letter-spacing="0.5">CODE</text>
-  </g>
-
-  <g>
-    <rect x="534" y="150" width="212" height="250" rx="16" fill="#F4F6FE" stroke="#3F4CCB" stroke-width="1.5"/>
-    <circle cx="566" cy="188" r="16" fill="#3F4CCB"/><text x="566" y="194" font-size="15" font-weight="700" fill="#FFFFFF" text-anchor="middle">3</text>
-    <text x="556" y="238" font-size="21" font-weight="700" fill="#151B3B">Marketing Agent</text>
-    <text x="556" y="272" font-size="15" fill="#4B5169">Who to target, where,</text>
-    <text x="556" y="294" font-size="15" fill="#4B5169">which message,</text>
-    <text x="556" y="316" font-size="15" fill="#4B5169">and why</text>
-    <rect x="556" y="346" width="48" height="28" rx="14" fill="#E3E7FB"/><text x="580" y="365" font-size="12" font-weight="700" fill="#303DAF" text-anchor="middle" letter-spacing="0.5">AI</text>
-  </g>
-
-  <g>
-    <rect x="786" y="150" width="212" height="250" rx="16" fill="#F4F6FE" stroke="#3F4CCB" stroke-width="1.5"/>
-    <circle cx="818" cy="188" r="16" fill="#3F4CCB"/><text x="818" y="194" font-size="15" font-weight="700" fill="#FFFFFF" text-anchor="middle">4</text>
-    <text x="808" y="238" font-size="21" font-weight="700" fill="#151B3B">Content Agent</text>
-    <text x="808" y="272" font-size="15" fill="#4B5169">Content plan first,</text>
-    <text x="808" y="294" font-size="15" fill="#4B5169">then the asset</text>
-    <text x="808" y="316" font-size="15" fill="#4B5169">to test</text>
-    <rect x="808" y="346" width="48" height="28" rx="14" fill="#E3E7FB"/><text x="832" y="365" font-size="12" font-weight="700" fill="#303DAF" text-anchor="middle" letter-spacing="0.5">AI</text>
-  </g>
-
-  <g>
-    <rect x="1038" y="150" width="212" height="250" rx="16" fill="#FFFFFF" stroke="#DCE1F2" stroke-width="1.5"/>
-    <circle cx="1070" cy="188" r="16" fill="#151B3B"/><text x="1070" y="194" font-size="15" font-weight="700" fill="#FFFFFF" text-anchor="middle">5</text>
-    <text x="1060" y="238" font-size="21" font-weight="700" fill="#151B3B">Experiment</text>
-    <text x="1060" y="272" font-size="15" fill="#4B5169">New variant vs</text>
-    <text x="1060" y="294" font-size="15" fill="#4B5169">a control, same</text>
-    <text x="1060" y="316" font-size="15" fill="#4B5169">audience + channel</text>
-    <rect x="1060" y="330" width="128" height="26" rx="13" fill="#E2F3EB"/><text x="1124" y="348" font-size="11.5" font-weight="700" fill="#0B6B4C" text-anchor="middle" letter-spacing="0.4">CRM · LIVE</text>
-    <rect x="1060" y="362" width="168" height="26" rx="13" fill="#FCE8EF"/><text x="1144" y="380" font-size="11.5" font-weight="700" fill="#A61E4D" text-anchor="middle" letter-spacing="0.4">RESPONSE · SIMULATED</text>
-  </g>
-
-  <line x1="244" y1="275" x2="276" y2="275" stroke="#3F4CCB" stroke-width="2.5" marker-end="url(#flowArrow)"/>
-  <line x1="496" y1="275" x2="528" y2="275" stroke="#3F4CCB" stroke-width="2.5" marker-end="url(#flowArrow)"/>
-  <line x1="748" y1="275" x2="780" y2="275" stroke="#3F4CCB" stroke-width="2.5" marker-end="url(#flowArrow)"/>
-  <line x1="1000" y1="275" x2="1032" y2="275" stroke="#3F4CCB" stroke-width="2.5" marker-end="url(#flowArrow)"/>
-
-  <path d="M 1144 402 L 1144 468 Q 1144 480 1132 480 L 400 480 Q 388 480 388 468 L 388 410" fill="none" stroke="#D6336C" stroke-width="2.5" stroke-dasharray="8 6" marker-end="url(#flowArrowLoop)"/>
-  <rect x="596" y="466" width="340" height="28" rx="14" fill="#FFFFFF"/>
-  <text x="766" y="486" font-size="15" font-weight="600" fill="#D6336C" text-anchor="middle">Results feed the next experiment</text>
-
-  <text x="640" y="536" font-size="13" fill="#7A809A" text-anchor="middle">CODE = deterministic calculations · AI = agent decisions and content · LIVE = real HubSpot API calls · SIMULATED = modeled audience response</text>
-</svg></div>
+    <div class="mhuman"><em class="st">HUMAN</em><span>Controls segmentation, positioning, objectives and constraints, and approves every step.</span></div>
+    <p class="mloop">Each test runs against the best version so far, and its result feeds the next decision.</p>
   </section>
 
   <section id="walkthrough">
-    <div class="kicker">One decision, end to end</div>
-    <h2>A Ramp scenario, from evidence to the next action</h2>
-    <p>One run of the demo, recorded step by step. Performance numbers are <span class="st st-sim">SIMULATED</span>.
-    The recommendation, hypothesis and email are the agents' <span class="st st-ai">AI</span> output from that run
-    (Gemini), shown as written unless marked condensed.</p>
+    <div class="kicker">One experiment, end to end</div>
+    <h2>A Ramp scenario, from baseline to the next decision.</h2>
+    <p>Recorded from one run of the demo. Performance numbers are simulated; the recommendation and content are the
+    agents' output from that run.</p>
     <ol class="chain">
-      <li><div class="chain-k">Context</div><div class="chain-b">
-        <div class="chain-tags"><em class="st st-human">INPUT</em></div>
-        <p>Ramp scenario with three role-based segments. Campaign objective: <b>product consideration</b>, which favors
-        response rate over reach. A baseline sent each audience its original message on every channel it uses.</p></div></li>
-      <li><div class="chain-k">Evidence</div><div class="chain-b">
-        <div class="chain-tags"><em class="st st-code">CODE</em><em class="st st-sim">SIMULATED</em></div>
-        <p>Controllers responded best: <b>9.8% CTR</b> (151 clicks from 1,548 reached), 4.5 points above the other
-        audiences. For Controllers, <b>email had the highest CTR (14.6%)</b>, while <b>LinkedIn delivered more clicks
-        per experiment (63 vs 35)</b>. Only one messaging angle, time savings, had been tested with them.</p></div></li>
-      <li><div class="chain-k">Insight</div><div class="chain-b">
-        <div class="chain-tags"><em class="st st-code">CODE</em></div>
-        <p>Two openings: a reach-versus-response trade-off between LinkedIn and email, and three untested messaging
-        angles for the best-responding audience.</p></div></li>
-      <li><div class="chain-k">Decision</div><div class="chain-b">
-        <div class="chain-tags"><em class="st st-ai">AI · MARKETING AGENT</em><em class="st st-human">MARKETER APPROVES</em></div>
-        <p>Reach <b>Controllers on email</b> with a <b>real-time visibility</b> message, as a <b>customer story</b>.
-        The agent labeled it "trying something new" with medium confidence, and named the trade-off: fewer clicks
-        than LinkedIn, in exchange for the stronger response the objective favors.</p></div></li>
-      <li><div class="chain-k">Hypothesis</div><div class="chain-b">
-        <div class="chain-tags"><em class="st st-ai">AI</em></div>
-        <p><q>A real-time visibility customer story by email will drive higher engagement from Controllers than the
-        current time-savings how-to guide.</q> <span class="cond">(condensed)</span></p></div></li>
-      <li><div class="chain-k">Content</div><div class="chain-b">
-        <div class="chain-tags"><em class="st st-ai">AI · CONTENT AGENT</em><em class="st st-human">MARKETER APPROVES</em></div>
-        <p>Subject: <b>"Stop waiting for the month-end surprise"</b>. Preview text: "Gain total visibility into company
-        spend as it happens." Button: "See how it works." Automated checks reject numbers, placeholder links and
-        off-channel personalization before the marketer sees it.</p></div></li>
-      <li><div class="chain-k">Experiment</div><div class="chain-b">
-        <div class="chain-tags"><em class="st st-code">CODE</em><em class="st st-sim">DELIVERY SIMULATED</em></div>
-        <p>Controllers on email, split 50/50: the new email against the best version so far, <b>"Close the books
-        without chasing receipts"</b> (time savings, how-to guide). Nothing was sent.</p></div></li>
-      <li class="result"><div class="chain-k">Result</div><div class="chain-b">
+      <li><div class="chain-k">Baseline<span class="chain-q">What happened?</span></div><div class="chain-b">
         <div class="chain-tags"><em class="st st-sim">SIMULATED</em><em class="st st-code">CODE</em></div>
-        <p>New email <b>7.3%</b> (9 of 124 reached) vs best so far <b>11.8%</b> (14 of 119): 4.5 points lower, but
-        on 23 clicks in total. Verdict: <b>too close to call</b>. SignalLoop calls a winner only with at least 20
-        clicks on each side and a statistically significant gap.</p></div></li>
-      <li><div class="chain-k">Next action</div><div class="chain-b">
+        <p>Controllers responded best: <b>9.8% CTR</b> (151 of 1,548 reached). For them, <b>email</b> had the highest
+        CTR (14.6%), while <b>LinkedIn</b> delivered more clicks per experiment (63 vs 35).</p></div></li>
+      <li><div class="chain-k">Insight<span class="chain-q">What did the evidence indicate?</span></div><div class="chain-b">
+        <div class="chain-tags"><em class="st st-code">CODE</em></div>
+        <p>A trade-off between reach (LinkedIn) and response (email), with three of four messaging angles still untested
+        on Controllers. The objective, product consideration, favors response.</p></div></li>
+      <li><div class="chain-k">Recommendation<span class="chain-q">What should be tested next?</span></div><div class="chain-b">
+        <div class="chain-tags"><em class="st st-ai">AI · MARKETING AGENT</em><em class="st st-human">MARKETER APPROVES</em></div>
+        <p><b>Controllers × email × real-time visibility</b>, as a customer story. The agent named the trade-off (fewer
+        clicks than LinkedIn, stronger response) and rated its confidence medium.</p></div></li>
+      <li><div class="chain-k">Content<span class="chain-q">What did the Content Agent produce?</span></div><div class="chain-b">
+        <div class="chain-tags"><em class="st st-ai">AI · CONTENT AGENT</em><em class="st st-human">MARKETER APPROVES</em></div>
+        <p>An email, <b>"Stop waiting for the month-end surprise"</b>, with the preview text "Gain total visibility into
+        company spend as it happens." and a "See how it works" button.</p></div></li>
+      <li class="result"><div class="chain-k">Experiment<span class="chain-q">What gets compared?</span></div><div class="chain-b">
+        <div class="chain-tags"><em class="st st-sim">SIMULATED RESULT</em></div>
+        <p>The new email against the best version so far, "Close the books without chasing receipts", split 50/50:
+        <b>7.3%</b> (9 of 124) vs <b>11.8%</b> (14 of 119).</p></div></li>
+      <li><div class="chain-k">Learn<span class="chain-q">What happens next?</span></div><div class="chain-b">
         <div class="chain-tags"><em class="st st-code">CODE</em><em class="st st-ai">AI</em></div>
-        <p>No loser is declared. The best-so-far email stays the control, the test is recorded as inconclusive, and
-        the next recommendation receives it as uncertainty: the Marketing Agent is instructed to retest or try an
-        untested angle, not to treat the result as a loss.</p></div></li>
+        <p><b>Too close to call.</b> 23 clicks can't support a 4.5-point conclusion; a winner needs 20+ clicks on each
+        side and a significant gap. The best-so-far email stays the control, and the next recommendation treats the
+        result as uncertainty: retest, or try an untested angle.</p></div></li>
     </ol>
-    <p class="land">A results dashboard would show the new email losing by 4.5 points. SignalLoop holds that conclusion
-    until the evidence supports it: the kind of judgment I wanted built into the system rather than left to chance.</p>
+    <p class="land">A dashboard would show the new email losing. SignalLoop waits until the evidence can support that call.</p>
     <details class="shots"><summary>See these steps in the product (4 screenshots)</summary>
       <div class="shot-grid">
         <div class="report"><div class="lab">Results <em class="badge">simulated</em><span>code</span></div>
@@ -594,57 +500,45 @@
   </section>
 
   <section id="decisions">
-    <div class="kicker">The decisions behind the design</div>
-    <h2>The trade-offs a PMM should be able to check</h2>
+    <div class="kicker">Why I designed it this way</div>
+    <h2>AI interprets the evidence. It never manufactures it.</h2>
     <div class="dgrid">
-      <article class="dcard"><div class="dcard-k">Decision 1</div>
-        <h3>Code calculates every metric. AI only reads the results.</h3>
-        <dl><dt>Why</dt><dd>A recommendation is only as trustworthy as its numbers. Code gives the same answer every time, so any figure can be audited; language models are unreliable at arithmetic and can find patterns that aren't there.</dd>
-        <dt>Alternative considered</dt><dd>Letting the model analyze raw campaign data. Faster to build and more flexible, but its conclusions couldn't be checked.</dd></dl></article>
-      <article class="dcard"><div class="dcard-k">Decision 2</div>
-        <h3>Strategy and content are separate AI steps.</h3>
-        <dl><dt>Why</dt><dd>It mirrors how a PMM reviews a test plan before any copy exists. The Marketing Agent decides who, where and why; the Content Agent can't change those choices, only execute them.</dd>
-        <dt>Alternative considered</dt><dd>One agent that plans and writes in a single pass. Cheaper, but strong copy can hide a weak strategic choice.</dd></dl></article>
-      <article class="dcard"><div class="dcard-k">Decision 3</div>
-        <h3>No recommendation without evidence.</h3>
-        <dl><dt>Why</dt><dd>Every recommendation must cite metrics the agent actually retrieved, and code rejects anything else. A PMM should be able to trace a recommendation to its numbers before acting on it.</dd>
-        <dt>Alternative considered</dt><dd>Free-form reasoning. More fluent, but a confident wrong answer would look the same as a right one.</dd></dl></article>
-      <article class="dcard"><div class="dcard-k">Decision 4</div>
-        <h3>A marketer approves every step.</h3>
-        <dl><dt>Why</dt><dd>Positioning, claims and budget carry accountability that should stay with a person. The recommendation is approved before content is written, and the content before the test runs.</dd>
-        <dt>Alternative considered</dt><dd>A fully autonomous loop. Faster, but it removes the review where marketing judgment matters most.</dd></dl></article>
-      <article class="dcard"><div class="dcard-k">Decision 5</div>
-        <h3>Every test runs against the best version so far.</h3>
-        <dl><dt>Why</dt><dd>"Did it work?" needs a comparison. The new variant and the current best share an audience and channel, split 50/50, and a winner is called only with 20+ clicks on each side and a significant gap.</dd>
-        <dt>Alternative considered</dt><dd>Comparing against a historical average. Simpler, but it mixes timing and audience effects, and the loop would learn from noise.</dd></dl></article>
-      <article class="dcard"><div class="dcard-k">Decision 6</div>
-        <h3>Each company example uses a different segmentation model.</h3>
-        <dl><dt>Why</dt><dd>To test whether the same decision logic adapts when a market is structured differently: by role in one scenario, by business stage in the other. <a href="#segments">See the models</a>.</dd>
-        <dt>Alternative considered</dt><dd>One generic persona set. Easier to demo, but it would hide whether the logic depends on a particular market structure.</dd></dl></article>
-      <article class="dcard wide"><div class="dcard-k">Decision 7</div>
-        <h3>Campaign performance is simulated; the CRM integration is real.</h3>
-        <dl><dt>Why</dt><dd>A portfolio prototype has no real audience or budget. A hidden response model lets the full loop run with outcomes the agents can't see in advance, while real HubSpot writes show the workflow connects to an actual marketing system. The prototype tests the decision workflow, not marketing results.</dd>
-        <dt>Alternative considered</dt><dd>Public benchmarks or illustrative results. Benchmarks wouldn't respond to the system's choices, and invented results would misrepresent what was shown. Every simulated number here is labeled.</dd></dl></article>
+      <article class="dcard"><h3>Keep measurement deterministic</h3><dl>
+        <dt>Decision</dt><dd>Metrics and significance checks run in code; the agents only read the results.</dd>
+        <dt>Why</dt><dd>Arithmetic and significance calls have to be reproducible and auditable.</dd>
+        <dt>Trade-off</dt><dd>Less flexible than letting a model explore raw campaign data.</dd></dl></article>
+      <article class="dcard"><h3>Separate strategy from execution</h3><dl>
+        <dt>Decision</dt><dd>The Marketing Agent chooses the experiment; the Content Agent executes it.</dd>
+        <dt>Why</dt><dd>Content generation can't quietly change the audience or the hypothesis, and strong copy can't hide a weak choice.</dd>
+        <dt>Trade-off</dt><dd>Two AI steps instead of one.</dd></dl></article>
+      <article class="dcard"><h3>Require evidence before a recommendation</h3><dl>
+        <dt>Decision</dt><dd>Recommendations must cite campaign metrics the agent retrieved; code rejects anything else.</dd>
+        <dt>Why</dt><dd>A PMM should be able to trace a recommendation to its numbers before acting on it.</dd>
+        <dt>Trade-off</dt><dd>Some responses are rejected and retried.</dd></dl></article>
+      <article class="dcard"><h3>Keep a marketer accountable</h3><dl>
+        <dt>Decision</dt><dd>The marketer approves the recommendation, then the content, and every test runs against the best version so far.</dd>
+        <dt>Why</dt><dd>Positioning, claims and budget stay a human call, and every result gets a fair comparison.</dd>
+        <dt>Trade-off</dt><dd>Slower than an autonomous loop.</dd></dl></article>
     </div>
+    <p class="aside">Implementation details for technical reviewers are <a href="#built">further down</a>.</p>
   </section>
 
-  <section id="segments">
-    <div class="kicker">Segmentation models used for this demonstration</div>
-    <h2>Two market structures, modeled on purpose</h2>
-    <p>Ramp and Square are illustrative scenarios. The segments below are <b>my assumptions</b>, chosen for this
-    demonstration. They are not either company's segmentation, and no internal data or research informed them.</p>
+  <section id="scenarios">
+    <div class="kicker">Market scenarios</div>
+    <h2>Testing the system with two segmentation models.</h2>
+    <p class="disclaim">These are demonstration assumptions, used to test whether the engine can reason across different
+    market structures. They are not claims about either company's segmentation, and no internal data or research
+    informed them.</p>
     <div class="seglogic">
       <div class="seg z"><h3>Ramp scenario</h3>
-        <div class="by">Role-based model · assumption</div>
-        <p class="seg-why">Why this structure: spend management involves different people with different jobs, from the
-        budget owner to the person closing the books to the employee making a purchase.</p>
-        <ul><li><b>Finance Leaders</b>: own budget, forecasting and financial control</li><li><b>Controllers</b>: responsible for an accurate, on-time close</li><li><b>Employee Spenders</b>: buy software, travel or supplies to do their jobs</li></ul>
+        <div class="by">Modeled by buyer and user role</div>
+        <p class="seg-why">Spend management involves distinct jobs: owning the budget, closing the books and making purchases.</p>
+        <ul><li>Finance Leaders</li><li>Controllers</li><li>Employee Spenders</li></ul>
       </div>
       <div class="seg s"><h3>Square scenario</h3>
-        <div class="by">Business-stage model · assumption</div>
-        <p class="seg-why">Why this structure: an owner-operator often holds every role, so needs change more with the
-        business's maturity than with job title.</p>
-        <ul><li><b>New Sellers</b>: taking their first payments</li><li><b>Growing Businesses</b>: steady sales, in person and online</li><li><b>Multi-Location Operators</b>: several sites run as one business</li></ul>
+        <div class="by">Modeled by business maturity</div>
+        <p class="seg-why">An owner-operator often holds every role, so needs shift with the business's stage more than with job title.</p>
+        <ul><li>New Sellers</li><li>Growing Businesses</li><li>Multi-Location Operators</li></ul>
       </div>
     </div>
     <details class="more"><summary>Same logic, different answers: simulated baselines for both models</summary>
@@ -704,27 +598,16 @@
   <text x="600" y="612" font-size="14" font-weight="600" fill="#151B3B" text-anchor="middle">The Marketing Agent weighs these trade-offs against the campaign objective instead of picking the biggest number.</text>
   <text x="600" y="640" font-size="12" fill="#8A90A6" text-anchor="middle">All figures are SIMULATED by the demo's audience model. None come from real campaigns.</text>
 </svg></div>
-      <p class="aside">Each scenario's segments, channels and messaging angles live in one company-profile file; the decision logic is shared.</p>
     </details>
-  </section>
-
-  <section id="validate">
-    <div class="kicker">What I want to validate</div>
-    <h2>The software works. Whether it solves a real PMM problem is still open.</h2>
-    <p>These are the questions I'm taking into reviews with product marketers. The demo below is there to help answer them.</p>
-    <ol class="qlist">
-      <li><b>Problem</b><span>Is deciding the next audience, channel and message to test painful enough to justify a system like this?</span></li>
-      <li><b>Decision logic</b><span>Are these the inputs and trade-offs a PMM actually uses? What's missing?</span></li>
-      <li><b>Trust</b><span>What evidence would a PMM need before following the recommendation?</span></li>
-      <li><b>Workflow</b><span>Where would this fit in real campaign planning and optimization, and who would own it?</span></li>
-    </ol>
   </section>
 
   <section id="live">
     <div class="kicker">Live demo</div>
-    <h2>Run the experiment loop yourself</h2>
-    <p>Pick a scenario and a campaign objective, run a baseline, then move through the loop one step at a time. You
-    approve the recommendation before any content is written, and the content before the test runs.</p>
+    <h2>Try the decision loop yourself.</h2>
+    <p>Pick a scenario and objective, then step through the loop; you approve each recommendation and piece of content
+    before anything runs.</p>
+    <p class="aside">Reviewing as a PMM? I'd value your view on four questions: is this problem painful enough, are these
+    the right inputs and trade-offs, what evidence would earn your trust, and where would it fit in your workflow?</p>
     <div class="demo" id="demo">
       <div class="demo-top">
         <div class="demo-bar">
@@ -752,28 +635,35 @@
   </section>
 
   <section id="real">
-    <div class="kicker">What's real, and what's simulated</div>
-    <h2>No result on this page is a real business outcome.</h2>
-    <p>The prototype runs on real infrastructure but has no real audience. Anything that depends on how people would
-    respond is simulated and labeled, including inside the live demo.</p>
-    <div class="dtable-wrap"><table class="truth">
-      <thead><tr><th scope="col">Component</th><th scope="col">Status</th><th scope="col">What that means</th></tr></thead>
-      <tbody>
-        <tr><td>HubSpot CRM</td><td><span class="st st-live">LIVE</span></td><td>Fictional sample contacts and audience lists are written through the HubSpot API.</td></tr>
-        <tr><td>Campaign delivery</td><td><span class="st st-sim">SIMULATED</span></td><td>No emails or social posts are sent.</td></tr>
-        <tr><td>Performance data</td><td><span class="st st-sim">SIMULATED</span></td><td>Reach and clicks come from a hidden response model. The agents never see it, only the measured results.</td></tr>
-        <tr><td>Analytics</td><td><span class="st st-code">CODE</span></td><td>Deterministic calculations over the simulated results.</td></tr>
-        <tr><td>Recommendation</td><td><span class="st st-ai">AI</span></td><td>Generated by the Marketing Agent from the measured results.</td></tr>
-        <tr><td>Content</td><td><span class="st st-ai">AI</span></td><td>Generated by the Content Agent from the approved recommendation.</td></tr>
-        <tr><td>Experiment history</td><td><span class="st st-stored">STORED</span></td><td>Each visitor's runs are saved so the next recommendation can build on them.</td></tr>
-      </tbody>
-    </table></div>
+    <div class="kicker">Real vs simulated</div>
+    <h2>Campaign performance is simulated. Nothing here is a real business result.</h2>
+    <div class="sgrid">
+      <div class="scard"><em class="st st-live">LIVE</em><b>HubSpot CRM</b><span>Fictional contacts and audience lists written through the HubSpot API.</span></div>
+      <div class="scard sim"><em class="st st-sim">SIMULATED</em><b>Campaign delivery</b><span>No emails or posts are sent.</span></div>
+      <div class="scard sim"><em class="st st-sim">SIMULATED</em><b>Campaign performance</b><span>Reach and clicks come from a hidden response model the agents never see.</span></div>
+      <div class="scard"><em class="st st-code">CODE</em><b>Analytics</b><span>Deterministic calculations over the simulated results.</span></div>
+      <div class="scard"><em class="st st-ai">AI</em><b>Strategic recommendation</b><span>From the Marketing Agent, based on measured results.</span></div>
+      <div class="scard"><em class="st st-ai">AI</em><b>Content</b><span>From the Content Agent, based on the approved recommendation.</span></div>
+    </div>
+    <p class="aside">Why simulate? A portfolio prototype has no real audience or budget. The simulation lets the whole loop
+    run, so the prototype tests the decision workflow, not marketing performance.</p>
+  </section>
+
+  <section id="production">
+    <div class="kicker">Before production</div>
+    <h2>Four things production would require.</h2>
+    <div class="pgrid">
+      <div class="pitem"><b>Real signals</b><span>Campaign, web, CRM and pipeline data in place of the simulator.</span></div>
+      <div class="pitem"><b>Stronger experimentation</b><span>Sample sizes, test durations and decision thresholds set in advance.</span></div>
+      <div class="pitem"><b>Governance</b><span>Approval roles, privacy, claims controls and ongoing evaluation.</span></div>
+      <div class="pitem"><b>Business outcomes</b><span>Optimize toward pipeline and revenue, not CTR alone.</span></div>
+    </div>
   </section>
 
   <section id="built">
-    <div class="kicker">How it's built</div>
-    <h2>For technical reviewers</h2>
-    <p>The case study doesn't depend on these details. They show how the constraints described above are enforced.</p>
+    <div class="kicker">Implementation details</div>
+    <h2>How the constraints are enforced.</h2>
+    <p>For technical reviewers; the case study above doesn't depend on these details.</p>
     <details class="more"><summary>Architecture</summary>
       <div class="stackrows">
         <div class="srow"><b>Page</b><span>Static case study and demo. Opening the page makes no API calls; only running a step does.</span></div>
@@ -814,18 +704,6 @@
     <p class="aside">Source and setup: <a href="https://github.com/shivagoel5/signalloop">github.com/shivagoel5/signalloop</a></p>
   </section>
 
-  <section id="production">
-    <div class="kicker">Before production</div>
-    <h2>What would need to be true before a team relied on this</h2>
-    <ul class="next">
-      <li><b>Real performance data.</b> Actual email, social and web engagement in place of the simulator.</li>
-      <li><b>Pipeline and revenue signals.</b> Experiments judged by downstream impact, not clicks alone.</li>
-      <li><b>Stronger experiment design.</b> Sample sizes and test durations set in advance.</li>
-      <li><b>Governance.</b> Approval roles, brand and legal review, and an audit trail of every recommendation.</li>
-      <li><b>Organizational context.</b> Positioning, launch calendars and sales priorities the agents can't see today.</li>
-    </ul>
-  </section>
-
   <!--
     What I learned from PMMs: enable after the reviews by removing the hidden attribute below and replacing each
     placeholder with real notes. Do not publish until there is actual feedback to report.
@@ -843,13 +721,16 @@
   </section>
 
   <section class="closing">
-    <div class="kicker">What this project shows</div>
-    <p class="bigland">How I approach AI in product marketing: start from the decision that matters, separate evidence
-    from judgment, let code own what should be deterministic, use AI where interpretation adds value, and keep a
-    marketer accountable for the call.</p>
-    <p style="max-width:66ch">SignalLoop works as software. Whether it earns a place in a real PMM workflow is the next
-    question, and I'm taking it to the people who make these decisions.</p>
-    <div class="ctas" style="margin-top:18px">
+    <div class="kicker">The takeaway</div>
+    <h2>SignalLoop reflects how I approach AI-enabled product marketing.</h2>
+    <ul class="principles">
+      <li>Identify the decision that actually matters.</li>
+      <li>Separate measurement from interpretation.</li>
+      <li>Automate what should be deterministic.</li>
+      <li>Use AI where judgment adds value.</li>
+      <li>Keep a person responsible for the final call.</li>
+    </ul>
+    <div class="ctas" style="margin-top:22px">
       <a class="btn ghostd" href="#live">Try the live demo</a>
       <a class="btn ghostd" href="https://github.com/shivagoel5/signalloop">View source on GitHub</a>
     </div>
@@ -875,7 +756,7 @@
       if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target)}})},{threshold:.08});
     els.forEach(function(el){io.observe(el)});
   }
-  var ids=['problem','walkthrough','decisions','validate','live','real','built'];
+  var ids=['problem','model','walkthrough','decisions','scenarios','live','real'];
   var links={};ids.forEach(function(id){links[id]=document.querySelector('.nav a[href="#'+id+'"]')});
   if('IntersectionObserver' in window){
     var spy=new IntersectionObserver(function(es){es.forEach(function(x){
