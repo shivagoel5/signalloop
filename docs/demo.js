@@ -11,7 +11,7 @@
   var WORKING={run:'Running the campaign and measuring the simulated response…',strategy:'SignalLoop is weighing your strategy against the results…',content:'Writing the campaign for the approved test…'};
   var DECISIONS={explore:'New test',exploit:'Builds on a win',retest:'Retest'};
   var STATUS={significant:'significant',no_clear_difference:'no clear difference',not_enough_evidence:'not enough evidence'};
-  var RESULT_LINE={adopt_new_variant:'The new version won, so it became the control.',keep_control:'The control held.',not_enough_evidence:'There wasn\'t enough evidence to decide yet.'};
+  var RESULT_LINE={adopt_new_variant:'The new version won, so it became the version to beat.',keep_control:'Today\'s version held.',not_enough_evidence:'There wasn\'t enough evidence to decide yet.'};
   var TOOL_NAMES={getStrategyContext:'your strategy (goal, ICP, positioning, messages to test)',getEvidenceSummary:'what past campaigns taught and what is still unknown',getAudiencePerformance:'audience results',getChannelPerformance:'channel results',getMessagingPerformance:'message results',getContentPerformance:'content-format results',getAudienceProfile:'the audience profile',getPreviousContent:'content already tested',getMessagingHistory:'message history',getTopPerformingContent:'best-performing content',getBrandContext:'brand and proof rules',getContentConstraints:'channel rules'};
 
   function $(id){return document.getElementById(id)}
@@ -43,7 +43,7 @@
   function variantLabel(c){
     var id=c.contentVariantId||(c.variant&&c.variant.contentVariantId)||'',from=/^exp(\d+)-test$/.exec(id);
     if(c.role==='test')return 'New version'+(from?' · campaign '+from[1]:'');
-    if(c.role==='control')return 'Current control · '+(from?'from campaign '+from[1]:'original message');
+    if(c.role==='control')return 'Today\'s version'+(from?' · from campaign '+from[1]:'');
     return 'Original message';
   }
   function table(head,rows,numFrom,hideOnMobile){
@@ -265,7 +265,7 @@
     var test=L.cells.filter(function(c){return c.role==='test'})[0],ctrl=L.cells.filter(function(c){return c.role==='control'})[0];
     var won=t.decision==='adopt_new_variant',lost=t.decision==='keep_control'&&t.significant;
     var box=el('div','verdict'+(won?' win':lost?' lose':t.decision==='not_enough_evidence'?' open':''));
-    var heads={adopt_new_variant:'The new version won',keep_control:t.significant?'The current control won':'No clear difference',not_enough_evidence:'Not enough evidence to decide yet'};
+    var heads={adopt_new_variant:'The new version won',keep_control:t.significant?'Today\'s version won':'No clear difference',not_enough_evidence:'Not enough evidence to decide yet'};
     box.appendChild(el('div','verdict-h',heads[t.decision]));
     box.appendChild(el('div','dsub',String(t.summary||'').replace(/new variant/g,'new version')));
     var g=el('div','versus');
@@ -289,13 +289,13 @@
   function learnedCard(t){
     var where=aud(t.audienceId)+' × '+CH[t.channel],keep=[],change=[];
     if(t.decision==='adopt_new_variant'){
-      keep.push('New control: '+t.test.label);keep.push('Where it was proven: '+where);
-      change.push('Test something new against the new control: another message, format or channel');
+      keep.push('New version to beat: '+t.test.label);keep.push('Where it was proven: '+where);
+      change.push('Test something new against it: another message, format or channel');
     }else if(t.decision==='keep_control'){
-      keep.push('Control: '+t.control.label);keep.push('Where it was tested: '+where);
+      keep.push('Version to beat: '+t.control.label);keep.push('Where it was tested: '+where);
       change.push((t.significant?'Drop ':'Move on from ')+t.test.label+' here');change.push('Test a different message or format');
     }else{
-      keep.push('Control, for now: '+t.control.label);keep.push('Where it was tested: '+where);
+      keep.push('Version to beat, for now: '+t.control.label);keep.push('Where it was tested: '+where);
       change.push('No verdict on '+t.test.label+' yet');change.push('Retest with more people, or test something else');
     }
     var card=el('div','learned-card');card.appendChild(el('div','block-k','What SignalLoop learned'));
@@ -358,7 +358,7 @@
     if(!t)return null;
     var res=state.analytics&&state.analytics.latest&&state.analytics.latest.testVsControl;
     var box=section('Built on campaign '+last.experimentNumber,'builton');
-    if(res)box.appendChild(el('p','dsub',res.decision==='keep_control'&&!res.significant?'No clear difference, so the control stayed.':RESULT_LINE[res.decision]));
+    if(res)box.appendChild(el('p','dsub',res.decision==='keep_control'&&!res.significant?'No clear difference, so today\'s version stayed.':RESULT_LINE[res.decision]));
     var same=[],diff=[];
     [['Audience',t.audienceId,r.priorityAudience,aud],['Channel',t.channel,r.recommendedChannel,function(x){return CH[x]}],['Message',t.messagingAngle,r.recommendedAngle,angle],['Content',t.contentType,r.recommendedContentType,ctype]].forEach(function(x){
       if(x[1]===x[2])same.push(x[0]+': '+x[3](x[1]));else diff.push(x[0]+': '+x[3](x[1])+' → '+x[3](x[2]));
@@ -367,26 +367,58 @@
     return box;
   }
 
+  // Step 4 makes three roles explicit: SignalLoop picked the test, AI drafted the content, and the marketer decides.
+  var FORMAT_NOUN={email:'email',linkedin:'LinkedIn post',facebook:'Facebook post',instagram:'Instagram post',blog:'blog post'};
+  function roleHead(n,title,sub){
+    var h=el('div','role-h'),t=el('div');h.appendChild(el('span','role-n',String(n)));
+    t.appendChild(el('b',null,title));if(sub)t.appendChild(el('span','dsub',sub));h.appendChild(t);return h;
+  }
   function renderContent(live){
     var plan=state.pendingPlan,c=plan.content,cp=c.contentPlan,r=plan.marketing.recommendation;
-    head('content','Create the campaign',[['AI-written','ai'],[CH[r.recommendedChannel]+' · '+ctype(r.recommendedContentType)],['You approve before it runs']]);
-    var grid=el('div','content-grid'),side=el('div','content-side');
-    grid.appendChild(preview(r.recommendedChannel,c.generatedContent,c.sampleContact,cp.cta));
-    side.appendChild(el('div','block-k','The experiment'));
-    plan.spec.cells.forEach(function(x){
-      var card=el('div','vs-card'+(x.role==='test'?' test':''));
-      card.appendChild(el('div','vs-l',variantLabel(x)));
-      card.appendChild(el('div','vs-h','“'+x.variant.headline+'”'));
-      card.appendChild(el('div','dsub',angle(x.messagingAngle)+' · '+ctype(x.contentType)));
-      card.appendChild(el('div','dsub',Math.round(x.share*100)+'% of '+aud(x.audienceId)+' on '+CH[x.channel]));
-      side.appendChild(card);
-    });
-    side.appendChild(el('div','dsum','One thing changes against the current control, so the result shows whether it worked.'));
-    var d=el('details','data');d.appendChild(el('summary',null,'Why this content'));
+    var test=plan.spec.cells.filter(function(x){return x.role==='test'})[0],ctrl=plan.spec.cells.filter(function(x){return x.role==='control'})[0];
+    var noun=FORMAT_NOUN[r.recommendedChannel]||'version',goal=find(STATIC.objectives,plan.marketing.objectiveId);
+    var signal=goal?(goal.metric==='CTR'?'CTR':goal.metric.charAt(0).toLowerCase()+goal.metric.slice(1)):'response';
+    head('content','Review the campaign before it runs',[['Nothing runs until you approve']]);
+
+    var pick=el('div','role-card');
+    pick.appendChild(roleHead(1,'SignalLoop picked the test','From the recommendation in the previous step'));
+    var chips=el('div','pick-row');
+    [aud(r.priorityAudience),CH[r.recommendedChannel],angle(r.recommendedAngle),ctype(r.recommendedContentType)].forEach(function(x){chips.appendChild(el('span','pick-chip',x))});
+    pick.appendChild(chips);
+    var change=[];
+    if(test&&ctrl){
+      if(test.messagingAngle!==ctrl.messagingAngle)change.push('the message, '+angle(ctrl.messagingAngle)+' → '+angle(test.messagingAngle));
+      if(test.contentType!==ctrl.contentType)change.push('the format, '+ctype(ctrl.contentType)+' → '+ctype(test.contentType));
+    }
+    if(change.length)pick.appendChild(el('p','dsub pick-change','What changes from today: '+change.join(' and ')+'.'));
+    panel.appendChild(pick);
+
+    var grid=el('div','content-grid'),left=el('div','role-card'),side=el('div','role-card');
+    left.appendChild(roleHead(2,'AI drafted this '+noun,'Written for this test, within brand and proof rules'));
+    left.appendChild(preview(r.recommendedChannel,c.generatedContent,c.sampleContact,cp.cta));
+    var d=el('details','data');d.appendChild(el('summary',null,'Why the AI wrote it this way'));
     kv(d,[['Audience insight',cp.audienceInsight],['Angle',cp.contentAngle],['Hook',cp.hook],['Key message',cp.keyMessage],['Supporting points',cp.supportingPoints],['Tone',cp.tone],['Brief',cp.contentBrief]]);
-    side.appendChild(d);
-    grid.appendChild(side);panel.appendChild(grid);
-    if(live)action('Approve and run the experiment','run','Runs the new version against the current control, 50/50 on '+aud(r.priorityAudience)+' via '+CH[r.recommendedChannel]+'. Results are simulated.');
+    left.appendChild(d);
+
+    side.appendChild(roleHead(3,'How it will be tested',aud(r.priorityAudience)+' on '+CH[r.recommendedChannel]+', split in half'));
+    var split=el('div','abtest');
+    [[test,'new'],[ctrl,'today']].forEach(function(p){
+      var x=p[0];if(!x)return;
+      var row=el('div','ab-row '+p[1]),t=el('div');
+      row.appendChild(el('span','ab-pct',Math.round(x.share*100)+'%'));
+      t.appendChild(el('b',null,p[1]==='new'?'Get the new '+noun:'Get today\'s '+noun));
+      t.appendChild(el('div','ab-h','“'+x.variant.headline+'”'));
+      t.appendChild(el('div','dsub',angle(x.messagingAngle)+' · '+ctype(x.contentType)));
+      row.appendChild(t);split.appendChild(row);
+    });
+    side.appendChild(split);
+    side.appendChild(el('p','dsub ab-rule','Whichever earns the higher '+signal+' wins, but only if the difference is big enough to trust.'));
+    grid.appendChild(left);grid.appendChild(side);panel.appendChild(grid);
+
+    if(live){
+      actionbar.appendChild(roleHead(4,'You decide',null));
+      action('Approve and run the test','run','The test is simulated: HubSpot audience lists update, but nothing is sent.');
+    }
   }
 
   // Compare: the same product on two markets, side by side.
