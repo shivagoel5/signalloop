@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 
 import handler from "../functions/api.mjs";
 import { PROFILES } from "../lib/company.mjs";
@@ -305,4 +306,24 @@ test("api: plan with configured providers returns a pending plan", async () => {
     globalThis.fetch = originalFetch;
     delete process.env.GROQ_API_KEY;
   }
+});
+
+test("page: built-in demo settings match the API, and opening the page makes no API request", async () => {
+  const html = readFileSync(new URL("../../docs/index.html", import.meta.url), "utf8");
+  const match = html.match(/<script type="application\/json" id="demo-static">([\s\S]*?)<\/script>/);
+  assert.ok(match, "docs/index.html embeds the demo settings");
+  const settings = JSON.parse(match[1]);
+  assert.deepEqual(Object.keys(settings.companies), Object.keys(PROFILES));
+  for (const company of Object.keys(PROFILES)) {
+    const view = await (await handler(new Request(`http://localhost/api/session?sessionId=static-settings-check&company=${company}`))).json();
+    assert.equal(settings.companies[company], view.company);
+    assert.deepEqual(settings.objectives, view.objectives);
+    assert.equal(settings.defaultObjective, view.objective.id);
+    assert.equal(settings.maxExperiments, view.maxExperiments);
+    const { crm, ...labels } = view.labels;
+    assert.deepEqual(settings.labels, labels);
+  }
+  // The only session read in the page is the refresh used when the browser's saved copy is out of date.
+  assert.equal(html.match(/api\('GET','session'\)/g)?.length, 1);
+  assert.match(html, /async function refreshFromServer\(\)\{\s*var res=await api\('GET','session'\)/);
 });

@@ -524,6 +524,7 @@
         <span class="dsub" id="demo-status" aria-live="polite"></span>
       </div>
       <div class="demo-out" id="demo-out"></div>
+      <script type="application/json" id="demo-static">{"companies":{"ramp":"Ramp","square":"Square"},"objectives":[{"id":"awareness","label":"Awareness"},{"id":"traffic","label":"Traffic"},{"id":"engagement","label":"Engagement"},{"id":"product_consideration","label":"Product consideration"},{"id":"conversion","label":"Conversion"}],"defaultObjective":"product_consideration","maxExperiments":12,"labels":{"delivery":"SIMULATED","performance":"SIMULATED","analytics":"DETERMINISTIC","marketing":"AI","contentPlanning":"AI","contentGeneration":"AI","history":"STORED"}}</script>
       <p class="demo-note">Reach, clicks and CTR are simulated, and no emails or posts are sent. HubSpot contact and list
       updates are real when the CRM label shows LIVE. Analytics are calculated by code; the Marketing and Content Agents
       (Groq, with Gemini as fallback) only read those computed metrics and must cite them.</p>
@@ -651,6 +652,14 @@
   function aud(id){var a=find(state&&state.audiences,id);return a?a.name:id}
   function angle(id){var a=find(state&&state.angles,id);return a?a.label:id}
   function ctype(id){var a=find(state&&state.contentTypes,id);return a?a.label:id}
+  // Describes a row from its own data: which experiment a new variant is for, and where the control's
+  // best-so-far variant came from. Works for measured cells and for cells in a pending plan.
+  function variantLabel(c){
+    var id=c.contentVariantId||(c.variant&&c.variant.contentVariantId)||'',from=/^exp(\d+)-test$/.exec(id);
+    if(c.role==='test')return 'New variant'+(from?' · experiment '+from[1]:'');
+    if(c.role==='control')return 'Best so far · '+(from?'from experiment '+from[1]:'original message');
+    return 'Original message';
+  }
   function wait(ms){return new Promise(function(r){setTimeout(r,ms)})}
   function block(label,question){var b=el('section','dblock');b.appendChild(el('div','dlab',label));if(question)b.appendChild(el('div','dq',question));out.appendChild(b);return b}
   function table(head,rows,numFrom,hideOnMobile){
@@ -716,13 +725,17 @@
     var request=api('POST',a.route,{objective:objSel.value});
     for(var i=0;i<3;i++){setSteps(base+i,base+i);await wait(isRun?350:1100)}
     var res=await request;
-    if(res.network||!res.ok){
+    if(!res.network&&res.status===409&&await refreshFromServer()){
+      // The copy saved in this browser was behind the server, so continue from the server's copy.
+      localSteps=[];setSteps(-1,state.pendingPlan?6:(state.experimentCount?3:0));statusEl.textContent='';
+      showError('The copy of this demo saved in your browser was out of date, so it has been refreshed. Continue from here.',null,where?out.lastElementChild:null);
+    }else if(res.network||!res.ok){
       setSteps(-1,base,base);statusEl.textContent='';
       if(where){var s=where.querySelector('.dprogress .dsub');if(s)s.remove();if(btn)btn.disabled=false}
       showError(res.network?'Could not reach the demo API. The live demo runs on signalloop-shiva.netlify.app.':(res.body.error||'Something went wrong.'),res.body,where&&where.querySelector('.dprogress'));
     }else{
       var label=where&&where.querySelector('.dlab').textContent,anchor=where&&where.getBoundingClientRect().top;
-      state=res.body;localSteps=[];render();setSteps(-1,isRun?3:6);
+      state=res.body;saveState();localSteps=[];render();setSteps(-1,isRun?3:6);
       statusEl.textContent=isRun?'Experiment '+state.experimentCount+' measured.':'Next experiment planned.';
       if(where){
         // Keep the visitor where they were: the plan replaces the block in place; a run adds its results above.
@@ -768,8 +781,8 @@
   }
   function renderAnalyze(){
     var a=state.analytics,L=a.latest,b=block('Analyze','What happened in experiment '+L.experimentNumber+'?');
-    b.appendChild(table(['Role','Audience','Channel','Angle','Content type','Reach','Clicks','CTR','vs previous'],L.cells.map(function(c){
-      return {cells:[c.role,aud(c.audienceId),CH[c.channel],angle(c.messagingAngle),ctype(c.contentType),String(c.reach),String(c.clicks),pct(c.ctr),c.changeVsPreviousPp==null?'—':pp(c.changeVsPreviousPp)]}}),5,[0,4,8]));
+    b.appendChild(table(['Variant','Audience','Channel','Angle','Content type','Reach','Clicks','CTR','vs previous'],L.cells.map(function(c){
+      return {cells:[variantLabel(c),aud(c.audienceId),CH[c.channel],angle(c.messagingAngle),ctype(c.contentType),String(c.reach),String(c.clicks),pct(c.ctr),c.changeVsPreviousPp==null?'—':pp(c.changeVsPreviousPp)]}}),5,[0,4,8]));
     if(L.testVsControl){
       var t=L.testVsControl;
       b.appendChild(el('div','dsum',t.significant?('Result: the '+t.winner+' variant won ('+pp(t.deltaPp)+' CTR for the test, z = '+t.z+').'):('Result: too close to call ('+pp(t.deltaPp)+' CTR for the test; '+t.reason+').')));
@@ -829,18 +842,43 @@
   }
   function renderNext(plan){
     var b=block('Next experiment','What exactly are we testing?');
-    b.appendChild(table(['Role','Audience','Channel','Angle','Content type','Headline','Audience split'],plan.spec.cells.map(function(c){
-      return {cells:[c.role,aud(c.audienceId),CH[c.channel],angle(c.messagingAngle),ctype(c.contentType),c.variant.headline,Math.round(c.share*100)+'%']}}),6,[3,4,6]));
+    b.appendChild(table(['Variant','Audience','Channel','Angle','Content type','Headline','Audience split'],plan.spec.cells.map(function(c){
+      return {cells:[variantLabel(c),aud(c.audienceId),CH[c.channel],angle(c.messagingAngle),ctype(c.contentType),c.variant.headline,Math.round(c.share*100)+'%']}}),6,[3,4,6]));
     b.appendChild(el('div','dsum','Hypothesis: '+plan.marketing.recommendation.hypothesis));
     resultsButton(b,'Run next experiment');
   }
 
-  async function load(){
-    busy=true;syncControls();clearError();out.textContent='';statusEl.textContent='';
-    var res=await api('GET','session');busy=false;
-    if(res.network||!res.ok){state=null;showError(res.network?'The live demo runs on the deployed site at signalloop-shiva.netlify.app.':(res.body.error||'Could not load the session.'));syncControls();return}
-    state=res.body;
-    if(!objSel.options.length)state.objectives.forEach(function(o){var op=el('option',null,o.label);op.value=o.id;objSel.appendChild(op)});
+  // Opening the page or switching company makes no request. The demo starts from the settings built into
+  // the page, or from this visitor's last results saved in the browser. Only Run, Ask and Start over call
+  // the API; the server copy is fetched only if the saved copy turns out to be out of date.
+  var STATIC=JSON.parse($('demo-static').textContent);
+  function storageKey(){return 'signalloop-state-'+sessionId+'-'+company}
+  function saveState(){
+    try{localStorage.setItem(storageKey(),JSON.stringify(state));if(state.labels&&state.labels.crm)localStorage.setItem('signalloop-crm-label',state.labels.crm)}catch(e){}
+  }
+  function savedState(){
+    try{var s=JSON.parse(localStorage.getItem(storageKey())||'null');return s&&s.companyKey===company?s:null}catch(e){return null}
+  }
+  function emptyState(){
+    // The CRM label depends on the server's HubSpot setting, so it appears once the server has reported it.
+    var labels=Object.assign({},STATIC.labels),crm=null;
+    try{crm=localStorage.getItem('signalloop-crm-label')}catch(e){}
+    if(crm)labels.crm=crm;
+    return {company:STATIC.companies[company],companyKey:company,objective:find(STATIC.objectives,objSel.value||STATIC.defaultObjective),objectives:STATIC.objectives,
+      experimentCount:0,maxExperiments:STATIC.maxExperiments,experiments:[],analytics:null,pendingPlan:null,labels:labels,audiences:[],angles:[],contentTypes:[]};
+  }
+  async function refreshFromServer(){
+    var res=await api('GET','session');
+    if(res.network||!res.ok)return false;
+    state=res.body;saveState();render();return true;
+  }
+  function load(){
+    clearError();statusEl.textContent='';
+    if(!objSel.options.length){
+      STATIC.objectives.forEach(function(o){var op=el('option',null,o.label);op.value=o.id;objSel.appendChild(op)});
+      objSel.value=STATIC.defaultObjective;
+    }
+    state=savedState()||emptyState();
     render();setSteps(-1,state.pendingPlan?6:(state.experimentCount?3:0));syncControls();
   }
 
@@ -848,7 +886,7 @@
   resetBtn.addEventListener('click',async function(){
     if(busy)return;busy=true;syncControls();clearError();
     var res=await api('POST','reset',{objective:objSel.value});busy=false;
-    if(res.ok){state=res.body;render();setSteps(-1,0);statusEl.textContent='Session cleared.'}else showError((res.body&&res.body.error)||'Could not reset.');
+    if(res.ok){state=res.body;saveState();render();setSteps(-1,0);statusEl.textContent='Session cleared.'}else showError((res.body&&res.body.error)||'Could not reset.');
     syncControls();
   });
   objSel.addEventListener('change',function(){if(state&&state.pendingPlan)statusEl.textContent='The new objective applies to the next plan the agents make.'});
