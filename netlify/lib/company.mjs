@@ -1,9 +1,9 @@
-// Shared company data for the live demo: profiles and sample contacts from the Python project
-// (one source of truth), plus labels for channels and campaign objectives.
+// Shared company data: the company profiles (audiences, channels, messaging angles, content types,
+// brand rules) and fictional sample contacts, plus labels for channels and campaign objectives.
 
-import ramp from "../../ai-content-pipeline/examples/ramp.json" with { type: "json" };
-import square from "../../ai-content-pipeline/examples/square.json" with { type: "json" };
-import contactBook from "../../ai-content-pipeline/data/contacts.json" with { type: "json" };
+import ramp from "../../data/companies/ramp.json" with { type: "json" };
+import square from "../../data/companies/square.json" with { type: "json" };
+import contactBook from "../../data/contacts.json" with { type: "json" };
 
 export const PROFILES = { ramp, square };
 export const CONTACTS = contactBook;

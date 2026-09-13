@@ -1,0 +1,43 @@
+{
+  "name": "Company name",
+  "context": "One or two sentences on what the company sells and to whom. Steers both agents.",
+  "brand_context": {
+    "voice": "How the brand sounds.",
+    "positioning": "The one-line positioning.",
+    "proof_rules": "Never invent customer names, statistics, quotes or product features."
+  },
+  "messaging_angles": [
+    { "id": "angle_id", "label": "Angle label", "description": "What this message emphasizes." }
+  ],
+  "content_types": [
+    { "id": "how_to_guide", "label": "How-to guide" }
+  ],
+  "content_constraints": {
+    "email": { "format": "Marketing email", "max_words": 140, "subject_max_chars": 60 },
+    "linkedin": { "format": "LinkedIn post", "max_words": 220 },
+    "general": "One clear CTA per piece. No invented statistics, customer names or quotes."
+  },
+  "blog": {
+    "title": "Baseline topic used in the first (baseline) experiment",
+    "outline": ["Point one", "Point two"],
+    "draft": "Baseline draft."
+  },
+  "personas": [
+    {
+      "id": "audience_id",
+      "name": "Audience display name (role or stage)",
+      "short_name": "Plural audience name",
+      "segment": "persona_audience_id",
+      "channels": ["email", "linkedin"],
+      "default_angle": "angle_id",
+      "default_content_type": "how_to_guide",
+      "profile_summary": "Who this audience is.",
+      "pain_points": ["Pain point"],
+      "newsletter": {
+        "subject": "Baseline subject line",
+        "preview": "Baseline preview text",
+        "body": "Hi {first_name},\n\nBaseline body.\n\n→ Read the post"
+      }
+    }
+  ]
+}

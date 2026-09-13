@@ -2,7 +2,7 @@
   "name": "signalloop",
   "private": true,
   "type": "module",
-  "description": "SignalLoop live demo: a Netlify Function that runs the write, send, measure, improve loop.",
+  "description": "SignalLoop: AI-assisted marketing experimentation. Deterministic analytics, a Marketing Agent and a Content Agent on Netlify Functions.",
   "scripts": {
     "dev": "node netlify/dev-server.mjs",
     "test": "node --test netlify/test/*.test.mjs"

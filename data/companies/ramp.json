@@ -1,7 +1,6 @@
 {
   "name": "Ramp",
   "context": "Ramp is a finance automation platform that combines corporate cards, expense management, bill payments, procurement, and accounting automation. It helps finance teams control spend and close the books faster while employees buy what they need within policy. You write sharp, credible B2B copy for finance and operations buyers. Never invent product features or customer metrics.",
-  "segmentation_logic": "by organizational role (spend touches finance leadership, accounting, and every employee who buys)",
   "blog": {
     "title": "How finance teams control spend without slowing the business",
     "outline": [
@@ -19,13 +18,6 @@
       "id": "finance_leader",
       "name": "Finance Leader (CFO / VP Finance)",
       "segment": "persona_finance_leader",
-      "angle": "Economic buyer. Lead with real-time spend visibility, savings, and control that scales with growth.",
-      "engagement": {
-        "open": 0.46,
-        "click": 0.17,
-        "unsub": 0.004
-      },
-      "audience_size": 260,
       "newsletter": {
         "subject": "See spend as it happens, not at month-end",
         "preview": "Control that scales with the company.",
@@ -50,13 +42,6 @@
       "id": "controller",
       "name": "Controller / Accounting Lead",
       "segment": "persona_controller",
-      "angle": "Operator. Lead with a faster close: automatic receipt capture, coding, and reconciliation, with fewer people to chase.",
-      "engagement": {
-        "open": 0.44,
-        "click": 0.15,
-        "unsub": 0.005
-      },
-      "audience_size": 240,
       "newsletter": {
         "subject": "Close the books without chasing receipts",
         "preview": "Less reconciliation, more analysis.",
@@ -81,13 +66,6 @@
       "id": "employee_spender",
       "name": "Employee Spender (any team)",
       "segment": "persona_employee_spender",
-      "angle": "End user. Lead with buying what you need in minutes, clear policy up front, and no expense reports.",
-      "engagement": {
-        "open": 0.39,
-        "click": 0.1,
-        "unsub": 0.009
-      },
-      "audience_size": 900,
       "newsletter": {
         "subject": "Buy what you need, without the expense report",
         "preview": "Clear rules, fast approvals.",
@@ -108,20 +86,6 @@
       ]
     }
   ],
-  "optimization": {
-    "next_topics": [
-      "From expense reports to real-time spend visibility: a finance leader's playbook",
-      "Month-end close in days, not weeks: what to automate first",
-      "Card policies that employees actually follow",
-      "Catching duplicate software spend before renewal"
-    ],
-    "headline_variants": [
-      "Control Spend Without Slowing the Business",
-      "The Real-Time Spend Playbook for Growing Finance Teams",
-      "Stop Finding Out About Spend at Month-End"
-    ],
-    "rationale": "Click-through is strongest with the finance-leader segment on visibility-and-control framing, so the next slate leans into real-time spend and a faster close rather than generic expense tips."
-  },
   "brand_context": {
     "voice": "Sharp, credible and practical. Speaks to finance and operations people as peers. No hype.",
     "positioning": "Finance automation that gives companies control over spend without slowing the business down.",
