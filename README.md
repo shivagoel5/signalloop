@@ -2,7 +2,7 @@
 
 **A product marketing prototype built around one question: given campaign evidence, which audience, channel and message should a marketer test next, and why?** Deterministic code measures how audiences, channels and messages perform; a **Marketing Agent** recommends the next experiment and cites its evidence; a **Content Agent** turns the approved recommendation into the asset to test. A marketer approves each step, and every experiment runs against the best version so far.
 
-### 👉 [View the case study and live demo](https://signalloop-shiva.netlify.app)
+### 👉 [View the case study and live demo](https://signalloop-dun.vercel.app)
 
 A product marketing portfolio project by **Shiva Goel**.
 
