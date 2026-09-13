@@ -1,7 +1,8 @@
 // SignalLoop live demo API.
 //   GET  /api/session?sessionId=&company=         current session: experiments, analytics, pending plan
 //   POST /api/run    {sessionId, company, objective}  run the baseline, or the pending planned experiment
-//   POST /api/plan   {sessionId, company, objective}  Marketing Agent -> Content Agent -> next experiment
+//   POST /api/strategy {sessionId, company, objective}  Marketing Agent: what to test next
+//   POST /api/content  {sessionId, company}             Content Agent: the variant; the next experiment is then ready to run
 //   POST /api/reset  {sessionId, company}            start the session over
 
 import { HubSpotClient, HubSpotError } from "../lib/hubspot.mjs";
@@ -9,12 +10,12 @@ import { LLMClient, LLMUnavailableError } from "../lib/llm.mjs";
 import { AgentError } from "../lib/agents/run-agent.mjs";
 import { OBJECTIVES, PROFILES } from "../lib/company.mjs";
 import { computeAnalytics } from "../lib/analytics.mjs";
-import { MAX_EXPERIMENTS, baselineSpec, newSession, planNextExperiment, runExperiment } from "../lib/loop.mjs";
+import { MAX_EXPERIMENTS, baselineSpec, createContent, newSession, recommendStrategy, runExperiment } from "../lib/loop.mjs";
 import { openStore } from "../lib/store.mjs";
 
 // Bounds CRM and AI usage from a public page, on top of the per-visitor rate limit below.
 const DAILY_RUN_CAP = 400;
-const DAILY_PLAN_CAP = 150;
+const DAILY_AI_CAP = 300; // agent calls: a recommendation and its content count separately
 const SESSION_ID = /^[a-z0-9-]{16,64}$/i;
 
 export default async (req) => {
@@ -49,7 +50,7 @@ export default async (req) => {
   if (route === "run") {
     if (session.experiments.length >= MAX_EXPERIMENTS) return json({ error: `This session has reached ${MAX_EXPERIMENTS} experiments. Start over to run more.` }, 409);
     const spec = session.experiments.length === 0 ? baselineSpec(profile) : session.pendingPlan?.spec;
-    if (!spec) return json({ error: "Plan the next experiment before running it." }, 409);
+    if (!spec) return json({ error: "Create the content for the next experiment before running it." }, 409);
     if (!(await withinDailyCap(store, "runs", DAILY_RUN_CAP))) return json({ error: "The demo has reached today's run limit. Please try again tomorrow." }, 429);
 
     const hubspot = new HubSpotClient({ token: env("HUBSPOT_ACCESS_TOKEN"), mode: env("HUBSPOT_MODE") || "mock" });
@@ -67,28 +68,33 @@ export default async (req) => {
     }
   }
 
-  if (route === "plan") {
+  if (route === "strategy" || route === "content") {
     if (!session.experiments.length) return json({ error: "Run the baseline experiment first." }, 409);
-    if (session.pendingPlan) return json(sessionView(profile, session));
     if (session.experiments.length >= MAX_EXPERIMENTS) return json({ error: `This session has reached ${MAX_EXPERIMENTS} experiments.` }, 409);
+    // A repeated click returns the step that already exists instead of calling the agent again.
+    if (route === "strategy" && session.pendingPlan) return json(sessionView(profile, session));
+    if (route === "content" && !session.pendingPlan?.marketing) return json({ error: "Get a recommendation before creating content." }, 409);
+    if (route === "content" && session.pendingPlan.spec) return json(sessionView(profile, session));
 
     const llm = new LLMClient({ env });
     if (!llm.configured) return json({ error: "AI agents are not connected yet (no GROQ_API_KEY or GEMINI_API_KEY is set).", aiUnavailable: true }, 503);
-    if (!(await withinDailyCap(store, "plans", DAILY_PLAN_CAP))) return json({ error: "The AI agents have reached today's limit. Please try again tomorrow.", aiUnavailable: true }, 429);
+    if (!(await withinDailyCap(store, "ai", DAILY_AI_CAP))) return json({ error: "The AI agents have reached today's limit. Please try again tomorrow.", aiUnavailable: true }, 429);
 
     try {
-      const { analytics } = await planNextExperiment({ profile, session, llm });
+      const step = route === "strategy" ? recommendStrategy : createContent;
+      const { analytics } = await step({ profile, session, llm });
       await store.setJSON(key, session);
       return json(sessionView(profile, session, analytics));
     } catch (err) {
-      console.error("SignalLoop plan failed:", err);
+      console.error(`SignalLoop ${route} failed:`, err);
       if (err instanceof LLMUnavailableError) {
         return json({ error: "The AI providers are unavailable right now (rate limit or outage). Please try again shortly.", aiUnavailable: true, attempts: err.attempts }, 503);
       }
       if (err instanceof AgentError) {
-        return json({ error: "The agents could not produce a valid, data-backed plan. Please try again.", attempts: err.details?.attempts }, 502);
+        const what = route === "strategy" ? "a valid, data-backed recommendation" : "content that passes the checks";
+        return json({ error: `The agent could not produce ${what}. Please try again.`, attempts: err.details?.attempts }, 502);
       }
-      return json({ error: "Planning failed. Please try again in a minute." }, 502);
+      return json({ error: "Something went wrong. Please try again in a minute." }, 502);
     }
   }
 
@@ -96,7 +102,7 @@ export default async (req) => {
 };
 
 export const config = {
-  path: ["/api/session", "/api/run", "/api/plan", "/api/reset"],
+  path: ["/api/session", "/api/run", "/api/strategy", "/api/content", "/api/reset"],
   rateLimit: { windowLimit: 30, windowSize: 60, aggregateBy: ["ip"] },
 };
 
@@ -121,7 +127,7 @@ function sessionView(profile, session, analytics) {
       crm: env("HUBSPOT_MODE") === "live" && env("HUBSPOT_ACCESS_TOKEN") ? "LIVE" : "MOCK",
       delivery: "SIMULATED",
       performance: "SIMULATED",
-      analytics: "DETERMINISTIC",
+      analytics: "CODE",
       marketing: "AI",
       contentPlanning: "AI",
       contentGeneration: "AI",

@@ -1,7 +1,7 @@
 // Read-only tools for the two agents. Every tool returns data computed by the analytics engine or
 // stored in the company profile; nothing here lets an agent change metrics or history.
 
-import { CHANNEL_LABELS, getAudience } from "../company.mjs";
+import { CHANNEL_LABELS, angleLabel, contentTypeLabel, getAudience } from "../company.mjs";
 
 export function marketingToolbox({ profile, analytics, experiments, controlFor }) {
   const audienceIds = profile.personas.map((p) => p.id);
@@ -43,7 +43,7 @@ export function marketingToolbox({ profile, analytics, experiments, controlFor }
             audienceId: id,
             channels: b.channels.map((c) => {
               const control = controlFor?.(id, c.channel);
-              return { ...slimChannel(c), currentControl: control ? `${control.messagingAngle} + ${control.contentType}` : null };
+              return { ...slimChannel(c), currentControl: control ? `${angleLabel(profile, control.messagingAngle)} + ${contentTypeLabel(profile, control.contentType)}` : null };
             }),
             efficiencyLeader: b.channelLeaders.efficiency?.channel ?? null,
             volumeLeader: b.channelLeaders.volume?.channel ?? null,

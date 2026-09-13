@@ -8,7 +8,7 @@
 import { PROFILES, OBJECTIVES, CHANNEL_LABELS, angleLabel, contentTypeLabel } from "../lib/company.mjs";
 import { HubSpotClient } from "../lib/hubspot.mjs";
 import { LLMClient } from "../lib/llm.mjs";
-import { baselineSpec, newSession, planNextExperiment, runExperiment } from "../lib/loop.mjs";
+import { baselineSpec, createContent, newSession, recommendStrategy, runExperiment } from "../lib/loop.mjs";
 
 const [companyKey = "ramp", objectiveId = "product_consideration"] = process.argv.slice(2);
 if (!PROFILES[companyKey]) throw new Error(`Unknown company "${companyKey}". Use ramp or square.`);
@@ -35,11 +35,11 @@ if (!llm.configured) {
   process.exit(0);
 }
 
-console.log("\n2. Planning with the agents…");
+console.log("\n2. Marketing Agent: what to test next…");
 const started = Date.now();
 try {
-  const { plan } = await planNextExperiment({ profile, session, llm });
-  const m = plan.marketing;
+  const { plan: strategy } = await recommendStrategy({ profile, session, llm });
+  const m = strategy.marketing;
   const r = m.recommendation;
   console.log(`\nMarketing Agent (AI · ${m.provider} ${m.model})`);
   console.log(`   Target:     ${audienceName(r.priorityAudience)} on ${CHANNEL_LABELS[r.recommendedChannel]}`);
@@ -51,18 +51,23 @@ try {
   for (const e of m.evidence) console.log(`   - ${e.statement} [${e.metricId}: ${e.metric ? `${pct(e.metric.ctr)} CTR, ${e.metric.clicks}/${e.metric.reach}` : "?"}]`);
   console.log(`   Tools: ${m.toolCalls.map((c) => c.name + (c.suppliedBySystem ? "*" : "")).join(", ")}  (* supplied by the system)`);
 
+  console.log("\n3. Content Agent: creating the variant…");
+  const { plan } = await createContent({ profile, session, llm });
   const c = plan.content;
+  const g = c.generatedContent;
   console.log(`\nContent Agent (AI · ${c.provider} ${c.model})`);
   console.log(`   Topic:    ${c.contentPlan.topic}`);
   console.log(`   Headline: ${c.contentPlan.headline}`);
   console.log(`   Hook:     ${c.contentPlan.hook}`);
-  console.log(`   CTA:      ${c.contentPlan.cta}`);
   console.log(`   Format:   ${c.contentPlan.format}`);
-  console.log(`\n   ${c.generatedContent.title}\n   ${c.generatedContent.body.replace(/\n/g, "\n   ")}`);
+  console.log(`\n   Title:    ${g.title}`);
+  if (g.previewText) console.log(`   Preview:  ${g.previewText}`);
+  console.log(`\n   ${g.paragraphs.join("\n\n   ")}`);
+  console.log(`\n   [Button: ${g.ctaText}]`);
 
   const [test, control] = plan.spec.cells;
   const variantLabel = (c) => `${angleLabel(profile, c.messagingAngle)}, ${contentTypeLabel(profile, c.contentType).toLowerCase()}`;
-  console.log(`\n3. Next experiment on ${CHANNEL_LABELS[test.channel]}: ${variantLabel(test)} (test) vs ${variantLabel(control)} (control), 50/50`);
+  console.log(`\n4. Next experiment on ${CHANNEL_LABELS[test.channel]}: ${variantLabel(test)} (new variant) vs ${variantLabel(control)} (best so far), 50/50`);
 } catch (err) {
   console.log(`\nPlanning failed: ${err.message}`);
   for (const a of err.attempts ?? err.details?.attempts ?? []) console.log(`   - ${JSON.stringify(a).slice(0, 240)}`);

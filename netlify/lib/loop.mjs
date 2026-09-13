@@ -96,15 +96,42 @@ export async function runExperiment({ profile, companyKey, session, spec, hubspo
   return { experiment, analytics, distribution, crmState: distribution.crmState };
 }
 
-export async function planNextExperiment({ profile, session, llm }) {
+// Planning step 1: the Marketing Agent recommends what to test next. The visitor reviews it before any
+// content is created.
+export async function recommendStrategy({ profile, session, llm }) {
   const analytics = computeAnalytics({ profile, experiments: session.experiments, objectiveId: session.objectiveId });
-
   const marketing = await runMarketingAgent({
     llm, profile, analytics, experiments: session.experiments,
     controlFor: (audienceId, channel) => controlFor(profile, session.experiments, audienceId, channel),
   });
-  const rec = marketing.output;
+
+  session.pendingPlan = {
+    stage: "strategy",
+    marketing: {
+      recommendation: marketing.output,
+      evidence: marketing.evidence,
+      toolCalls: marketing.toolCalls,
+      systemSupplied: marketing.systemSupplied,
+      provider: marketing.provider,
+      model: marketing.model,
+    },
+    llmTrace: [...llm.trace],
+    createdAt: new Date().toISOString(),
+  };
+  return { plan: session.pendingPlan, analytics };
+}
+
+// Planning step 2: the Content Agent plans and writes the variant for the recommendation. The next
+// experiment (new variant vs the best so far) is then ready to run.
+export async function createContent({ profile, session, llm }) {
+  const pending = session.pendingPlan;
+  if (!pending?.marketing) throw new Error("Get a recommendation before creating content.");
+  const traceStart = llm.trace.length;
+  const analytics = computeAnalytics({ profile, experiments: session.experiments, objectiveId: session.objectiveId });
+  const rec = pending.marketing.recommendation;
   const content = await runContentAgent({ llm, profile, analytics, experiments: session.experiments, recommendation: rec });
+  const { contentPlan, generatedContent } = content.output;
+  const paragraphs = generatedContent.paragraphs.map((p) => p.trim()).filter(Boolean);
 
   const nextNumber = session.experiments.length + 1;
   const test = {
@@ -117,10 +144,14 @@ export async function planNextExperiment({ profile, session, llm }) {
     contentType: rec.recommendedContentType,
     variant: {
       contentVariantId: `exp${nextNumber}-test`,
-      topic: content.output.contentPlan.topic,
-      headline: content.output.contentPlan.headline,
-      body: content.output.generatedContent.body,
-      title: content.output.generatedContent.title,
+      topic: contentPlan.topic,
+      // What the audience actually sees (the email subject or post title), so tables, results and HubSpot match the preview.
+      headline: generatedContent.title,
+      title: generatedContent.title,
+      previewText: generatedContent.previewText,
+      paragraphs,
+      ctaText: generatedContent.ctaText,
+      body: paragraphs.join("\n\n"),
       source: "Content Agent",
     },
   };
@@ -129,31 +160,35 @@ export async function planNextExperiment({ profile, session, llm }) {
   const spec = {
     kind: "test_vs_control",
     cells: [test, control],
-    marketingAgentRecommendation: { ...rec, provider: marketing.provider, model: marketing.model },
+    marketingAgentRecommendation: { ...rec, provider: pending.marketing.provider, model: pending.marketing.model },
     contentAgentRecommendation: { ...content.output, provider: content.provider, model: content.model },
   };
 
+  // A real contact from the audience, so the email preview can show how {first_name} is filled in.
+  const audience = getAudience(profile, rec.priorityAudience);
+  const sample = CONTACTS.find((c) => c.persona === audience.segment);
   session.pendingPlan = {
+    ...pending,
+    stage: "content",
     spec,
-    marketing: {
-      recommendation: rec,
-      evidence: marketing.evidence,
-      toolCalls: marketing.toolCalls,
-      systemSupplied: marketing.systemSupplied,
-      provider: marketing.provider,
-      model: marketing.model,
-    },
     content: {
       ...content.output,
       toolCalls: content.toolCalls,
       systemSupplied: content.systemSupplied,
       provider: content.provider,
       model: content.model,
+      sampleContact: sample ? { firstName: sample.first_name, lastName: sample.last_name, company: sample.company } : null,
     },
-    llmTrace: llm.trace,
-    createdAt: new Date().toISOString(),
+    llmTrace: [...(pending.llmTrace ?? []), ...llm.trace.slice(traceStart)],
+    contentCreatedAt: new Date().toISOString(),
   };
   return { plan: session.pendingPlan, analytics };
+}
+
+// Both planning steps in one call, for the terminal script and tests.
+export async function planNextExperiment({ profile, session, llm }) {
+  await recommendStrategy({ profile, session, llm });
+  return createContent({ profile, session, llm });
 }
 
 // Control = the best-performing variant so far for the same audience and channel, re-run on the

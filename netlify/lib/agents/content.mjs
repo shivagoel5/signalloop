@@ -20,7 +20,13 @@ Rules:
 - Do not use numbers of any kind: no percentages, hours saved, durations, prices or offers. They are claims we cannot verify.
 - Write for the priority audience only, and refer to that audience by its own name.
 - Merge fields: only {first_name}, and only in email. Social posts and blog content are not personalized per contact.
-- One clear CTA.`;
+- One clear CTA.
+
+The generated content is shown as a preview of the real channel, so return it in parts:
+- title: the email subject line; for LinkedIn and Facebook the headline of the linked article; for Instagram the short text shown on the image; for a blog the article title.
+- previewText: the email's inbox preview text; for LinkedIn and Facebook a one-line description of the link; for a blog the standfirst under the title; for Instagram an empty string.
+- paragraphs: the body as separate paragraphs. An email starts with the greeting "Hi {first_name},".
+- ctaText: only the words on the button or link. Never write URLs, links or placeholders such as [Link]; the CTA is shown as a button.`;
 
 export async function runContentAgent({ llm, profile, analytics, experiments, recommendation }) {
   const toolbox = contentToolbox({ profile, analytics, experiments, recommendation });
@@ -49,8 +55,8 @@ export async function runContentAgent({ llm, profile, analytics, experiments, re
         },
         generatedContent: {
           type: "object",
-          properties: { title: str, body: str },
-          required: ["title", "body"],
+          properties: { title: str, previewText: str, paragraphs: { type: "array", items: str }, ctaText: str },
+          required: ["title", "previewText", "paragraphs", "ctaText"],
           additionalProperties: false,
         },
       },
@@ -74,10 +80,25 @@ export async function runContentAgent({ llm, profile, analytics, experiments, re
       errors.push("contentPlan.contentBrief must have 3 to 7 steps");
     }
     if (typeof plan.headline === "string" && plan.headline.length > 110) errors.push("headline must be 110 characters or fewer");
-    const words = String(gen.body ?? "").split(/\s+/).filter(Boolean).length;
-    if (words < 30) errors.push("generatedContent.body is too short");
+    const paragraphs = Array.isArray(gen.paragraphs) ? gen.paragraphs.map((p) => String(p ?? "").trim()).filter(Boolean) : [];
+    if (!paragraphs.length || paragraphs.length > 8) errors.push("generatedContent.paragraphs must have 1 to 8 paragraphs");
+    if (typeof gen.title !== "string" || gen.title.trim().length < 3) errors.push("generatedContent.title is missing");
+    if (constraints?.subject_max_chars && String(gen.title ?? "").length > constraints.subject_max_chars) {
+      errors.push(`The subject line must be ${constraints.subject_max_chars} characters or fewer`);
+    }
+    if (String(gen.previewText ?? "").length > 160) errors.push("generatedContent.previewText must be 160 characters or fewer");
+    if (typeof gen.ctaText !== "string" || gen.ctaText.trim().length < 2 || gen.ctaText.length > 40) {
+      errors.push("generatedContent.ctaText must be the button text only, 40 characters or fewer");
+    }
+    const body = paragraphs.join("\n\n");
+    const words = body.split(/\s+/).filter(Boolean).length;
+    if (words < 30) errors.push("generatedContent.paragraphs are too short");
     if (constraints?.max_words && words > Math.round(constraints.max_words * 1.3)) {
-      errors.push(`generatedContent.body has ${words} words; the ${recommendation.recommendedChannel} limit is ${constraints.max_words}`);
+      errors.push(`generatedContent.paragraphs have ${words} words; the ${recommendation.recommendedChannel} limit is ${constraints.max_words}`);
+    }
+    const generated = [gen.title, gen.previewText, body, gen.ctaText].map((t) => String(t ?? "")).join("\n");
+    if (/\[[^\]]*\]|https?:\/\/|www\./i.test(generated)) {
+      errors.push("Remove links, URLs and placeholders such as [Link]: the CTA text is shown as a button");
     }
     for (const prior of previousTopics) {
       if (similarity(plan.topic, prior) >= 0.6 || similarity(plan.headline, prior) >= 0.6) {
@@ -85,11 +106,11 @@ export async function runContentAgent({ llm, profile, analytics, experiments, re
         break;
       }
     }
-    const claimText = [plan.topic, plan.hook, plan.headline, plan.keyMessage, plan.cta, ...(plan.supportingPoints ?? []), gen.title, gen.body];
+    const claimText = [plan.topic, plan.hook, plan.headline, plan.keyMessage, plan.cta, ...(plan.supportingPoints ?? []), generated];
     if (claimText.some((t) => /\d/.test(String(t ?? "")))) {
       errors.push("Remove every number (statistics, percentages, hours saved, durations, prices, offers): the proof rules forbid claims we cannot verify");
     }
-    const mergeFields = String(gen.body ?? "").match(/\{+[^{}]*\}+/g) ?? [];
+    const mergeFields = generated.match(/\{+[^{}]*\}+/g) ?? [];
     if (mergeFields.some((f) => f !== "{first_name}")) errors.push("The only merge field allowed is {first_name}");
     if (recommendation.recommendedChannel !== "email" && mergeFields.length) {
       errors.push(`Remove merge fields: ${recommendation.recommendedChannel} content is not personalized per contact`);

@@ -168,24 +168,108 @@
   .lbl b{font-size:10.5px;letter-spacing:.06em;border-radius:999px;padding:2px 8px;background:#EDEFFA;color:#303DAF}
   .lbl-live b{background:#E2F3EB;color:#0B6B4C}
   .lbl-simulated b,.lbl-mock b{background:#FCE8EF;color:#A61E4D}
-  .lbl-deterministic b,.lbl-stored b{background:#F1EFE8;color:#444441}
+  .lbl-code b,.lbl-stored b{background:#F1EFE8;color:#444441}
   .btn.run{font:inherit;font-size:14.5px;font-weight:700;background:var(--ink);color:#fff;border:0;cursor:pointer}
   .btn.run:hover{background:#262E66}
   .btn.run:disabled{opacity:.6;cursor:default}
   button.btn.ghostd{font:inherit;font-size:14px;font-weight:600;cursor:pointer}
   button.btn.ghostd:disabled{opacity:.6;cursor:default}
-  .demo-steps{list-style:none;display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin:18px 0 0;padding:0;counter-reset:step}
-  .demo-steps li{counter-increment:step;font-size:12.5px;font-weight:700;color:var(--mut);border-top:3px solid var(--line);padding-top:8px;transition:color .2s ease,border-color .2s ease}
-  .demo-steps li::before{content:counter(step) " · "}
-  .demo-steps li.active{color:var(--indigo);border-color:var(--indigo)}
-  .demo-steps li.done{color:var(--green);border-color:var(--green)}
-  .demo-steps li.fail{color:var(--signal);border-color:var(--signal)}
-  .demo-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:16px}
-  .demo-note{font-size:13px;color:var(--mut);margin:16px 0 0;max-width:none}
-  .demo-out{margin-top:10px}
-  .dblock{padding:16px 0;border-top:1px solid var(--line)}
+  .step:focus-visible,details>summary:focus-visible{outline:2px solid var(--indigo);outline-offset:2px}
+
+  /* live demo: stepper and one stage at a time */
+  .stepper{list-style:none;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:18px 0 0;padding:0}
+  .stepper li{border-top:3px solid var(--line)}
+  .stepper li.done{border-color:var(--green)}
+  .stepper li.current{border-color:var(--indigo)}
+  .step{display:flex;align-items:center;gap:8px;width:100%;padding:9px 0 0;font:inherit;font-size:13px;font-weight:700;color:var(--mut);background:none;border:0;text-align:left}
+  button.step{cursor:pointer}
+  button.step:hover .step-t{text-decoration:underline;text-underline-offset:3px}
+  button.step:disabled{cursor:default}
+  .step-n{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-size:11.5px;background:#EEF0F8;color:var(--mut);flex:none}
+  .stepper li.done .step{color:var(--green)}
+  .stepper li.done .step-n{background:#E2F3EB;color:#0B6B4C}
+  .stepper li.current .step{color:var(--indigo)}
+  .stepper li.current .step-n{background:var(--indigo);color:#fff}
+  .stepper li.shown .step-t{text-decoration:underline;text-underline-offset:3px}
+  .stage{margin-top:14px;border:1px solid var(--line);border-radius:14px;padding:20px 22px 22px;background:#FBFCFF}
+  .stage-k{font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--indigo)}
+  .stage-h{font-family:'Newsreader',Georgia,serif;font-size:24px;font-weight:500;margin:4px 0 8px}
+  .stage-intro{font-size:14.5px;color:#4B5169;margin:0 0 12px}
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+  .chip{font-size:12px;font-weight:600;background:#EEF0F8;color:#4B5169;border-radius:999px;padding:3px 10px}
+  .chip.ai,.chip.sim,.chip.code{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:4px 10px}
+  .chip.ai{background:#EDEFFA;color:#303DAF}
+  .chip.sim{background:#FCE8EF;color:#A61E4D}
+  .chip.code{background:#F1EFE8;color:#444441}
+  .viewing{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;background:#F1F3FC;border-radius:10px;padding:8px 12px;margin-bottom:14px;font-size:13.5px;color:#4B5169}
+  .viewing .btn{padding:6px 12px;font-size:13px}
+  .dnote{background:#E9F6F0;color:#0B6B4C;border-radius:10px;padding:9px 14px;margin-bottom:14px;font-size:14px}
+  .stage-action{margin-top:20px;padding-top:16px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px}
+  .stage-action .dsub{margin:0;max-width:56ch}
+  .dprogress{flex-basis:100%}
+  .dprogress .bar{height:4px;border-radius:999px;background:#E6E9F8;overflow:hidden;position:relative}
+  .dprogress .bar::after{content:"";position:absolute;top:0;bottom:0;left:0;width:35%;border-radius:999px;background:var(--indigo);animation:slide 1.2s ease-in-out infinite}
+  @keyframes slide{from{transform:translateX(-100%)}to{transform:translateX(290%)}}
+  .aud-list{list-style:none;margin:4px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .aud-list li{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px}
+  .aud-list b{display:block}
+  .aud-list span{font-size:12.5px;color:var(--mut)}
+  .verdict{border-radius:12px;padding:14px 16px;margin:0 0 14px;border:1px solid var(--line);background:#F7F8FE}
+  .verdict.win{border-color:#BFE3D3;background:#F3FBF7}
+  .verdict.lose{border-color:#F3C6D5;background:#FFF6F9}
+  .verdict-h{font-weight:700;font-size:17px}
+  .versus{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0 4px}
+  .vs-card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+  .vs-card.test{border-color:#C9CEF3}
+  .vs-l{font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--mut)}
+  .vs-card.test .vs-l{color:var(--indigo)}
+  .vs-ctr{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.2;margin-top:2px}
+  .vs-h{font-size:14px;margin-top:6px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+  .card-t{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mut)}
+  details.data,details.hist{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
+  details.data>summary,details.hist>summary{cursor:pointer;font-size:14px;font-weight:700;color:var(--indigo)}
+  details.data[open]>summary{margin-bottom:8px}
+  #demo-history details.hist{margin-top:14px;border-top:0;padding-top:0}
+  .rec{font-family:'Newsreader',Georgia,serif;font-size:21px;line-height:1.4;margin:2px 0 12px;max-width:none}
+  .rec b{font-weight:600;color:var(--indigo)}
+
+  /* live demo: channel previews */
+  .mail,.post,.blogp{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 8px 24px rgba(21,27,59,.06);margin:4px 0 0}
+  .mail{max-width:620px}
+  .mail-head{padding:16px 20px 14px;border-bottom:1px solid #EEF1FA}
+  .mail-from,.post-head{display:flex;align-items:center;gap:10px;font-size:14px;line-height:1.35}
+  .avatar{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:var(--ink);color:#fff;font-weight:700;font-size:14px;flex:none}
+  .mut{color:var(--mut);font-size:12.5px}
+  .mail-subject{font-size:19px;font-weight:700;margin-top:12px;line-height:1.3}
+  .mail-pre{font-size:13.5px;color:var(--mut);margin-top:3px}
+  .mail-body{padding:18px 20px 22px;color:#2A3050}
+  .mail-body p{margin:0 0 14px;font-size:15px;line-height:1.7;max-width:none}
+  .mail-cta{display:inline-block;margin-top:4px;background:var(--indigo);color:#fff;font-weight:700;font-size:14px;border-radius:8px;padding:10px 18px}
+  .mail-foot{font-size:12px;color:var(--mut);background:#F7F8FE;border-top:1px solid #EEF1FA;padding:8px 20px}
+  mark.merge{background:#FFF1BF;color:inherit;border-radius:4px;padding:0 3px}
+  .post{max-width:560px}
+  .post-head{padding:14px 16px 4px}
+  .post-text{padding:8px 16px 6px}
+  .post-text p{margin:0 0 10px;font-size:14.5px;line-height:1.6;max-width:none}
+  .post-link{border-top:1px solid #EEF1FA}
+  .post-img{height:120px;background:linear-gradient(135deg,#1D2558,#3F4CCB);color:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center;font-family:'Newsreader',Georgia,serif;font-size:26px}
+  .post-meta{padding:10px 16px 2px}
+  .post-title{font-weight:700;font-size:15px;line-height:1.35}
+  .post-cta{display:inline-block;margin:8px 16px 14px;border:1px solid var(--indigo);color:var(--indigo);font-weight:700;font-size:13.5px;border-radius:999px;padding:6px 14px}
+  .insta-img{aspect-ratio:1/1;max-height:340px;width:100%;background:linear-gradient(135deg,#31388F,#D6336C);color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;padding:28px;font-family:'Newsreader',Georgia,serif;font-size:26px;line-height:1.25}
+  .insta-cta{font-weight:700;color:var(--indigo)}
+  .blogp{max-width:640px;padding:22px 24px 0}
+  .blog-k{font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}
+  .blog-t{font-family:'Newsreader',Georgia,serif;font-size:26px;font-weight:500;line-height:1.2;margin:6px 0 8px}
+  .blogp p{font-size:15px;line-height:1.7;max-width:none}
+  .blogp p.blog-sf{font-size:16px;color:#4B5169;font-style:italic}
+  .blog-more{display:inline-block;font-weight:700;color:var(--indigo);margin:0 0 18px}
+  .blogp .mail-foot{margin:0 -24px}
+
+  .demo-foot{display:flex;flex-wrap:wrap;align-items:flex-start;gap:12px 18px;margin-top:16px}
+  .demo-note{font-size:13px;color:var(--mut);margin:0;max-width:none;flex:1;min-width:240px}
   .dlab{font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--indigo);margin-bottom:4px}
-  .dq{font-family:'Newsreader',Georgia,serif;font-size:19px;color:var(--ink);margin:0 0 10px}
   .dsub{font-size:13px;color:var(--mut);margin-top:6px}
   .dsubhead{margin-top:16px}
   .dtable-wrap{overflow-x:auto}
@@ -205,16 +289,13 @@
   .kv dt{font-weight:700;color:var(--mut);font-size:12.5px;padding-top:2px}
   .kv dd{margin:0}
   .kv .dlist{margin:0;padding-left:18px}
-  .agent{border:1px solid var(--line);border-radius:12px;padding:10px 14px;background:#F7F8FE}
   .why{list-style:none;margin:6px 0 0;padding:0}
   .why li{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:8px 0;font-size:14px}
-  .gen{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:#FBFBFE;margin-top:8px}
-  .gen-t{font-weight:700;font-size:16px;margin-bottom:6px}
-  .gen-b{white-space:pre-line;font-size:14.5px;line-height:1.6}
   .timeline{margin:4px 0 0;padding-left:18px;font-size:14px}
   .timeline li{margin:6px 0}
   .derr{color:#A61E4D;background:#FCE8EF;border-radius:10px;padding:10px 14px;margin-top:14px;font-size:14px}
-  @media(max-width:680px){.demo-steps{grid-template-columns:repeat(3,1fr)}.two{grid-template-columns:1fr}
+  @media(max-width:680px){.two,.versus,.aud-list{grid-template-columns:1fr}.stepper{gap:4px}.step{flex-direction:column;align-items:flex-start;gap:4px;font-size:12px}
+    .stage{padding:16px 14px}.stage-h{font-size:21px}.rec{font-size:18px}.mail-head,.mail-body,.mail-foot{padding-left:14px;padding-right:14px}
     .kv{grid-template-columns:1fr;gap:2px}.kv dt{padding-top:8px}.dtable .hm{display:none}}
 </style></head>
 <body>
@@ -481,31 +562,28 @@
 
   <section id="output">
     <div class="kicker">Demo output</div>
-    <h2>What the demo shows after an experiment</h2>
-    <p>Screenshots from one test run of the demo: a Ramp baseline experiment, then the agents' plan for the next
-    experiment. Every number is <span class="st st-sim">SIMULATED</span>. Calculations and insights are
-    <span class="st st-code">CODE</span>. The Marketing Agent's decision and the Content Agent's plan and asset are
-    <span class="st st-ai">AI</span> output, shown unedited. In this run Groq answered for the Marketing Agent and Gemini took over as fallback for the Content Agent. Try the <a href="#live">live demo</a> to run your own.</p>
-    <div class="report"><div class="lab">Analyze: what happened <em class="badge">simulated</em><span>calculated by code</span></div>
-      <img src="img/demo-analyze.jpg" alt="Analyze panel: per-audience and per-channel reach, clicks and CTR for a simulated Ramp baseline, pooled results by audience, messaging angle and content type" loading="lazy"></div>
-    <div class="report"><div class="lab">Audience insight: how each audience is behaving <em class="badge">simulated</em><span>derived by code</span></div>
-      <img src="img/demo-audience-insight.jpg" alt="Audience insight panel: plain-language statements derived from the simulated results" loading="lazy"></div>
-    <div class="report"><div class="lab">Channel insight: efficiency versus volume <em class="badge">simulated</em><span>derived by code</span></div>
-      <img src="img/demo-channel-insight.jpg" alt="Channel insight panel: efficiency leader and volume leader for each audience with supporting statements" loading="lazy"></div>
-    <div class="report"><div class="lab">Marketing Agent: what to test next <em class="st st-ai">AI</em><span>cites the metrics above</span></div>
-      <img src="img/demo-marketing-agent.jpg" alt="Marketing Agent decision: target audience, channel, messaging angle, content type, hypothesis, trade-off, and the metrics behind the recommendation" loading="lazy"></div>
-    <div class="report"><div class="lab">Content Agent: plan first, then the asset <em class="st st-ai">AI</em><span>follows the Marketing Agent's decision</span></div>
-      <img src="img/demo-content-agent.jpg" alt="Content Agent output: content plan with audience insight, angle, topic, hook, headline, key message and CTA, followed by the generated content" loading="lazy"></div>
-    <div class="report"><div class="lab">Next experiment: test versus control <em class="st st-ai">AI</em><span>then measured by code</span></div>
-      <img src="img/demo-next-experiment.jpg" alt="Next experiment: the agents' new variant tested against the current best variant for the same audience and channel" loading="lazy"></div>
+    <h2>What the demo shows, one step at a time</h2>
+    <p>Screenshots from one run of the live demo for Ramp: the baseline results, the Marketing Agent's recommendation,
+    the Content Agent's email, and the result of testing it against the best version so far. Every number is
+    <span class="st st-sim">SIMULATED</span>. Results and insights are <span class="st st-code">CODE</span>. The
+    recommendation and the email are <span class="st st-ai">AI</span> output (Gemini in this run), shown unedited.
+    Try the <a href="#live">live demo</a> to run your own.</p>
+    <div class="report"><div class="lab">Step 2 · Results: what the baseline showed <em class="badge">simulated</em><span>calculated by code</span></div>
+      <img src="img/demo-results.jpg" alt="Results step: plain-language takeaways about audiences and channels from a simulated Ramp baseline, with the full data under See the data" loading="lazy"></div>
+    <div class="report"><div class="lab">Step 3 · Strategy: what to test next <em class="st st-ai">AI</em><span>cites the measured results</span></div>
+      <img src="img/demo-strategy.jpg" alt="Strategy step: the Marketing Agent recommends an audience, channel, messaging angle and content type, with its hypothesis, reasoning, trade-off and the numbers behind it" loading="lazy"></div>
+    <div class="report"><div class="lab">Step 4 · Content: the variant, previewed as an email <em class="st st-ai">AI</em><span>follows the recommendation</span></div>
+      <img src="img/demo-content.jpg" alt="Content step: the Content Agent's email shown as an inbox preview for a sample contact, followed by the new-variant versus best-so-far experiment" loading="lazy"></div>
+    <div class="report"><div class="lab">Experiment 2 results: new variant vs best so far <em class="badge">simulated</em><span>calculated by code</span></div>
+      <img src="img/demo-verdict.jpg" alt="Results step after the test: the verdict comparing the new variant with the best-so-far variant, and updated takeaways" loading="lazy"></div>
   </section>
 
   <section id="live">
     <div class="kicker">Live demo</div>
     <h2>Run the experiment loop yourself</h2>
-    <p>Start with a baseline campaign. SignalLoop measures how each audience and channel responds, then two AI
-    agents take over: the Marketing Agent decides who to target, where, and with which message, and the Content
-    Agent plans and writes the variant to test. Run that experiment and the next recommendation reacts to what happened.</p>
+    <p>Run the loop one step at a time. Start with a baseline campaign and SignalLoop measures how each audience and
+    channel responds. Ask the Marketing Agent what to test next and review its recommendation, then have the Content
+    Agent create the variant. Run it against the best version so far, and the next recommendation builds on what happened.</p>
     <div class="demo" id="demo">
       <div class="demo-bar">
         <div class="demo-pick" role="radiogroup" aria-label="Company">
@@ -515,19 +593,16 @@
         <label class="obj" for="demo-objective">Campaign objective <select id="demo-objective"></select></label>
       </div>
       <div class="labels" id="demo-labels" aria-label="What is live, simulated or AI"></div>
-      <ol class="demo-steps" id="demo-steps" aria-live="polite">
-        <li>Distribute</li><li>Measure</li><li>Analyze</li><li>Marketing Agent</li><li>Content Agent</li><li>Next experiment</li>
-      </ol>
-      <div class="demo-actions">
-        <button type="button" class="btn run" id="demo-primary">Loading…</button>
+      <ol class="stepper" id="demo-stepper" aria-label="Steps in the experiment loop"></ol>
+      <div class="stage" id="demo-panel"></div>
+      <div id="demo-history" hidden></div>
+      <div class="demo-foot">
         <button type="button" class="btn ghostd" id="demo-reset">Start over</button>
-        <span class="dsub" id="demo-status" aria-live="polite"></span>
+        <p class="demo-note">Reach, clicks and CTR are simulated, and no emails or posts are sent. HubSpot contact and list
+        updates are real when the CRM label shows LIVE. Analytics are calculated by code; the Marketing and Content Agents
+        (Groq, with Gemini as fallback) only read those computed metrics and must cite them.</p>
       </div>
-      <div class="demo-out" id="demo-out"></div>
-      <script type="application/json" id="demo-static">{"companies":{"ramp":"Ramp","square":"Square"},"objectives":[{"id":"awareness","label":"Awareness"},{"id":"traffic","label":"Traffic"},{"id":"engagement","label":"Engagement"},{"id":"product_consideration","label":"Product consideration"},{"id":"conversion","label":"Conversion"}],"defaultObjective":"product_consideration","maxExperiments":12,"labels":{"delivery":"SIMULATED","performance":"SIMULATED","analytics":"DETERMINISTIC","marketing":"AI","contentPlanning":"AI","contentGeneration":"AI","history":"STORED"}}</script>
-      <p class="demo-note">Reach, clicks and CTR are simulated, and no emails or posts are sent. HubSpot contact and list
-      updates are real when the CRM label shows LIVE. Analytics are calculated by code; the Marketing and Content Agents
-      (Groq, with Gemini as fallback) only read those computed metrics and must cite them.</p>
+      <script type="application/json" id="demo-static">{"companies":{"ramp":{"name":"Ramp","audiences":[{"id":"finance_leader","name":"Finance Leaders","channels":["email","linkedin","blog"]},{"id":"controller","name":"Controllers","channels":["email","linkedin","blog"]},{"id":"employee_spender","name":"Employee Spenders","channels":["email","blog"]}]},"square":{"name":"Square","audiences":[{"id":"new_seller","name":"New Sellers","channels":["email","instagram","facebook"]},{"id":"growing_business","name":"Growing Businesses","channels":["email","instagram","blog"]},{"id":"multi_location","name":"Multi-Location Operators","channels":["email","linkedin","facebook"]}]}},"objectives":[{"id":"awareness","label":"Awareness"},{"id":"traffic","label":"Traffic"},{"id":"engagement","label":"Engagement"},{"id":"product_consideration","label":"Product consideration"},{"id":"conversion","label":"Conversion"}],"defaultObjective":"product_consideration","maxExperiments":12,"labels":{"delivery":"SIMULATED","performance":"SIMULATED","analytics":"CODE","marketing":"AI","contentPlanning":"AI","contentGeneration":"AI","history":"STORED"}}</script>
     </div>
   </section>
 
@@ -627,275 +702,5 @@
   addEventListener('keydown',function(e){if(e.key==='Escape')close()});
 })();
 </script>
-<script>
-(function(){
-  var demo=document.getElementById('demo');if(!demo)return;
-  var CH={email:'Email',linkedin:'LinkedIn',instagram:'Instagram',facebook:'Facebook',blog:'Blog'};
-  var LABEL_NAMES={crm:'HubSpot CRM',delivery:'Campaign delivery',performance:'Performance data',analytics:'Analytics',marketing:'Marketing recommendation',contentPlanning:'Content planning',contentGeneration:'Content generation',history:'Experiment history'};
-  function $(id){return document.getElementById(id)}
-  var out=$('demo-out'),primary=$('demo-primary'),resetBtn=$('demo-reset'),statusEl=$('demo-status'),objSel=$('demo-objective'),labelsEl=$('demo-labels');
-  var steps=[].slice.call(demo.querySelectorAll('#demo-steps li')),picks=[].slice.call(demo.querySelectorAll('.pick'));
-  var company='ramp',state=null,busy=false,sessionId=getSessionId();
-
-  function getSessionId(){
-    var id=null;try{id=localStorage.getItem('signalloop-session')}catch(e){}
-    if(!id||!/^[a-z0-9-]{16,64}$/i.test(id)){
-      id=(window.crypto&&crypto.randomUUID)?crypto.randomUUID():('s-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,12));
-      try{localStorage.setItem('signalloop-session',id)}catch(e){}
-    }
-    return id;
-  }
-  function el(tag,cls,text){var n=document.createElement(tag);if(cls)n.className=cls;if(text!=null)n.textContent=text;return n}
-  function pct(x,d){return (x*100).toFixed(d==null?1:d)+'%'}
-  function pp(x){return (x>0?'+':'')+x+'pp'}
-  function find(list,id){return (list||[]).filter(function(x){return x.id===id})[0]}
-  function aud(id){var a=find(state&&state.audiences,id);return a?a.name:id}
-  function angle(id){var a=find(state&&state.angles,id);return a?a.label:id}
-  function ctype(id){var a=find(state&&state.contentTypes,id);return a?a.label:id}
-  // Describes a row from its own data: which experiment a new variant is for, and where the control's
-  // best-so-far variant came from. Works for measured cells and for cells in a pending plan.
-  function variantLabel(c){
-    var id=c.contentVariantId||(c.variant&&c.variant.contentVariantId)||'',from=/^exp(\d+)-test$/.exec(id);
-    if(c.role==='test')return 'New variant'+(from?' · experiment '+from[1]:'');
-    if(c.role==='control')return 'Best so far · '+(from?'from experiment '+from[1]:'original message');
-    return 'Original message';
-  }
-  function wait(ms){return new Promise(function(r){setTimeout(r,ms)})}
-  function block(label,question){var b=el('section','dblock');b.appendChild(el('div','dlab',label));if(question)b.appendChild(el('div','dq',question));out.appendChild(b);return b}
-  function table(head,rows,numFrom,hideOnMobile){
-    var wrap=el('div','dtable-wrap'),t=el('table','dtable'),thead=el('thead'),tb=el('tbody'),hr=el('tr');
-    function cls(i){return [i>=numFrom?'num':'',(hideOnMobile||[]).indexOf(i)>=0?'hm':''].join(' ').trim()||null}
-    head.forEach(function(h,i){var th=el('th',cls(i),h);th.scope='col';hr.appendChild(th)});
-    thead.appendChild(hr);t.appendChild(thead);
-    rows.forEach(function(r){var tr=el('tr',r.cls||null);r.cells.forEach(function(c,i){tr.appendChild(el('td',cls(i),c))});tb.appendChild(tr)});
-    t.appendChild(tb);wrap.appendChild(t);return wrap}
-  function kv(parent,pairs){
-    var dl=el('dl','kv');
-    pairs.forEach(function(p){
-      if(p[1]==null||p[1]==='')return;
-      dl.appendChild(el('dt',null,p[0]));var dd=el('dd');
-      if(Array.isArray(p[1])){var ul=el('ul','dlist');p[1].forEach(function(x){ul.appendChild(el('li',null,x))});dd.appendChild(ul)}else dd.textContent=p[1];
-      dl.appendChild(dd)});
-    parent.appendChild(dl);return dl}
-  var localSteps=[];
-  function setSteps(active,doneUpTo,failAt){[steps,localSteps].forEach(function(list){list.forEach(function(s,i){s.className=failAt===i?'fail':i<doneUpTo?'done':i===active?'active':''})})}
-  function api(method,route,body){
-    var url='/api/'+route,init={method:method,headers:{'Content-Type':'application/json'}};
-    if(method==='GET')url+='?sessionId='+encodeURIComponent(sessionId)+'&company='+company;
-    else init.body=JSON.stringify(Object.assign({sessionId:sessionId,company:company},body||{}));
-    return fetch(url,init).then(function(r){return r.json().catch(function(){return {}}).then(function(b){return {ok:r.ok,status:r.status,body:b}})}).catch(function(){return {network:true}});
-  }
-  function clearError(){demo.querySelectorAll('.derr,.dprogress').forEach(function(e){e.remove()});localSteps=[]}
-  function showError(msg,body,where){
-    demo.querySelectorAll('.derr').forEach(function(e){e.remove()});var box=el('div','derr',msg);
-    if(body&&body.attempts&&body.attempts.length){
-      box.appendChild(el('div','dsub','Tried: '+body.attempts.map(function(a){return a.provider?(a.provider+(a.status?' ('+a.status+')':'')):(a.errors||[]).join('; ')}).join(', ')));
-    }
-    if(where)where.appendChild(box);else demo.insertBefore(box,out);
-  }
-
-  function nextAction(){
-    if(!state)return null;
-    if(state.experimentCount>=state.maxExperiments)return {label:'Session complete ('+state.maxExperiments+' experiments)',disabled:true};
-    if(state.experimentCount===0)return {label:'Run baseline experiment',route:'run'};
-    if(state.pendingPlan)return {label:'Run next experiment',route:'run'};
-    return {label:'Ask the agents what to test next',route:'plan'};
-  }
-  function syncControls(){
-    var a=nextAction();primary.textContent=a?a.label:'Loading…';
-    primary.disabled=busy||!a||!!a.disabled;resetBtn.disabled=busy||!state;objSel.disabled=busy;
-    picks.forEach(function(p){p.disabled=busy});
-  }
-
-  // Pressed from a results block (where), the progress bar, status and errors show in that block and the
-  // view stays on it while the results refresh. Pressed from the controls, they show at the top.
-  async function act(where){
-    var a=nextAction();if(!a||a.disabled||busy)return;
-    busy=true;syncControls();clearError();
-    var isRun=a.route==='run',base=isRun?0:3,btn=where&&where.querySelector('.btn.run');
-    var working=isRun?'Distributing and measuring…':'The Marketing Agent is analyzing the results, then the Content Agent will plan the variant…';
-    statusEl.textContent=working;
-    if(where){
-      if(btn)btn.disabled=true;
-      var progress=el('div','dprogress'),bar=$('demo-steps').cloneNode(true);
-      bar.removeAttribute('id');bar.removeAttribute('aria-live');
-      progress.appendChild(bar);progress.appendChild(el('div','dsub',working));where.appendChild(progress);
-      localSteps=[].slice.call(bar.children);
-    }
-    var request=api('POST',a.route,{objective:objSel.value});
-    for(var i=0;i<3;i++){setSteps(base+i,base+i);await wait(isRun?350:1100)}
-    var res=await request;
-    if(!res.network&&res.status===409&&await refreshFromServer()){
-      // The copy saved in this browser was behind the server, so continue from the server's copy.
-      localSteps=[];setSteps(-1,state.pendingPlan?6:(state.experimentCount?3:0));statusEl.textContent='';
-      showError('The copy of this demo saved in your browser was out of date, so it has been refreshed. Continue from here.',null,where?out.lastElementChild:null);
-    }else if(res.network||!res.ok){
-      setSteps(-1,base,base);statusEl.textContent='';
-      if(where){var s=where.querySelector('.dprogress .dsub');if(s)s.remove();if(btn)btn.disabled=false}
-      showError(res.network?'Could not reach the demo API. The live demo runs on signalloop-shiva.netlify.app.':(res.body.error||'Something went wrong.'),res.body,where&&where.querySelector('.dprogress'));
-    }else{
-      var label=where&&where.querySelector('.dlab').textContent,anchor=where&&where.getBoundingClientRect().top;
-      state=res.body;saveState();localSteps=[];render();setSteps(-1,isRun?3:6);
-      statusEl.textContent=isRun?'Experiment '+state.experimentCount+' measured.':'Next experiment planned.';
-      if(where){
-        // Keep the visitor where they were: the plan replaces the block in place; a run adds its results above.
-        var blocks=[].slice.call(out.querySelectorAll('.dblock'));
-        var target=blocks.filter(function(b){return b.querySelector('.dlab').textContent===label})[0]||blocks[blocks.length-1];
-        if(isRun)target.insertBefore(el('div','dsum','Experiment '+state.experimentCount+' measured. The experiment history, Analyze and insight sections above now include its results.'),target.querySelector('.dsub'));
-        scrollBy(0,target.getBoundingClientRect().top-anchor);
-      }
-    }
-    busy=false;syncControls();
-  }
-
-  function resultsButton(parent,label){var btn=el('button','btn run',label);btn.type='button';btn.style.marginTop='12px';btn.addEventListener('click',function(){act(parent)});parent.appendChild(btn)}
-
-  function render(){
-    out.textContent='';renderLabels();
-    if(state.objective)objSel.value=state.objective.id;
-    if(!state.experimentCount){
-      out.appendChild(el('p','dsub','No experiments yet. Start with a baseline: every audience on each of its channels with its default message and content type.'));
-      return;
-    }
-    renderHistory();renderAnalyze();renderAudienceInsight();renderChannelInsight();
-    if(state.pendingPlan){renderMarketing(state.pendingPlan);renderContent(state.pendingPlan);renderNext(state.pendingPlan)}
-    else{var b=block('Marketing Agent','What should we do next?');b.appendChild(el('p','dsub','Results are in. Ask the agents what to test next; they read the computed metrics above and must cite them.'));resultsButton(b,'Ask the agents what to test next')}
-  }
-  function renderLabels(){
-    labelsEl.textContent='';
-    Object.keys(LABEL_NAMES).forEach(function(k){var v=state.labels[k];if(!v)return;var c=el('span','lbl lbl-'+v.toLowerCase());c.appendChild(el('span',null,LABEL_NAMES[k]));c.appendChild(el('b',null,v));labelsEl.appendChild(c)});
-  }
-  function renderHistory(){
-    var b=block('Experiment history','What have we tried?'),ol=el('ol','timeline');
-    state.experiments.forEach(function(e){
-      var li=el('li');
-      if(e.kind==='baseline'){li.appendChild(el('b',null,'Experiment '+e.experimentNumber+': baseline'));li.appendChild(document.createTextNode(' · '+e.cells.length+' audience and channel combinations with default messages'))}
-      else{
-        var t=e.cells.filter(function(c){return c.role==='test'})[0],k=e.cells.filter(function(c){return c.role==='control'})[0];
-        li.appendChild(el('b',null,'Experiment '+e.experimentNumber+': test vs control'));
-        li.appendChild(document.createTextNode(' · '+aud(t.audienceId)+' on '+CH[t.channel]+': '+angle(t.messagingAngle)+', '+ctype(t.contentType).toLowerCase()+' ('+pct(t.ctr)+') vs '+angle(k.messagingAngle)+', '+ctype(k.contentType).toLowerCase()+' ('+pct(k.ctr)+')'));
-        if(e.hypothesis)li.appendChild(el('div','dsub','Hypothesis: '+e.hypothesis));
-      }
-      ol.appendChild(li)});
-    b.appendChild(ol);
-  }
-  function renderAnalyze(){
-    var a=state.analytics,L=a.latest,b=block('Analyze','What happened in experiment '+L.experimentNumber+'?');
-    b.appendChild(table(['Variant','Audience','Channel','Angle','Content type','Reach','Clicks','CTR','vs previous'],L.cells.map(function(c){
-      return {cells:[variantLabel(c),aud(c.audienceId),CH[c.channel],angle(c.messagingAngle),ctype(c.contentType),String(c.reach),String(c.clicks),pct(c.ctr),c.changeVsPreviousPp==null?'—':pp(c.changeVsPreviousPp)]}}),5,[0,4,8]));
-    if(L.testVsControl){
-      var t=L.testVsControl;
-      b.appendChild(el('div','dsum',t.significant?('Result: the '+t.winner+' variant won ('+pp(t.deltaPp)+' CTR for the test, z = '+t.z+').'):('Result: too close to call ('+pp(t.deltaPp)+' CTR for the test; '+t.reason+').')));
-    }
-    b.appendChild(el('div','dlab dsubhead','Pooled across all experiments'));
-    b.appendChild(table(['Audience','Reach','Clicks','CTR','vs other audiences'],a.audiences.filter(function(x){return x.reach>0}).map(function(x){
-      return {cells:[x.name,String(x.reach),String(x.clicks),pct(x.ctr),x.vsOthers?pp(x.vsOthers.deltaPp)+(x.vsOthers.significant?'':' (not significant)'):'—']}}),1));
-    var two=el('div','two');two.appendChild(dimTable('Messaging angle',a.angles.tested));two.appendChild(dimTable('Content type',a.contentTypes.tested));b.appendChild(two);
-  }
-  function dimTable(title,rows){var w=el('div');w.appendChild(el('div','dlab dsubhead',title+', all audiences'));w.appendChild(table([title,'Reach','CTR'],rows.map(function(r){return {cells:[r.label,String(r.reach),pct(r.ctr)]}}),1));return w}
-  function insightList(b,items,empty){
-    if(!items.length){if(empty)b.appendChild(el('p','dsub',empty));return}
-    var ul=el('ul','ins');items.forEach(function(i){ul.appendChild(el('li',null,i.text))});b.appendChild(ul);
-  }
-  function renderAudienceInsight(){var b=block('Audience insight','How is each audience behaving?');insightList(b,state.analytics.insights.audience,'Not enough data for audience patterns yet.')}
-  function renderChannelInsight(){
-    var a=state.analytics,b=block('Channel insight','How are the channels behaving?'),rows=[];
-    state.audiences.forEach(function(p){
-      var x=a.byAudience[p.id],L=x.channelLeaders;
-      x.channels.forEach(function(c){
-        var tags=[];
-        if(L.efficiency&&L.efficiency.channel===c.channel)tags.push('Efficiency leader');
-        if(L.volume&&L.volume.channel===c.channel)tags.push('Volume leader');
-        rows.push({cls:tags.length?'lead':'',cells:[p.name,c.label,c.tested?pct(c.ctr):'—',c.tested?String(c.expectedClicksPerExperiment):'—',tags.join(' · ')]});
-      })});
-    b.appendChild(table(['Audience','Channel','CTR','Clicks per experiment','Leader'],rows,2));
-    b.appendChild(el('div','dsub','Efficiency leader = highest CTR. Volume leader = most expected clicks per experiment. The Marketing Agent weighs them against the campaign objective.'));
-    insightList(b,a.insights.channel);
-  }
-  function toolsLine(x){
-    return el('div','dsub','Data it retrieved: '+x.toolCalls.map(function(c){return c.name+(c.suppliedBySystem?' (supplied by the system)':'')}).join(', '));
-  }
-  function renderMarketing(plan){
-    var m=plan.marketing,r=m.recommendation,b=block('Marketing Agent','What should we do next?');
-    b.appendChild(el('div','via','AI · '+m.provider+' · '+m.model));
-    var card=el('div','agent');
-    kv(card,[['Target audience',aud(r.priorityAudience)],['Channel',CH[r.recommendedChannel]],['Messaging angle',angle(r.recommendedAngle)],['Content type',ctype(r.recommendedContentType)],
-      ['Decision',r.decisionType+' · '+r.confidence+' confidence'],['Hypothesis',r.hypothesis],['Trade-off',r.tradeoff],['Reasoning',r.reasoning]]);
-    b.appendChild(card);
-    b.appendChild(el('div','dlab dsubhead','Why SignalLoop recommended this'));
-    var ul=el('ul','why');
-    m.evidence.forEach(function(e){
-      var li=el('li');li.appendChild(el('div',null,e.statement));
-      if(e.metric){var parts=[e.metric.label];if(e.metric.reach)parts.push(pct(e.metric.ctr)+' CTR','clicks '+e.metric.clicks+' of '+e.metric.reach+' reached');if(e.metric.deltaPp!=null)parts.push(pp(e.metric.deltaPp));li.appendChild(el('div','dsub',parts.join(' · ')))}
-      ul.appendChild(li)});
-    b.appendChild(ul);b.appendChild(toolsLine(m));
-  }
-  function renderContent(plan){
-    var c=plan.content,p=c.contentPlan,r=plan.marketing.recommendation,b=block('Content Agent','What should we create?');
-    b.appendChild(el('div','via','AI · '+c.provider+' · '+c.model));
-    b.appendChild(el('div','dlab dsubhead','Content plan'));
-    kv(b,[['Audience',aud(r.priorityAudience)],['Objective',state.objective.label],['Channel',CH[r.recommendedChannel]],['Audience insight',p.audienceInsight],['Content angle',p.contentAngle],
-      ['Topic',p.topic],['Format',p.format],['Hook',p.hook],['Headline',p.headline],['Primary message',p.keyMessage],['Supporting points',p.supportingPoints],['Tone',p.tone],['CTA',p.cta],['Content brief',p.contentBrief]]);
-    b.appendChild(el('div','dlab dsubhead','Generated content'));
-    var g=el('div','gen');g.appendChild(el('div','gen-t',c.generatedContent.title));g.appendChild(el('div','gen-b',c.generatedContent.body));b.appendChild(g);
-    b.appendChild(toolsLine(c));
-  }
-  function renderNext(plan){
-    var b=block('Next experiment','What exactly are we testing?');
-    b.appendChild(table(['Variant','Audience','Channel','Angle','Content type','Headline','Audience split'],plan.spec.cells.map(function(c){
-      return {cells:[variantLabel(c),aud(c.audienceId),CH[c.channel],angle(c.messagingAngle),ctype(c.contentType),c.variant.headline,Math.round(c.share*100)+'%']}}),6,[3,4,6]));
-    b.appendChild(el('div','dsum','Hypothesis: '+plan.marketing.recommendation.hypothesis));
-    resultsButton(b,'Run next experiment');
-  }
-
-  // Opening the page or switching company makes no request. The demo starts from the settings built into
-  // the page, or from this visitor's last results saved in the browser. Only Run, Ask and Start over call
-  // the API; the server copy is fetched only if the saved copy turns out to be out of date.
-  var STATIC=JSON.parse($('demo-static').textContent);
-  function storageKey(){return 'signalloop-state-'+sessionId+'-'+company}
-  function saveState(){
-    try{localStorage.setItem(storageKey(),JSON.stringify(state));if(state.labels&&state.labels.crm)localStorage.setItem('signalloop-crm-label',state.labels.crm)}catch(e){}
-  }
-  function savedState(){
-    try{var s=JSON.parse(localStorage.getItem(storageKey())||'null');return s&&s.companyKey===company?s:null}catch(e){return null}
-  }
-  function emptyState(){
-    // The CRM label depends on the server's HubSpot setting, so it appears once the server has reported it.
-    var labels=Object.assign({},STATIC.labels),crm=null;
-    try{crm=localStorage.getItem('signalloop-crm-label')}catch(e){}
-    if(crm)labels.crm=crm;
-    return {company:STATIC.companies[company],companyKey:company,objective:find(STATIC.objectives,objSel.value||STATIC.defaultObjective),objectives:STATIC.objectives,
-      experimentCount:0,maxExperiments:STATIC.maxExperiments,experiments:[],analytics:null,pendingPlan:null,labels:labels,audiences:[],angles:[],contentTypes:[]};
-  }
-  async function refreshFromServer(){
-    var res=await api('GET','session');
-    if(res.network||!res.ok)return false;
-    state=res.body;saveState();render();return true;
-  }
-  function load(){
-    clearError();statusEl.textContent='';
-    if(!objSel.options.length){
-      STATIC.objectives.forEach(function(o){var op=el('option',null,o.label);op.value=o.id;objSel.appendChild(op)});
-      objSel.value=STATIC.defaultObjective;
-    }
-    state=savedState()||emptyState();
-    render();setSteps(-1,state.pendingPlan?6:(state.experimentCount?3:0));syncControls();
-  }
-
-  primary.addEventListener('click',function(){act()});
-  resetBtn.addEventListener('click',async function(){
-    if(busy)return;busy=true;syncControls();clearError();
-    var res=await api('POST','reset',{objective:objSel.value});busy=false;
-    if(res.ok){state=res.body;saveState();render();setSteps(-1,0);statusEl.textContent='Session cleared.'}else showError((res.body&&res.body.error)||'Could not reset.');
-    syncControls();
-  });
-  objSel.addEventListener('change',function(){if(state&&state.pendingPlan)statusEl.textContent='The new objective applies to the next plan the agents make.'});
-  picks.forEach(function(b){b.addEventListener('click',function(){
-    if(busy)return;company=b.getAttribute('data-company');
-    picks.forEach(function(x){var on=x===b;x.classList.toggle('on',on);x.setAttribute('aria-checked',on?'true':'false')});
-    load();
-  })});
-  load();
-})();
-</script>
+<script src="demo.js"></script>
 </body></html>

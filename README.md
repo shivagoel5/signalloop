@@ -29,8 +29,8 @@ flowchart LR
 
 1. **Inputs.** Each company profile defines audiences, their channels, messaging angles, content types, brand rules and constraints. The marketer sets the campaign objective (awareness, traffic, engagement, product consideration, or conversion).
 2. **Measure (code).** The analytics engine calculates reach, clicks, CTR, pooled history by audience, channel, angle and content type, the change since the previous experiment, the efficiency leader (highest CTR) and volume leader (most clicks), and whether a difference is too small to call (two-proportion z-test plus a minimum click count). Every metric has an id.
-3. **Marketing Agent (AI).** Reads only the metrics it needs through read-only tools and decides the priority audience, channel, messaging angle, content type and hypothesis, weighing efficiency against volume for the objective. It must cite metric ids it actually retrieved; code rejects anything else.
-4. **Content Agent (AI).** Turns that decision into a content plan (insight, angle, topic, hook, headline, key message, CTA, format, brief) and then the asset. It can't change the Marketing Agent's choices and can't repeat earlier topics.
+3. **Marketing Agent (AI).** When the marketer asks for a recommendation, it reads only the metrics it needs through read-only tools and decides the priority audience, channel, messaging angle, content type and hypothesis, weighing efficiency against volume for the objective. It must cite metric ids it actually retrieved; code rejects anything else.
+4. **Content Agent (AI).** Once the marketer has reviewed the recommendation, it turns that decision into a content plan (insight, angle, topic, hook, headline, key message, CTA, format, brief) and then the asset, returned in parts (subject or title, preview text, paragraphs, button text) so the demo can preview it as a real email, post or article. It can't change the Marketing Agent's choices and can't repeat earlier topics.
 5. **Experiment.** The new variant runs against a control (the best variant so far for that audience and channel). HubSpot contacts and lists are updated for real; audience response is simulated. Results return to step 2.
 
 ## Why analytics are calculated in code
@@ -76,7 +76,7 @@ No performance number in this project comes from a real campaign.
 signalloop/
 ├── docs/index.html            # Case study and live demo page (published by Netlify)
 ├── netlify/
-│   ├── functions/api.mjs      # API: /api/session, /api/run, /api/plan, /api/reset
+│   ├── functions/api.mjs      # API: session, run, strategy, content, reset
 │   ├── lib/
 │   │   ├── analytics.mjs      # Deterministic analytics engine
 │   │   ├── simulator.mjs      # Simulated audience response

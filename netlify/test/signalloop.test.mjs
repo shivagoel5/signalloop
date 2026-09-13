@@ -9,7 +9,7 @@ import { LLMClient } from "../lib/llm.mjs";
 import { AgentError } from "../lib/agents/run-agent.mjs";
 import { similarity } from "../lib/agents/content.mjs";
 import { compareRates, computeAnalytics, twoProportionZ } from "../lib/analytics.mjs";
-import { baselineSpec, newSession, planNextExperiment, runExperiment } from "../lib/loop.mjs";
+import { baselineSpec, createContent, newSession, planNextExperiment, recommendStrategy, runExperiment } from "../lib/loop.mjs";
 import { clickProbability, makeRng, simulateCell } from "../lib/simulator.mjs";
 import { TRUTH } from "../lib/sim-truth.mjs";
 
@@ -47,7 +47,13 @@ const contentOutput = {
   },
   generatedContent: {
     title: "Your spend report is already outdated",
-    body: "Most finance teams do not lack data. They get it too late. By the time a monthly spend review lands, the duplicate tool has renewed and the off-policy purchase is already booked. Real-time visibility changes the job from explaining last month to steering this one, with limits and approvals built into every purchase. See how real-time spend visibility works.",
+    previewText: "Month-end reviews explain what went wrong. Real-time visibility helps you stop it first.",
+    paragraphs: [
+      "Most finance teams do not lack data. They get it too late.",
+      "By the time a monthly spend review lands, the duplicate tool has renewed and the off-policy purchase is already booked.",
+      "Real-time visibility changes the job from explaining last month to steering this one, with limits and approvals built into every purchase.",
+    ],
+    ctaText: "See how it works",
   },
 };
 
@@ -148,6 +154,23 @@ test("plan: Marketing Agent then Content Agent produce a test-vs-control next ex
   assert.ok(calls.some((c) => c.schema === "marketing_recommendation") && calls.some((c) => c.schema === "content_plan"));
 });
 
+test("plan in two steps: the recommendation waits for review before any content is created", async () => {
+  const session = await baselineSession();
+  const { calls, fetchImpl } = fakeProviders();
+  const llm = llmWith(fetchImpl);
+  await recommendStrategy({ profile: ramp, session, llm });
+  assert.equal(session.pendingPlan.stage, "strategy");
+  assert.equal(session.pendingPlan.spec, undefined, "nothing to run until the content exists");
+  assert.ok(calls.every((c) => c.schema !== "content_plan"), "the Content Agent has not run");
+
+  await createContent({ profile: ramp, session, llm });
+  assert.equal(session.pendingPlan.stage, "content");
+  const variant = session.pendingPlan.spec.cells[0].variant;
+  assert.equal(variant.paragraphs.length, 3);
+  assert.equal(variant.ctaText, "See how it works");
+  assert.ok(session.pendingPlan.content.sampleContact.firstName, "a sample contact for the preview");
+});
+
 test("run N+1 executes exactly the planned experiment and feeds analytics", async () => {
   const session = await baselineSession();
   await planNextExperiment({ profile: ramp, session, llm: llmWith(fakeProviders().fetchImpl) });
@@ -230,18 +253,22 @@ test("validation: high confidence is rejected before three experiments", async (
 });
 
 test("validation: content with numbers or invented stats is rejected", async () => {
-  const withStat = { ...contentOutput, generatedContent: { ...contentOutput.generatedContent, body: `${contentOutput.generatedContent.body} Teams save 30% of their close time.` } };
+  const withStat = { ...contentOutput, generatedContent: { ...contentOutput.generatedContent, paragraphs: [...contentOutput.generatedContent.paragraphs, "Teams save 30% of their close time."] } };
   await expectPlanRejected({ content: withStat }, /Remove every number/);
 });
 
 test("validation: content framed for a different audience or with other merge fields is rejected", async () => {
   const wrongAudience = { ...contentOutput, contentPlan: { ...contentOutput.contentPlan, topic: "Why controllers need faster month-end close" } };
   await expectPlanRejected({ content: wrongAudience }, /framed for Controllers/);
-  const wrongMerge = { ...contentOutput, generatedContent: { ...contentOutput.generatedContent, body: `Hi {{FirstName}}, ${contentOutput.generatedContent.body}` } };
-  await expectPlanRejected({ content: wrongMerge }, /only merge field allowed/);
+  const opening = (text) => ({ ...contentOutput, generatedContent: { ...contentOutput.generatedContent, paragraphs: [text, ...contentOutput.generatedContent.paragraphs] } });
+  await expectPlanRejected({ content: opening("Hi {{FirstName}},") }, /only merge field allowed/);
   // The fake decision targets LinkedIn, where content is not personalized per contact.
-  const socialMerge = { ...contentOutput, generatedContent: { ...contentOutput.generatedContent, body: `Hi {first_name}, ${contentOutput.generatedContent.body}` } };
-  await expectPlanRejected({ content: socialMerge }, /not personalized per contact/);
+  await expectPlanRejected({ content: opening("Hi {first_name},") }, /not personalized per contact/);
+});
+
+test("validation: links and placeholders in content are rejected, since the CTA is shown as a button", async () => {
+  const withPlaceholder = { ...contentOutput, generatedContent: { ...contentOutput.generatedContent, paragraphs: [...contentOutput.generatedContent.paragraphs, "Read the full story here: [Link]"] } };
+  await expectPlanRejected({ content: withPlaceholder }, /Remove links, URLs and placeholders/);
 });
 
 test("content: topics too similar to earlier content are detected", () => {
@@ -263,7 +290,7 @@ test("api: session lifecycle, AI-not-configured state, and input checks", async 
     assert.equal(first.experimentCount, 0);
     assert.equal(first.labels.performance, "SIMULATED");
 
-    assert.equal((await call("plan", {})).status, 409, "cannot plan before a baseline");
+    assert.equal((await call("strategy", {})).status, 409, "cannot ask for a recommendation before a baseline");
     const run = await call("run", { objective: "awareness" });
     assert.equal(run.status, 200);
     const runBody = await run.json();
@@ -271,10 +298,11 @@ test("api: session lifecycle, AI-not-configured state, and input checks", async 
     assert.equal(runBody.objective.id, "awareness");
     assert.ok(runBody.analytics.insights);
 
-    assert.equal((await call("run", {})).status, 409, "next run needs a plan");
-    const plan = await call("plan", {});
-    assert.equal(plan.status, 503);
-    assert.equal((await plan.json()).aiUnavailable, true);
+    assert.equal((await call("run", {})).status, 409, "next run needs content");
+    assert.equal((await call("content", {})).status, 409, "content needs a recommendation");
+    const strategy = await call("strategy", {});
+    assert.equal(strategy.status, 503);
+    assert.equal((await strategy.json()).aiUnavailable, true);
 
     const reset = await (await call("reset", {})).json();
     assert.equal(reset.experimentCount, 0);
@@ -287,7 +315,7 @@ test("api: session lifecycle, AI-not-configured state, and input checks", async 
   }
 });
 
-test("api: plan with configured providers returns a pending plan", async () => {
+test("api: recommendation, then content, then the planned run", async () => {
   const sessionId = "api-test-session-0002";
   const call = (route, body) => handler(new Request(`http://localhost/api/${route}`, {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sessionId, company: "ramp", ...body }),
@@ -297,9 +325,12 @@ test("api: plan with configured providers returns a pending plan", async () => {
   globalThis.fetch = fakeProviders().fetchImpl;
   try {
     assert.equal((await call("run", { objective: "traffic" })).status, 200);
-    const plan = await call("plan", {});
-    assert.equal(plan.status, 200);
-    const body = await plan.json();
+    const strategy = await (await call("strategy", {})).json();
+    assert.equal(strategy.pendingPlan.stage, "strategy");
+    assert.equal((await call("run", {})).status, 409, "cannot run before the content exists");
+    const content = await call("content", {});
+    assert.equal(content.status, 200);
+    const body = await content.json();
     assert.equal(body.pendingPlan.spec.cells.length, 2);
     assert.equal((await call("run", {})).status, 200);
   } finally {
@@ -316,14 +347,17 @@ test("page: built-in demo settings match the API, and opening the page makes no 
   assert.deepEqual(Object.keys(settings.companies), Object.keys(PROFILES));
   for (const company of Object.keys(PROFILES)) {
     const view = await (await handler(new Request(`http://localhost/api/session?sessionId=static-settings-check&company=${company}`))).json();
-    assert.equal(settings.companies[company], view.company);
+    assert.equal(settings.companies[company].name, view.company);
+    assert.deepEqual(settings.companies[company].audiences, view.audiences);
     assert.deepEqual(settings.objectives, view.objectives);
     assert.equal(settings.defaultObjective, view.objective.id);
     assert.equal(settings.maxExperiments, view.maxExperiments);
     const { crm, ...labels } = view.labels;
     assert.deepEqual(settings.labels, labels);
   }
-  // The only session read in the page is the refresh used when the browser's saved copy is out of date.
-  assert.equal(html.match(/api\('GET','session'\)/g)?.length, 1);
-  assert.match(html, /async function refreshFromServer\(\)\{\s*var res=await api\('GET','session'\)/);
+  // The only session read in the demo script is the refresh used when the browser's saved copy is out of date.
+  assert.match(html, /<script src="demo.js"><\/script>/);
+  const script = readFileSync(new URL("../../docs/demo.js", import.meta.url), "utf8");
+  assert.equal(script.match(/api\('GET','session'\)/g)?.length, 1);
+  assert.match(script, /async function refreshFromServer\(\)\{\s*var res=await api\('GET','session'\)/);
 });

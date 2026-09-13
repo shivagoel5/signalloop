@@ -17,7 +17,8 @@ Rules:
 - The next experiment runs against a control: the current best variant for that audience and channel (shown as currentControl). Change the messaging angle, the content type, or both, so the test compares something.
 - Every evidence item must cite a metricId returned by a tool, and its statement must describe what that metric shows.
 - decisionType: "exploit" = use a proven winner, "explore" = test something untested, "retest" = repeat an inconclusive test.
-- confidence reflects how strong the evidence is, not how good the idea sounds.`;
+- confidence reflects how strong the evidence is, not how good the idea sounds.
+- Write the hypothesis, reasoning, trade-off and evidence statements for a marketer: name angles, content types and channels by their labels (for example "Time savings", "How-to guide"), never by ids such as time_savings.`;
 
 export async function runMarketingAgent({ llm, profile, analytics, experiments, controlFor }) {
   const toolbox = marketingToolbox({ profile, analytics, experiments, controlFor });
