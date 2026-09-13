@@ -1,20 +1,25 @@
 # SignalLoop
 
-**An AI-assisted marketing experimentation system for product marketers.** Deterministic code measures how audiences, channels and messages perform; a **Marketing Agent** chooses the next marketing strategy; a **Content Agent** turns that strategy into an executable content plan and asset. Every experiment runs against a control, and its results shape the next decision.
+**A product marketing prototype built around one question: given campaign evidence, which audience, channel and message should a marketer test next, and why?** Deterministic code measures how audiences, channels and messages perform; a **Marketing Agent** recommends the next experiment and cites its evidence; a **Content Agent** turns the approved recommendation into the asset to test. A marketer approves each step, and every experiment runs against the best version so far.
 
 ### 👉 [View the case study and live demo](https://signalloop-shiva.netlify.app)
 
 A product marketing portfolio project by **Shiva Goel**.
 
+- **Role:** product strategy, PMM workflow design, experimentation logic, AI system design, implementation (AI-assisted), case study
+- **Status:** working prototype with simulated campaign data, seeking feedback from product marketers
+
 ![How SignalLoop runs an experiment loop](assets/preview-flow.png)
 
 ---
 
-## The problem
+## The problem I wanted to investigate
 
-Content teams publish constantly but still pick the next piece on instinct. Results sit in separate tools, small differences get mistaken for wins, and nothing records what was already tested.
+Generative AI lowers the cost of producing another email, post or landing page. My hypothesis is that this moves the hard part of product marketing upstream: **deciding which audience, channel and message deserve the next experiment, and why.** SignalLoop asks AI to help make that call from measured evidence, while the marketer keeps the final decision.
 
-AI writing tools don't fix this. They make more content cheaper, but they don't know which audience is responding, which channel reaches them, or which message already failed. The valuable step comes before the writing: **deciding which audience, channel and message to test next, and why.** SignalLoop asks AI to make that call from measured evidence.
+This is a hypothesis, not a validated finding. The next step is testing it with product marketers: whether the problem is painful enough, whether these are the inputs and trade-offs PMMs use, what evidence they would need to trust a recommendation, and where it would fit in a real workflow.
+
+**Scenarios.** Ramp and Square are illustrative. Their audience segments (role-based for Ramp, business-stage for Square) are my assumptions for the demonstration, not either company's segmentation, and no internal data or research informed them.
 
 ## How it works
 

@@ -169,7 +169,7 @@
   function looked(x){return cap((x.toolCalls||[]).map(function(c){return (TOOL_NAMES[c.name]||c.name)+(c.suppliedBySystem?' (added by the system)':'')}).join(', '))+'.'}
 
   function renderSetup(live){
-    head('setup','Start with a baseline',STATIC.companies[company].name+' segments its audiences '+SEGMENTS[company]+'. The baseline sends each audience its original message on every channel it uses, so SignalLoop has something to measure before the agents suggest what to change.');
+    head('setup','Start with a baseline','This demonstration models '+STATIC.companies[company].name+'\'s audiences '+SEGMENTS[company]+' (an assumption, not the company\'s own segmentation). The baseline sends each audience its original message on every channel it uses, so there is something to measure before the agents suggest what to change.');
     var ul=el('ul','aud-list');
     STATIC.companies[company].audiences.forEach(function(a){
       var li=el('li');li.appendChild(el('b',null,a.name));li.appendChild(el('span',null,a.channels.map(function(c){return CH[c]}).join(' · ')));ul.appendChild(li);
