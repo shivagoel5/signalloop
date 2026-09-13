@@ -11,6 +11,9 @@
   var DECISIONS={explore:'Trying something new',exploit:'Building on what works',retest:'Re-testing to confirm'};
   var STAGES=[['setup','Set up'],['results','Results'],['strategy','Strategy'],['content','Content']];
   var WORKING={run:'Updating the audience lists in HubSpot and measuring the simulated response…',strategy:'The Marketing Agent is reading the results and choosing what to test…',content:'The Content Agent is planning and writing the variant…'};
+  // First-visit guidance for each step, shown once per step next to its button.
+  var TIPS={setup:'Start here. Run a baseline to see how each audience responds.',results:'Next, ask the Marketing Agent what to test.',strategy:'Happy with the plan? Have the Content Agent write it.',content:'Run the new version against the best one so far.'};
+  var STEP_HINTS={setup:'Pick a company and campaign objective, then run a baseline',results:'What the simulated campaign showed, calculated by code',strategy:'The Marketing Agent\'s recommendation for the next test',content:'The Content Agent\'s variant, previewed on its channel'};
 
   function $(id){return document.getElementById(id)}
   var STATIC=JSON.parse($('demo-static').textContent);
@@ -117,6 +120,7 @@
       // Earlier steps of the current cycle can be opened again; Set up is only the starting point.
       var canView=i<cur&&i>0,b=el(canView?'button':'span','step');
       if(canView){b.type='button';b.addEventListener('click',function(){viewing=s[0];renderAll()})}
+      b.title=STEP_HINTS[s[0]];
       if(i===cur)b.setAttribute('aria-current','step');
       b.appendChild(el('span','step-n',i<cur?'✓':String(i+1)));b.appendChild(el('span','step-t',s[1]));
       li.appendChild(b);stepper.appendChild(li);
@@ -146,11 +150,21 @@
   }
   function note(text,cls){panel.insertBefore(el('div',cls||'dnote',text),panel.firstChild)}
   function action(label,route,hint){
-    var btn=el('button','btn run',label);btn.type='button';
+    var btn=el('button','btn run',label),stage=stageOf();btn.type='button';
     btn.addEventListener('click',function(){act(route)});
     if(hint)actionbar.appendChild(el('span','dsub',hint));
     actionbar.appendChild(btn);actionbar.hidden=false;
+    if(TIPS[stage]&&!tipsSeen()[stage]){
+      btn.classList.add('pulse');
+      var tip=el('div','coach-tip'),text=el('span'),gotIt=el('button','coach-x','Got it');
+      tip.setAttribute('role','note');gotIt.type='button';
+      text.appendChild(el('b',null,'Try it'));text.appendChild(document.createTextNode(TIPS[stage]));
+      gotIt.addEventListener('click',function(){markTipSeen(stage);tip.remove();btn.classList.remove('pulse')});
+      tip.appendChild(text);tip.appendChild(gotIt);actionbar.appendChild(tip);
+    }
   }
+  function tipsSeen(){try{return JSON.parse(localStorage.getItem('signalloop-tips')||'{}')||{}}catch(e){return {}}}
+  function markTipSeen(stage){var s=tipsSeen();s[stage]=true;try{localStorage.setItem('signalloop-tips',JSON.stringify(s))}catch(e){}}
   function rich(parent,parts){parts.forEach(function(p){parent.appendChild(typeof p==='string'?document.createTextNode(p):el('b',null,p.b))});return parent}
   function looked(x){return cap((x.toolCalls||[]).map(function(c){return (TOOL_NAMES[c.name]||c.name)+(c.suppliedBySystem?' (added by the system)':'')}).join(', '))+'.'}
 
@@ -363,6 +377,9 @@
   // --- actions ---
   async function act(route){
     if(busy)return;busy=true;syncControls();bringIntoView();
+    markTipSeen(stageOf());
+    [].slice.call(actionbar.querySelectorAll('.coach-tip')).forEach(function(t){t.remove()});
+    [].slice.call(actionbar.querySelectorAll('.pulse')).forEach(function(b){b.classList.remove('pulse')});
     [].slice.call(demo.querySelectorAll('.derr,.dnote')).forEach(function(e){e.remove()});
     var progress=el('div','dprogress'),msg=el('div','dsub',WORKING[route]);msg.setAttribute('role','status');
     progress.appendChild(el('div','bar'));progress.appendChild(msg);actionbar.appendChild(progress);
@@ -403,7 +420,11 @@
   resetBtn.addEventListener('click',async function(){
     if(busy)return;busy=true;syncControls();
     var res=await api('POST','reset',{objective:objSel.value});busy=false;
-    if(res.ok){state=res.body;saveState();viewing=null;renderAll();note('Session cleared. Start again with a baseline.')}
+    if(res.ok){
+      // Starting over is a fresh run-through, so the step tips come back.
+      try{localStorage.removeItem('signalloop-tips')}catch(e){}
+      state=res.body;saveState();viewing=null;renderAll();note('Session cleared. Start again with a baseline.');
+    }
     else{renderAll();note((res.body&&res.body.error)||'Could not start over. Please try again.','derr')}
   });
   objSel.addEventListener('change',function(){
@@ -425,4 +446,12 @@
   function alignOnArrival(){if(location.hash==='#live')setTimeout(function(){bringIntoView(true)},50)}
   if(document.readyState==='complete')alignOnArrival();else addEventListener('load',alignOnArrival);
   addEventListener('hashchange',alignOnArrival);
+
+  // The tip, button pulse and frame glow start when the demo comes into view, so visitors notice where to click.
+  if('IntersectionObserver' in window){
+    var watcher=new IntersectionObserver(function(entries){
+      entries.forEach(function(e){if(e.isIntersecting){demo.classList.add('in-view');watcher.disconnect()}});
+    },{threshold:.2});
+    watcher.observe(demo);
+  }else demo.classList.add('in-view');
 })();

@@ -199,6 +199,20 @@
   .stage{margin:0;padding:0}
   .stage-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:12px 20px;border-top:1px solid var(--line);background:var(--card)}
   .stage-bar[hidden]{display:none}
+  /* first-visit guidance: a tip with an arrow pointing at the next step's button, shown once the demo is in view */
+  .stage-bar{position:relative;z-index:3}
+  .demo{transition:box-shadow .6s ease}
+  .demo.in-view{box-shadow:0 14px 40px rgba(63,76,203,.14)}
+  .coach-tip{position:absolute;right:20px;bottom:calc(100% + 12px);max-width:300px;background:var(--ink);color:#fff;font-size:13.5px;line-height:1.45;border-radius:10px;padding:10px 12px;box-shadow:0 10px 30px rgba(21,27,59,.25);display:flex;gap:10px;align-items:flex-start;opacity:0;transform:translateY(6px);transition:opacity .35s ease,transform .35s ease;pointer-events:none}
+  .demo.in-view .coach-tip{opacity:1;transform:none;pointer-events:auto}
+  .coach-tip::after{content:"";position:absolute;right:48px;top:100%;border:8px solid transparent;border-top-color:var(--ink)}
+  .coach-tip b{color:#A9B3FF;margin-right:5px}
+  .coach-x{font:inherit;font-size:12.5px;font-weight:700;color:#fff;background:rgba(255,255,255,.14);border:0;border-radius:7px;padding:3px 9px;cursor:pointer;flex:none;white-space:nowrap}
+  .coach-x:hover{background:rgba(255,255,255,.24)}
+  .coach-x:focus-visible{outline:2px solid #A9B3FF;outline-offset:2px}
+  .demo.in-view .btn.run.pulse{animation:pulse 1.8s ease-out infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(63,76,203,.55)}70%{box-shadow:0 0 0 12px rgba(63,76,203,0)}100%{box-shadow:0 0 0 0 rgba(63,76,203,0)}}
+  @media(max-width:680px){.coach-tip{right:auto;left:14px}.coach-tip::after{right:auto;left:40px}.stage-bar .btn.run{order:-1}}
   /* On laptop and desktop screens the demo fits the window: the stage scrolls inside and the next step's button stays in view. */
   @media (min-width:681px) and (min-height:560px){.demo{height:calc(100vh - 76px);min-height:500px;max-height:900px}.stage-scroll{flex:1;min-height:0;overflow:auto}}
   @media (max-width:680px),(max-height:559px){.demo{overflow:visible}.stage-bar{position:sticky;bottom:0;z-index:2;border-radius:0 0 16px 16px;box-shadow:0 -6px 16px rgba(21,27,59,.06)}}
