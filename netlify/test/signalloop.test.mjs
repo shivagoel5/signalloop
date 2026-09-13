@@ -189,6 +189,37 @@ test("validation: channel must be available for the audience", async () => {
   );
 });
 
+async function expectPlanRejected(options, pattern) {
+  await assert.rejects(
+    planNextExperiment({ profile: ramp, session: await baselineSession(), llm: llmWith(fakeProviders(options).fetchImpl) }),
+    (err) => err instanceof AgentError && pattern.test(JSON.stringify(err.details)),
+  );
+}
+
+test("validation: a test identical to its control is rejected", async () => {
+  // After the baseline, the control for Finance Leaders on LinkedIn is cost control + thought leadership.
+  await expectPlanRejected({ decision: { ...marketingDecision, recommendedAngle: "cost_control" } }, /control for finance_leader on linkedin/);
+});
+
+test("validation: high confidence is rejected before three experiments", async () => {
+  await expectPlanRejected({ decision: { ...marketingDecision, confidence: "high" } }, /confidence must be low or medium/);
+});
+
+test("validation: content with numbers or invented stats is rejected", async () => {
+  const withStat = { ...contentOutput, generatedContent: { ...contentOutput.generatedContent, body: `${contentOutput.generatedContent.body} Teams save 30% of their close time.` } };
+  await expectPlanRejected({ content: withStat }, /Remove every number/);
+});
+
+test("validation: content framed for a different audience or with other merge fields is rejected", async () => {
+  const wrongAudience = { ...contentOutput, contentPlan: { ...contentOutput.contentPlan, topic: "Why controllers need faster month-end close" } };
+  await expectPlanRejected({ content: wrongAudience }, /framed for Controllers/);
+  const wrongMerge = { ...contentOutput, generatedContent: { ...contentOutput.generatedContent, body: `Hi {{FirstName}}, ${contentOutput.generatedContent.body}` } };
+  await expectPlanRejected({ content: wrongMerge }, /only merge field allowed/);
+  // The fake decision targets LinkedIn, where content is not personalized per contact.
+  const socialMerge = { ...contentOutput, generatedContent: { ...contentOutput.generatedContent, body: `Hi {first_name}, ${contentOutput.generatedContent.body}` } };
+  await expectPlanRejected({ content: socialMerge }, /not personalized per contact/);
+});
+
 test("content: topics too similar to earlier content are detected", () => {
   assert.ok(similarity("How finance teams control spend without slowing the business", "How finance teams control spend without slowing down the business") >= 0.6);
   assert.ok(similarity("Your spend report is already outdated", "See spend as it happens, not at month-end") < 0.6);

@@ -61,10 +61,12 @@ try {
   console.log(`\n   ${c.generatedContent.title}\n   ${c.generatedContent.body.replace(/\n/g, "\n   ")}`);
 
   const [test, control] = plan.spec.cells;
-  console.log(`\n3. Next experiment: ${angleLabel(profile, test.messagingAngle)} (test) vs ${angleLabel(profile, control.messagingAngle)} (control), 50/50`);
+  const variantLabel = (c) => `${angleLabel(profile, c.messagingAngle)}, ${contentTypeLabel(profile, c.contentType).toLowerCase()}`;
+  console.log(`\n3. Next experiment on ${CHANNEL_LABELS[test.channel]}: ${variantLabel(test)} (test) vs ${variantLabel(control)} (control), 50/50`);
 } catch (err) {
   console.log(`\nPlanning failed: ${err.message}`);
   for (const a of err.attempts ?? err.details?.attempts ?? []) console.log(`   - ${JSON.stringify(a).slice(0, 240)}`);
   process.exitCode = 1;
 }
-console.log(`\nProvider calls: ${llm.trace.map((t) => `${t.provider}${t.ok ? "" : `(${t.status ?? "error"})`}`).join(" → ")} · ${Math.round((Date.now() - started) / 1000)}s`);
+const tokens = llm.trace.reduce((sum, t) => sum + (t.tokens ?? 0), 0);
+console.log(`\nProvider calls: ${llm.trace.map((t) => `${t.provider}${t.ok ? "" : `(${t.status ?? "error"})`}`).join(" → ")} · ${tokens} tokens · ${Math.round((Date.now() - started) / 1000)}s`);

@@ -482,15 +482,22 @@
   <section id="output">
     <div class="kicker">Demo output</div>
     <h2>What the demo shows after an experiment</h2>
-    <p>Screenshots from the live demo after a Ramp baseline experiment. Every number in them is
-    <span class="st st-sim">SIMULATED</span>, and every calculation and insight is produced by <span class="st st-code">CODE</span>,
-    not by an AI model. Try the <a href="#live">live demo</a> to see the Marketing Agent and Content Agent act on these results.</p>
+    <p>Screenshots from one test run of the demo: a Ramp baseline experiment, then the agents' plan for the next
+    experiment. Every number is <span class="st st-sim">SIMULATED</span>. Calculations and insights are
+    <span class="st st-code">CODE</span>. The Marketing Agent's decision and the Content Agent's plan and asset are
+    <span class="st st-ai">AI</span> output, shown unedited. In this run Groq answered for the Marketing Agent and Gemini took over as fallback for the Content Agent. Try the <a href="#live">live demo</a> to run your own.</p>
     <div class="report"><div class="lab">Analyze: what happened <em class="badge">simulated</em><span>calculated by code</span></div>
       <img src="img/demo-analyze.jpg" alt="Analyze panel: per-audience and per-channel reach, clicks and CTR for a simulated Ramp baseline, pooled results by audience, messaging angle and content type" loading="lazy"></div>
     <div class="report"><div class="lab">Audience insight: how each audience is behaving <em class="badge">simulated</em><span>derived by code</span></div>
       <img src="img/demo-audience-insight.jpg" alt="Audience insight panel: plain-language statements derived from the simulated results" loading="lazy"></div>
     <div class="report"><div class="lab">Channel insight: efficiency versus volume <em class="badge">simulated</em><span>derived by code</span></div>
       <img src="img/demo-channel-insight.jpg" alt="Channel insight panel: efficiency leader and volume leader for each audience with supporting statements" loading="lazy"></div>
+    <div class="report"><div class="lab">Marketing Agent: what to test next <em class="st st-ai">AI</em><span>cites the metrics above</span></div>
+      <img src="img/demo-marketing-agent.jpg" alt="Marketing Agent decision: target audience, channel, messaging angle, content type, hypothesis, trade-off, and the metrics behind the recommendation" loading="lazy"></div>
+    <div class="report"><div class="lab">Content Agent: plan first, then the asset <em class="st st-ai">AI</em><span>follows the Marketing Agent's decision</span></div>
+      <img src="img/demo-content-agent.jpg" alt="Content Agent output: content plan with audience insight, angle, topic, hook, headline, key message and CTA, followed by the generated content" loading="lazy"></div>
+    <div class="report"><div class="lab">Next experiment: test versus control <em class="st st-ai">AI</em><span>then measured by code</span></div>
+      <img src="img/demo-next-experiment.jpg" alt="Next experiment: the agents' new variant tested against the current best variant for the same audience and channel" loading="lazy"></div>
   </section>
 
   <section id="live">

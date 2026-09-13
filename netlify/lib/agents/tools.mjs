@@ -3,7 +3,7 @@
 
 import { CHANNEL_LABELS, getAudience } from "../company.mjs";
 
-export function marketingToolbox({ profile, analytics, experiments }) {
+export function marketingToolbox({ profile, analytics, experiments, controlFor }) {
   const audienceIds = profile.personas.map((p) => p.id);
   const audienceParam = optionalAudienceParam(audienceIds);
   const forAudiences = (audienceId) => (audienceId ? [audienceId] : audienceIds);
@@ -22,13 +22,16 @@ export function marketingToolbox({ profile, analytics, experiments }) {
     getAvailableMessagingAngles: {
       description: "All messaging angles and content types that can be tested.",
       parameters: noParams(),
-      run: () => ({ angles: profile.messaging_angles, contentTypes: profile.content_types }),
+      run: () => ({
+        angles: profile.messaging_angles.map(({ id, label }) => ({ id, label })),
+        contentTypes: profile.content_types.map(({ id, label }) => ({ id, label })),
+      }),
     },
     getAudiencePerformance: {
       description: "Pooled CTR, reach and clicks for each audience, and how each compares with the other audiences.",
       parameters: noParams(),
       run: () => ({ audiences: analytics.audiences.map(({ audienceId, name, reach, clicks, ctr, experiments: n, vsOthers, metricId }) =>
-        ({ audienceId, name, reach, clicks, ctr, experiments: n, vsOthers, metricId })) }),
+        ({ audienceId, name, reach, clicks, ctrPercent: pct1(ctr), experiments: n, vsOthers, metricId })) }),
     },
     getChannelPerformance: {
       description: "Channel results per audience: CTR, reach and expected clicks per experiment, the efficiency leader (highest CTR), the volume leader (most clicks), and whether the gap is too close to call. Also overall channel results and trends.",
@@ -38,7 +41,10 @@ export function marketingToolbox({ profile, analytics, experiments }) {
           const b = analytics.byAudience[id];
           return {
             audienceId: id,
-            channels: b.channels.map(slimChannel),
+            channels: b.channels.map((c) => {
+              const control = controlFor?.(id, c.channel);
+              return { ...slimChannel(c), currentControl: control ? `${control.messagingAngle} + ${control.contentType}` : null };
+            }),
             efficiencyLeader: b.channelLeaders.efficiency?.channel ?? null,
             volumeLeader: b.channelLeaders.volume?.channel ?? null,
             leaderComparison: b.channelLeaders.comparison
@@ -46,7 +52,7 @@ export function marketingToolbox({ profile, analytics, experiments }) {
               : null,
           };
         }),
-        overall: analytics.channels.map((c) => ({ ...slimChannel(c), trend: c.trend.status })),
+        overall: analytics.channels.map((c) => ({ channel: c.channel, ctrPercent: pct1(c.ctr), expectedClicksPerExperiment: c.expectedClicksPerExperiment, trend: c.trend.status, metricId: c.metricId })),
       }),
     },
     getMessagingPerformance: {
@@ -66,15 +72,15 @@ export function marketingToolbox({ profile, analytics, experiments }) {
       }),
     },
     getExperimentHistory: {
-      description: "The last five experiments: what was tested, results per cell, test-vs-control outcome, and the hypothesis behind each.",
+      description: "The last three experiments: what was tested, results per cell, test-vs-control outcome, and the hypothesis behind each.",
       parameters: noParams(),
       run: () => ({
-        experiments: experiments.slice(-5).map((e) => ({
+        experiments: experiments.slice(-3).map((e) => ({
           experimentNumber: e.experimentNumber,
           kind: e.kind,
           hypothesis: e.marketingAgentRecommendation?.hypothesis ?? null,
           cells: e.cells.map((c) => ({ role: c.role, audienceId: c.audienceId, channel: c.channel, messagingAngle: c.messagingAngle,
-            contentType: c.contentType, reach: c.reach, clicks: c.clicks, ctr: c.ctr })),
+            contentType: c.contentType, reach: c.reach, clicks: c.clicks, ctrPercent: pct1(c.ctr) })),
         })),
         latestTestVsControl: analytics.latest?.testVsControl ?? null,
       }),
@@ -127,8 +133,8 @@ export function contentToolbox({ profile, analytics, experiments, recommendation
         return {
           top: [...byVariant.values()]
             .map((v) => ({ channel: v.channel, messagingAngle: v.messagingAngle, contentType: v.contentType, topic: v.topic,
-              headline: v.headline, reach: v.reach, clicks: v.clicks, ctr: v.reach ? Math.round((v.clicks / v.reach) * 10000) / 10000 : 0 }))
-            .sort((a, b) => b.ctr - a.ctr)
+              headline: v.headline, reach: v.reach, clicks: v.clicks, ctrPercent: v.reach ? pct1(v.clicks / v.reach) : 0 }))
+            .sort((a, b) => b.ctrPercent - a.ctrPercent)
             .slice(0, 3),
         };
       },
@@ -177,7 +183,7 @@ function toolbox(tools) {
         return { error: "Arguments were not valid JSON" };
       }
       const result = tool.run(args);
-      calls.push({ name, args });
+      calls.push({ name, args, result });
       collectMetricIds(result, seenMetricIds);
       return result;
     },
@@ -195,12 +201,11 @@ function collectMetricIds(value, set) {
 }
 
 function slimChannel(c) {
-  return { channel: c.channel, tested: c.tested, ctr: c.ctr, reach: c.reach, clicks: c.clicks,
-    reachPerExperiment: c.reachPerExperiment, expectedClicksPerExperiment: c.expectedClicksPerExperiment, metricId: c.metricId };
+  return { channel: c.channel, ctrPercent: pct1(c.ctr), clicks: c.clicks, reach: c.reach, expectedClicksPerExperiment: c.expectedClicksPerExperiment, metricId: c.metricId };
 }
 
 function slimRow(r) {
-  return { id: r.id, label: r.label, ctr: r.ctr, reach: r.reach, clicks: r.clicks, experiments: r.experiments, metricId: r.metricId };
+  return { id: r.id, ctrPercent: pct1(r.ctr), clicks: r.clicks, reach: r.reach, metricId: r.metricId };
 }
 
 function slimDimension(audienceId, d) {
@@ -215,6 +220,11 @@ function slimDimension(audienceId, d) {
 function dedupeVariants(variants) {
   const seen = new Set();
   return variants.filter((v) => (seen.has(v.contentVariantId) ? false : seen.add(v.contentVariantId)));
+}
+
+// CTR as a percentage with one decimal (0.0973 -> 9.7), so agents quote rates the way marketers read them.
+function pct1(ctr) {
+  return Math.round(ctr * 1000) / 10;
 }
 
 function noParams() {

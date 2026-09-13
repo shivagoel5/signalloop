@@ -17,6 +17,9 @@ Rules:
 - The plan must visibly reflect the Marketing Agent's hypothesis and the messaging angle.
 - Check previous content and do not reuse a topic or headline that was already tested for this audience.
 - Follow the brand voice, proof rules and channel constraints. Never invent statistics, customer names, quotes or product features.
+- Do not use numbers of any kind: no percentages, hours saved, durations, prices or offers. They are claims we cannot verify.
+- Write for the priority audience only, and refer to that audience by its own name.
+- Merge fields: only {first_name}, and only in email. Social posts and blog content are not personalized per contact.
 - One clear CTA.`;
 
 export async function runContentAgent({ llm, profile, analytics, experiments, recommendation }) {
@@ -82,6 +85,18 @@ export async function runContentAgent({ llm, profile, analytics, experiments, re
         break;
       }
     }
+    const claimText = [plan.topic, plan.hook, plan.headline, plan.keyMessage, plan.cta, ...(plan.supportingPoints ?? []), gen.title, gen.body];
+    if (claimText.some((t) => /\d/.test(String(t ?? "")))) {
+      errors.push("Remove every number (statistics, percentages, hours saved, durations, prices, offers): the proof rules forbid claims we cannot verify");
+    }
+    const mergeFields = String(gen.body ?? "").match(/\{+[^{}]*\}+/g) ?? [];
+    if (mergeFields.some((f) => f !== "{first_name}")) errors.push("The only merge field allowed is {first_name}");
+    if (recommendation.recommendedChannel !== "email" && mergeFields.length) {
+      errors.push(`Remove merge fields: ${recommendation.recommendedChannel} content is not personalized per contact`);
+    }
+    const framing = [plan.audienceInsight, plan.topic, plan.headline, plan.hook, plan.keyMessage, gen.title].join(" ").toLowerCase();
+    const misaddressed = profile.personas.find((p) => p.id !== audience.id && audienceNames(p).some((n) => framing.includes(n)));
+    if (misaddressed) errors.push(`The content is framed for ${misaddressed.short_name}, but the target audience is ${audience.short_name}`);
     return errors;
   };
 
@@ -108,6 +123,12 @@ Use the tools to check the audience, previous content, what has performed, brand
   });
 
   return result;
+}
+
+// Plural and singular forms of an audience's name, e.g. "finance leaders" and "finance leader".
+function audienceNames(persona) {
+  const plural = persona.short_name.toLowerCase();
+  return [plural, plural.replace(/(sses|ses)$/, (m) => m.slice(0, -2)).replace(/s$/, "")];
 }
 
 // Token-overlap similarity (Jaccard) used to catch repeated topics.

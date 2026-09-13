@@ -99,7 +99,10 @@ export async function runExperiment({ profile, companyKey, session, spec, hubspo
 export async function planNextExperiment({ profile, session, llm }) {
   const analytics = computeAnalytics({ profile, experiments: session.experiments, objectiveId: session.objectiveId });
 
-  const marketing = await runMarketingAgent({ llm, profile, analytics, experiments: session.experiments });
+  const marketing = await runMarketingAgent({
+    llm, profile, analytics, experiments: session.experiments,
+    controlFor: (audienceId, channel) => controlFor(profile, session.experiments, audienceId, channel),
+  });
   const rec = marketing.output;
   const content = await runContentAgent({ llm, profile, analytics, experiments: session.experiments, recommendation: rec });
 
@@ -157,17 +160,7 @@ export async function planNextExperiment({ profile, session, llm }) {
 // other half of the audience. Falls back to the audience's baseline variant.
 function controlCell(profile, experiments, rec, nextNumber) {
   const audience = getAudience(profile, rec.priorityAudience);
-  const history = experiments.flatMap((e) => e.cells
-    .filter((c) => c.audienceId === rec.priorityAudience && c.channel === rec.recommendedChannel)
-    .map((c) => ({ c, variant: e.variants?.[c.contentVariantId] })));
-  const byVariant = new Map();
-  for (const { c, variant } of history) {
-    const agg = byVariant.get(c.contentVariantId) ?? { cell: c, variant, reach: 0, clicks: 0 };
-    agg.reach += c.reach;
-    agg.clicks += c.clicks;
-    byVariant.set(c.contentVariantId, agg);
-  }
-  const best = [...byVariant.values()].sort((a, b) => b.clicks / (b.reach || 1) - a.clicks / (a.reach || 1))[0];
+  const best = bestVariant(experiments, rec.priorityAudience, rec.recommendedChannel);
 
   return {
     cellId: `${rec.priorityAudience}-${rec.recommendedChannel}-control`,
@@ -186,6 +179,32 @@ function controlCell(profile, experiments, rec, nextNumber) {
         body: audience.newsletter.body,
         source: "profile template",
       },
+  };
+}
+
+// The best-performing variant so far (pooled CTR) for an audience on a channel, if any.
+function bestVariant(experiments, audienceId, channel) {
+  const byVariant = new Map();
+  for (const e of experiments) {
+    for (const c of e.cells) {
+      if (c.audienceId !== audienceId || c.channel !== channel) continue;
+      const agg = byVariant.get(c.contentVariantId) ?? { cell: c, variant: e.variants?.[c.contentVariantId], reach: 0, clicks: 0 };
+      agg.reach += c.reach;
+      agg.clicks += c.clicks;
+      byVariant.set(c.contentVariantId, agg);
+    }
+  }
+  return [...byVariant.values()].sort((a, b) => b.clicks / (b.reach || 1) - a.clicks / (a.reach || 1))[0];
+}
+
+// The messaging angle and content type the control would use for an audience on a channel.
+export function controlFor(profile, experiments, audienceId, channel) {
+  const audience = getAudience(profile, audienceId);
+  if (!audience) return null;
+  const best = bestVariant(experiments, audienceId, channel);
+  return {
+    messagingAngle: best?.cell.messagingAngle ?? audience.default_angle,
+    contentType: best?.cell.contentType ?? audience.default_content_type,
   };
 }
 

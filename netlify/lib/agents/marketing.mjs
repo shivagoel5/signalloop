@@ -14,12 +14,13 @@ Rules:
 - If the top options are "too close to call", treat that as uncertainty: consider testing an untested or under-tested angle or content type, or retesting.
 - Build on what the experiment history shows. Do not repeat the exact same audience, channel, angle and content type as the last test unless you are deliberately retesting an inconclusive result.
 - The channel must be one of the priority audience's available channels.
+- The next experiment runs against a control: the current best variant for that audience and channel (shown as currentControl). Change the messaging angle, the content type, or both, so the test compares something.
 - Every evidence item must cite a metricId returned by a tool, and its statement must describe what that metric shows.
 - decisionType: "exploit" = use a proven winner, "explore" = test something untested, "retest" = repeat an inconclusive test.
 - confidence reflects how strong the evidence is, not how good the idea sounds.`;
 
-export async function runMarketingAgent({ llm, profile, analytics, experiments }) {
-  const toolbox = marketingToolbox({ profile, analytics, experiments });
+export async function runMarketingAgent({ llm, profile, analytics, experiments, controlFor }) {
+  const toolbox = marketingToolbox({ profile, analytics, experiments, controlFor });
   const audienceIds = profile.personas.map((p) => p.id);
   const angleIds = profile.messaging_angles.map((a) => a.id);
   const typeIds = profile.content_types.map((t) => t.id);
@@ -81,6 +82,13 @@ export async function runMarketingAgent({ llm, profile, analytics, experiments }
     if (lastTest && d.decisionType !== "retest" && lastTest.audienceId === d.priorityAudience && lastTest.channel === d.recommendedChannel
       && lastTest.messagingAngle === d.recommendedAngle && lastTest.contentType === d.recommendedContentType) {
       errors.push("This repeats the last test exactly; choose a different variable or mark it as a retest");
+    }
+    const control = controlFor?.(d.priorityAudience, d.recommendedChannel);
+    if (control && control.messagingAngle === d.recommendedAngle && control.contentType === d.recommendedContentType) {
+      errors.push(`The control for ${d.priorityAudience} on ${d.recommendedChannel} already uses ${d.recommendedAngle} with ${d.recommendedContentType}; change the angle or the content type so the test compares something`);
+    }
+    if (experiments.length < 3 && d.confidence === "high") {
+      errors.push("With fewer than three experiments the evidence is thin; confidence must be low or medium");
     }
     return errors;
   };

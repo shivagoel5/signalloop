@@ -15,7 +15,7 @@ const PROVIDERS = [
     baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai",
     keyEnv: "GEMINI_API_KEY",
     modelEnv: "GEMINI_MODEL",
-    defaultModel: "gemini-2.5-flash",
+    defaultModel: "gemini-3.1-flash-lite",
   },
 ];
 
@@ -59,9 +59,9 @@ export class LLMClient {
     for (let i = this.active; i < this.providers.length; i++) {
       const p = this.providers[i];
       try {
-        const message = await this.#request(p, { messages, tools, jsonSchema, maxTokens });
+        const { message, usage } = await this.#request(p, { messages, tools, jsonSchema, maxTokens });
         this.active = i;
-        this.trace.push({ provider: p.name, model: p.model, ok: true, kind: jsonSchema ? "decision" : "tools" });
+        this.trace.push({ provider: p.name, model: p.model, ok: true, kind: jsonSchema ? "decision" : "tools", tokens: usage?.total_tokens ?? null });
         return { provider: p.name, model: p.model, message };
       } catch (err) {
         const failure = { provider: p.name, model: p.model, ok: false, status: err.status ?? null, error: String(err.message).slice(0, 160) };
@@ -101,9 +101,10 @@ export class LLMClient {
       err.status = resp.status;
       throw err;
     }
-    const message = JSON.parse(text).choices?.[0]?.message;
+    const data = JSON.parse(text);
+    const message = data.choices?.[0]?.message;
     if (!message) throw new Error(`${p.name} returned no message`);
-    return message;
+    return { message, usage: data.usage };
   }
 }
 

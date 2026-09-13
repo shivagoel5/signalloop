@@ -102,7 +102,7 @@ signalloop/
 |---|---|
 | `GROQ_API_KEY` | Primary AI provider (secret) |
 | `GEMINI_API_KEY` | Fallback AI provider when Groq fails or is rate limited (secret) |
-| `GROQ_MODEL`, `GEMINI_MODEL` | Optional model overrides (defaults `openai/gpt-oss-120b`, `gemini-2.5-flash`) |
+| `GROQ_MODEL`, `GEMINI_MODEL` | Optional model overrides (defaults `openai/gpt-oss-120b`, `gemini-3.1-flash-lite`) |
 | `HUBSPOT_ACCESS_TOKEN` | HubSpot service key (secret) with scopes `crm.objects.contacts.read`, `crm.objects.contacts.write`, `crm.lists.read`, `crm.lists.write`, `crm.schemas.contacts.read`, `crm.schemas.contacts.write` |
 | `HUBSPOT_MODE` | `live` to write to HubSpot; anything else uses mock mode |
 

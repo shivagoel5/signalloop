@@ -13,13 +13,18 @@ export class AgentError extends Error {
   }
 }
 
-const MAX_TOOL_ROUNDS = 4;
+// Kept low because every round resends the tool definitions and results; free provider tiers
+// limit tokens per minute. Core tools the model skips are supplied by the system afterwards.
+const MAX_TOOL_ROUNDS = 2;
 
 export async function runAgent({ llm, system, task, toolbox, finalInstruction, jsonSchema, validate, requiredTools = [] }) {
-  const messages = [{ role: "system", content: system }, { role: "user", content: task }];
+  const messages = [
+    { role: "system", content: system },
+    { role: "user", content: `${task}\nRequest every tool you need in a single turn; you can call several at once.` },
+  ];
 
   for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
-    const { message } = await llm.chat({ messages, tools: toolbox.definitions, maxTokens: 1200 });
+    const { message } = await llm.chat({ messages, tools: toolbox.definitions, maxTokens: 700 });
     const toolCalls = message.tool_calls ?? [];
     messages.push({ role: "assistant", content: message.content ?? "", ...(toolCalls.length ? { tool_calls: toolCalls } : {}) });
     if (!toolCalls.length) break;
@@ -34,17 +39,25 @@ export async function runAgent({ llm, system, task, toolbox, finalInstruction, j
   const systemSupplied = [];
   for (const name of requiredTools) {
     if (toolbox.calls.some((c) => c.name === name)) continue;
-    const result = toolbox.run(name, {});
+    toolbox.run(name, {});
     toolbox.calls.at(-1).suppliedBySystem = true;
     systemSupplied.push(name);
-    messages.push({ role: "user", content: `Data from ${name} (supplied by the system):\n${JSON.stringify(result)}` });
   }
 
-  messages.push({ role: "user", content: finalInstruction });
+  // Phase 2 starts a fresh conversation with the retrieved data as plain text. Replaying the
+  // tool-call history here makes some models try to call tools again, which providers reject
+  // when no tools are offered.
+  const retrieved = toolbox.calls
+    .map((c) => `### ${c.name}${c.suppliedBySystem ? " (supplied by the system)" : ""}\n${JSON.stringify(c.result)}`)
+    .join("\n\n");
+  const decisionMessages = [
+    { role: "system", content: system },
+    { role: "user", content: `${task}\n\nData retrieved with tools:\n\n${retrieved}\n\n${finalInstruction}` },
+  ];
 
   const attempts = [];
   for (let attempt = 0; attempt < 3; attempt++) {
-    const { message, provider, model } = await llm.chat({ messages, jsonSchema, maxTokens: 2000 });
+    const { message, provider, model } = await llm.chat({ messages: decisionMessages, jsonSchema, maxTokens: 2000 });
     let output;
     let errors;
     try {
@@ -57,8 +70,8 @@ export async function runAgent({ llm, system, task, toolbox, finalInstruction, j
     if (!errors.length) {
       return { output, provider, model, toolCalls: toolbox.calls, systemSupplied, attempts };
     }
-    messages.push({ role: "assistant", content: String(message.content ?? "") });
-    messages.push({ role: "user", content: `That response failed validation:\n- ${errors.join("\n- ")}\nReturn corrected JSON only.` });
+    decisionMessages.push({ role: "assistant", content: String(message.content ?? "") });
+    decisionMessages.push({ role: "user", content: `That response failed validation:\n- ${errors.join("\n- ")}\nReturn corrected JSON only.` });
     // Second failure: give the fallback provider one try.
     if (attempt === 1 && !llm.useNextProvider()) break;
   }
