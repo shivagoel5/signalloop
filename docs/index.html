@@ -60,7 +60,7 @@
   .seg li{margin:4px 0}
 
   .report{border:1px solid var(--line);border-radius:14px;overflow:hidden;margin:16px 0;background:var(--card)}
-  .report img{width:100%;display:block}
+  .report img{width:100%;height:auto;display:block}
   .report .lab{padding:11px 16px;font-size:13px;font-weight:700;border-bottom:1px solid var(--line)}
   .report .lab span{float:right;font-weight:400;color:var(--mut)}
 
@@ -153,19 +153,21 @@
   a.btn{cursor:pointer}
   a.btn.ghost:hover{border-color:#fff;color:#fff}
   a.btn.ghostd:hover{color:var(--ink);border-color:var(--mut)}
-  .demo{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 22px;margin-top:22px}
+  .demo{background:var(--card);border:1px solid var(--line);border-radius:16px;margin-top:22px;display:flex;flex-direction:column;overflow:hidden}
+  .demo-top{padding:14px 20px 0;border-bottom:1px solid var(--line)}
   .demo-bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
   .demo-pick{display:flex;gap:8px;flex-wrap:wrap}
-  .pick{font:inherit;font-size:14px;font-weight:700;color:var(--ink);background:#F4F6FE;border:1px solid var(--line);border-radius:10px;padding:8px 14px;cursor:pointer;text-align:left;line-height:1.35}
-  .pick span{display:block;font-size:12px;font-weight:400;color:var(--mut)}
+  .pick{font:inherit;font-size:14px;font-weight:700;color:var(--ink);background:#F4F6FE;border:1px solid var(--line);border-radius:10px;padding:6px 12px;cursor:pointer;text-align:left;line-height:1.35}
+  .pick span{margin-left:6px;font-size:12px;font-weight:400;color:var(--mut)}
   .pick.on{border-color:var(--indigo);background:#E9ECFB;box-shadow:inset 0 0 0 1px var(--indigo)}
   .pick:disabled{cursor:default;opacity:.7}
   .obj{font-size:13px;font-weight:700;color:var(--mut);display:flex;align-items:center;gap:8px}
-  .obj select{font:inherit;font-size:14px;font-weight:600;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#F4F6FE}
+  .obj select{font:inherit;font-size:13.5px;font-weight:600;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:6px 8px;background:#F4F6FE}
   .pick:focus-visible,.btn.run:focus-visible,.obj select:focus-visible,button.btn.ghostd:focus-visible{outline:2px solid var(--indigo);outline-offset:2px}
-  .labels{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 0}
-  .lbl{display:inline-flex;align-items:center;gap:6px;font-size:12px;border:1px solid var(--line);border-radius:999px;padding:3px 4px 3px 10px;color:var(--mut)}
-  .lbl b{font-size:10.5px;letter-spacing:.06em;border-radius:999px;padding:2px 8px;background:#EDEFFA;color:#303DAF}
+  .labels{display:flex;flex-wrap:nowrap;gap:5px;margin:10px 0 0;overflow-x:auto;scrollbar-width:none}
+  .labels::-webkit-scrollbar{display:none}
+  .lbl{flex:none;display:inline-flex;align-items:center;gap:5px;font-size:11.5px;border:1px solid var(--line);border-radius:999px;padding:2px 3px 2px 8px;color:var(--mut)}
+  .lbl b{font-size:10px;letter-spacing:.06em;border-radius:999px;padding:1px 7px;background:#EDEFFA;color:#303DAF}
   .lbl-live b{background:#E2F3EB;color:#0B6B4C}
   .lbl-simulated b,.lbl-mock b{background:#FCE8EF;color:#A61E4D}
   .lbl-code b,.lbl-stored b{background:#F1EFE8;color:#444441}
@@ -177,11 +179,11 @@
   .step:focus-visible,details>summary:focus-visible{outline:2px solid var(--indigo);outline-offset:2px}
 
   /* live demo: stepper and one stage at a time */
-  .stepper{list-style:none;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:18px 0 0;padding:0}
+  .stepper{list-style:none;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0 0;padding:0}
   .stepper li{border-top:3px solid var(--line)}
   .stepper li.done{border-color:var(--green)}
   .stepper li.current{border-color:var(--indigo)}
-  .step{display:flex;align-items:center;gap:8px;width:100%;padding:9px 0 0;font:inherit;font-size:13px;font-weight:700;color:var(--mut);background:none;border:0;text-align:left}
+  .step{display:flex;align-items:center;gap:8px;width:100%;padding:7px 0 10px;font:inherit;font-size:13px;font-weight:700;color:var(--mut);background:none;border:0;text-align:left}
   button.step{cursor:pointer}
   button.step:hover .step-t{text-decoration:underline;text-underline-offset:3px}
   button.step:disabled{cursor:default}
@@ -191,9 +193,17 @@
   .stepper li.current .step{color:var(--indigo)}
   .stepper li.current .step-n{background:var(--indigo);color:#fff}
   .stepper li.shown .step-t{text-decoration:underline;text-underline-offset:3px}
-  .stage{margin-top:14px;border:1px solid var(--line);border-radius:14px;padding:20px 22px 22px;background:#FBFCFF}
+  .stage-scroll{padding:16px 20px 20px;background-color:#FBFCFF;
+    background-image:linear-gradient(#FBFCFF 30%,rgba(251,252,255,0)),linear-gradient(rgba(251,252,255,0),#FBFCFF 70%),radial-gradient(farthest-side at 50% 0,rgba(21,27,59,.14),transparent),radial-gradient(farthest-side at 50% 100%,rgba(21,27,59,.14),transparent);
+    background-position:center top,center bottom,center top,center bottom;background-repeat:no-repeat;background-size:100% 28px,100% 28px,100% 10px,100% 10px;background-attachment:local,local,scroll,scroll}
+  .stage{margin:0;padding:0}
+  .stage-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:12px 20px;border-top:1px solid var(--line);background:var(--card)}
+  .stage-bar[hidden]{display:none}
+  /* On laptop and desktop screens the demo fits the window: the stage scrolls inside and the next step's button stays in view. */
+  @media (min-width:681px) and (min-height:560px){.demo{height:calc(100vh - 76px);min-height:500px;max-height:900px}.stage-scroll{flex:1;min-height:0;overflow:auto}}
+  @media (max-width:680px),(max-height:559px){.demo{overflow:visible}.stage-bar{position:sticky;bottom:0;z-index:2;border-radius:0 0 16px 16px;box-shadow:0 -6px 16px rgba(21,27,59,.06)}}
   .stage-k{font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--indigo)}
-  .stage-h{font-family:'Newsreader',Georgia,serif;font-size:24px;font-weight:500;margin:4px 0 8px}
+  .stage-h{font-family:'Newsreader',Georgia,serif;font-size:22px;font-weight:500;margin:2px 0 8px}
   .stage-intro{font-size:14.5px;color:#4B5169;margin:0 0 12px}
   .tags{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
   .chip{font-size:12px;font-weight:600;background:#EEF0F8;color:#4B5169;border-radius:999px;padding:3px 10px}
@@ -201,11 +211,11 @@
   .chip.ai{background:#EDEFFA;color:#303DAF}
   .chip.sim{background:#FCE8EF;color:#A61E4D}
   .chip.code{background:#F1EFE8;color:#444441}
-  .viewing{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;background:#F1F3FC;border-radius:10px;padding:8px 12px;margin-bottom:14px;font-size:13.5px;color:#4B5169}
+  .viewing{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;flex:1;font-size:13.5px;color:#4B5169}
   .viewing .btn{padding:6px 12px;font-size:13px}
   .dnote{background:#E9F6F0;color:#0B6B4C;border-radius:10px;padding:9px 14px;margin-bottom:14px;font-size:14px}
-  .stage-action{margin-top:20px;padding-top:16px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px}
-  .stage-action .dsub{margin:0;max-width:56ch}
+  .stage-bar .dsub{margin:0;flex:1;min-width:220px}
+  .stage-bar .derr{flex-basis:100%;margin:0}
   .dprogress{flex-basis:100%}
   .dprogress .bar{height:4px;border-radius:999px;background:#E6E9F8;overflow:hidden;position:relative}
   .dprogress .bar::after{content:"";position:absolute;top:0;bottom:0;left:0;width:35%;border-radius:999px;background:var(--indigo);animation:slide 1.2s ease-in-out infinite}
@@ -267,8 +277,15 @@
   .blog-more{display:inline-block;font-weight:700;color:var(--indigo);margin:0 0 18px}
   .blogp .mail-foot{margin:0 -24px}
 
-  .demo-foot{display:flex;flex-wrap:wrap;align-items:flex-start;gap:12px 18px;margin-top:16px}
-  .demo-note{font-size:13px;color:var(--mut);margin:0;max-width:none;flex:1;min-width:240px}
+  .demo-note{font-size:12.5px;color:var(--mut);margin:10px 4px 0;max-width:none}
+  .demo-tools{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+  button.btn.sm{padding:6px 12px;font-size:13px}
+  .strategy-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:22px;align-items:start}
+  .content-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:18px;align-items:start}
+  .kv.compact{grid-template-columns:96px 1fr}
+  .content-side .vs-card{margin-top:8px}
+  .content-side .kv{grid-template-columns:1fr;gap:2px}
+  .content-side .kv dt{padding-top:8px}
   .dlab{font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--indigo);margin-bottom:4px}
   .dsub{font-size:13px;color:var(--mut);margin-top:6px}
   .dsubhead{margin-top:16px}
@@ -294,9 +311,9 @@
   .timeline{margin:4px 0 0;padding-left:18px;font-size:14px}
   .timeline li{margin:6px 0}
   .derr{color:#A61E4D;background:#FCE8EF;border-radius:10px;padding:10px 14px;margin-top:14px;font-size:14px}
-  @media(max-width:680px){.two,.versus,.aud-list{grid-template-columns:1fr}.stepper{gap:4px}.step{flex-direction:column;align-items:flex-start;gap:4px;font-size:12px}
-    .stage{padding:16px 14px}.stage-h{font-size:21px}.rec{font-size:18px}.mail-head,.mail-body,.mail-foot{padding-left:14px;padding-right:14px}
-    .kv{grid-template-columns:1fr;gap:2px}.kv dt{padding-top:8px}.dtable .hm{display:none}}
+  @media(max-width:680px){.two,.versus,.aud-list,.strategy-grid,.content-grid{grid-template-columns:1fr}.stepper{gap:4px}.step{flex-direction:column;align-items:flex-start;gap:4px;font-size:12px}
+    .demo-top,.stage-scroll,.stage-bar{padding-left:14px;padding-right:14px}.stage-h{font-size:20px}.rec{font-size:18px}.mail-head,.mail-body,.mail-foot{padding-left:14px;padding-right:14px}
+    .kv,.kv.compact{grid-template-columns:1fr;gap:2px}.kv dt{padding-top:8px}.dtable .hm{display:none}.labels{flex-wrap:wrap}}
 </style></head>
 <body>
 <nav class="nav" aria-label="Case study sections"><div class="wrap"><div class="row">
@@ -569,13 +586,13 @@
     recommendation and the email are <span class="st st-ai">AI</span> output (Gemini in this run), shown unedited.
     Try the <a href="#live">live demo</a> to run your own.</p>
     <div class="report"><div class="lab">Step 2 · Results: what the baseline showed <em class="badge">simulated</em><span>calculated by code</span></div>
-      <img src="img/demo-results.jpg" alt="Results step: plain-language takeaways about audiences and channels from a simulated Ramp baseline, with the full data under See the data" loading="lazy"></div>
+      <img src="img/demo-results.jpg" width="1400" height="1315" alt="Results step: plain-language takeaways about audiences and channels from a simulated Ramp baseline, with the full data under See the data" loading="lazy"></div>
     <div class="report"><div class="lab">Step 3 · Strategy: what to test next <em class="st st-ai">AI</em><span>cites the measured results</span></div>
-      <img src="img/demo-strategy.jpg" alt="Strategy step: the Marketing Agent recommends an audience, channel, messaging angle and content type, with its hypothesis, reasoning, trade-off and the numbers behind it" loading="lazy"></div>
+      <img src="img/demo-strategy.jpg" width="1332" height="1400" alt="Strategy step: the Marketing Agent recommends an audience, channel, messaging angle and content type, with its hypothesis, reasoning, trade-off and the numbers behind it" loading="lazy"></div>
     <div class="report"><div class="lab">Step 4 · Content: the variant, previewed as an email <em class="st st-ai">AI</em><span>follows the recommendation</span></div>
-      <img src="img/demo-content.jpg" alt="Content step: the Content Agent's email shown as an inbox preview for a sample contact, followed by the new-variant versus best-so-far experiment" loading="lazy"></div>
+      <img src="img/demo-content.jpg" width="1299" height="1400" alt="Content step: the Content Agent's email shown as an inbox preview for a sample contact, followed by the new-variant versus best-so-far experiment" loading="lazy"></div>
     <div class="report"><div class="lab">Experiment 2 results: new variant vs best so far <em class="badge">simulated</em><span>calculated by code</span></div>
-      <img src="img/demo-verdict.jpg" alt="Results step after the test: the verdict comparing the new variant with the best-so-far variant, and updated takeaways" loading="lazy"></div>
+      <img src="img/demo-verdict.jpg" width="1090" height="1400" alt="Results step after the test: the verdict comparing the new variant with the best-so-far variant, and updated takeaways" loading="lazy"></div>
   </section>
 
   <section id="live">
@@ -585,25 +602,30 @@
     channel responds. Ask the Marketing Agent what to test next and review its recommendation, then have the Content
     Agent create the variant. Run it against the best version so far, and the next recommendation builds on what happened.</p>
     <div class="demo" id="demo">
-      <div class="demo-bar">
-        <div class="demo-pick" role="radiogroup" aria-label="Company">
-          <button type="button" class="pick on" data-company="ramp" role="radio" aria-checked="true">Ramp <span>segments by role</span></button>
-          <button type="button" class="pick" data-company="square" role="radio" aria-checked="false">Square <span>segments by business stage</span></button>
+      <div class="demo-top">
+        <div class="demo-bar">
+          <div class="demo-pick" role="radiogroup" aria-label="Company">
+            <button type="button" class="pick on" data-company="ramp" role="radio" aria-checked="true" title="Segments audiences by role">Ramp</button>
+            <button type="button" class="pick" data-company="square" role="radio" aria-checked="false" title="Segments audiences by business stage">Square</button>
+          </div>
+          <div class="demo-tools">
+            <label class="obj" for="demo-objective">Campaign objective <select id="demo-objective"></select></label>
+            <button type="button" class="btn ghostd sm" id="demo-reset">Start over</button>
+          </div>
         </div>
-        <label class="obj" for="demo-objective">Campaign objective <select id="demo-objective"></select></label>
+        <div class="labels" id="demo-labels" aria-label="What is live, simulated or AI"></div>
+        <ol class="stepper" id="demo-stepper" aria-label="Steps in the experiment loop"></ol>
       </div>
-      <div class="labels" id="demo-labels" aria-label="What is live, simulated or AI"></div>
-      <ol class="stepper" id="demo-stepper" aria-label="Steps in the experiment loop"></ol>
-      <div class="stage" id="demo-panel"></div>
-      <div id="demo-history" hidden></div>
-      <div class="demo-foot">
-        <button type="button" class="btn ghostd" id="demo-reset">Start over</button>
-        <p class="demo-note">Reach, clicks and CTR are simulated, and no emails or posts are sent. HubSpot contact and list
-        updates are real when the CRM label shows LIVE. Analytics are calculated by code; the Marketing and Content Agents
-        (Groq, with Gemini as fallback) only read those computed metrics and must cite them.</p>
+      <div class="stage-scroll" id="demo-scroll">
+        <div class="stage" id="demo-panel"></div>
+        <div id="demo-history" hidden></div>
       </div>
+      <div class="stage-bar" id="demo-actionbar" hidden></div>
       <script type="application/json" id="demo-static">{"companies":{"ramp":{"name":"Ramp","audiences":[{"id":"finance_leader","name":"Finance Leaders","channels":["email","linkedin","blog"]},{"id":"controller","name":"Controllers","channels":["email","linkedin","blog"]},{"id":"employee_spender","name":"Employee Spenders","channels":["email","blog"]}]},"square":{"name":"Square","audiences":[{"id":"new_seller","name":"New Sellers","channels":["email","instagram","facebook"]},{"id":"growing_business","name":"Growing Businesses","channels":["email","instagram","blog"]},{"id":"multi_location","name":"Multi-Location Operators","channels":["email","linkedin","facebook"]}]}},"objectives":[{"id":"awareness","label":"Awareness"},{"id":"traffic","label":"Traffic"},{"id":"engagement","label":"Engagement"},{"id":"product_consideration","label":"Product consideration"},{"id":"conversion","label":"Conversion"}],"defaultObjective":"product_consideration","maxExperiments":12,"labels":{"delivery":"SIMULATED","performance":"SIMULATED","analytics":"CODE","marketing":"AI","contentPlanning":"AI","contentGeneration":"AI","history":"STORED"}}</script>
     </div>
+    <p class="demo-note">Reach, clicks and CTR are simulated, and no emails or posts are sent. HubSpot contact and list
+    updates are real when the CRM label shows LIVE. Analytics are calculated by code; the Marketing and Content Agents
+    (Groq, with Gemini as fallback) only read those computed metrics and must cite them.</p>
   </section>
 
   <section id="real">

@@ -4,7 +4,9 @@
 (function(){
   var demo=document.getElementById('demo');if(!demo)return;
   var CH={email:'Email',linkedin:'LinkedIn',instagram:'Instagram',facebook:'Facebook',blog:'Blog'};
-  var LABEL_NAMES={crm:'HubSpot CRM',delivery:'Campaign delivery',performance:'Performance data',analytics:'Analytics',marketing:'Marketing recommendation',contentPlanning:'Content planning',contentGeneration:'Content generation',history:'Experiment history'};
+  var SEGMENTS={ramp:'by role',square:'by business stage'};
+  // One chip per part of the system; the three agent labels (marketing, content planning, content generation) share one.
+  var LABELS=[['crm','HubSpot CRM'],['delivery','Delivery'],['performance','Performance'],['analytics','Analytics'],['marketing','AI agents','Marketing recommendation, content planning and content generation'],['history','History']];
   var TOOL_NAMES={getCampaignObjective:'campaign objective',getAvailableChannels:'available channels',getAvailableMessagingAngles:'messaging angles and content types',getAudiencePerformance:'audience results',getChannelPerformance:'channel results',getMessagingPerformance:'messaging results',getContentPerformance:'content-type results',getExperimentHistory:'experiment history',getAudienceProfile:'audience profile',getPreviousContent:'content already tested',getMessagingHistory:'messaging history',getTopPerformingContent:'best-performing content',getBrandContext:'brand guidelines',getContentConstraints:'channel rules'};
   var DECISIONS={explore:'Trying something new',exploit:'Building on what works',retest:'Re-testing to confirm'};
   var STAGES=[['setup','Set up'],['results','Results'],['strategy','Strategy'],['content','Content']];
@@ -12,9 +14,9 @@
 
   function $(id){return document.getElementById(id)}
   var STATIC=JSON.parse($('demo-static').textContent);
-  var panel=$('demo-panel'),stepper=$('demo-stepper'),historyEl=$('demo-history'),resetBtn=$('demo-reset'),objSel=$('demo-objective'),labelsEl=$('demo-labels');
+  var panel=$('demo-panel'),scroller=$('demo-scroll'),actionbar=$('demo-actionbar'),stepper=$('demo-stepper'),historyEl=$('demo-history'),resetBtn=$('demo-reset'),objSel=$('demo-objective'),labelsEl=$('demo-labels');
   var picks=[].slice.call(demo.querySelectorAll('.pick'));
-  var company='ramp',state=null,busy=false,viewing=null,historyOpen=false,sessionId=getSessionId();
+  var company='ramp',state=null,busy=false,viewing=null,historyOpen=false,lastShown=null,sessionId=getSessionId();
 
   function getSessionId(){
     var id=null;try{id=localStorage.getItem('signalloop-session')}catch(e){}
@@ -47,8 +49,8 @@
     thead.appendChild(hr);t.appendChild(thead);
     rows.forEach(function(r){var tr=el('tr',r.cls||null);r.cells.forEach(function(c,i){tr.appendChild(el('td',cls(i),c))});tb.appendChild(tr)});
     t.appendChild(tb);wrap.appendChild(t);return wrap}
-  function kv(parent,pairs){
-    var dl=el('dl','kv');
+  function kv(parent,pairs,cls){
+    var dl=el('dl',cls||'kv');
     pairs.forEach(function(p){
       if(p[1]==null||p[1]==='')return;
       dl.appendChild(el('dt',null,p[0]));var dd=el('dd');
@@ -98,12 +100,15 @@
   function syncControls(){
     resetBtn.disabled=busy||!state;objSel.disabled=busy;
     picks.forEach(function(p){p.disabled=busy});
-    [].slice.call(stepper.querySelectorAll('button')).forEach(function(b){b.disabled=busy});
-    [].slice.call(panel.querySelectorAll('button')).forEach(function(b){b.disabled=busy});
+    [stepper,panel,actionbar].forEach(function(root){[].slice.call(root.querySelectorAll('button')).forEach(function(b){b.disabled=busy})});
   }
   function renderLabels(){
     labelsEl.textContent='';
-    Object.keys(LABEL_NAMES).forEach(function(k){var v=state.labels[k];if(!v)return;var c=el('span','lbl lbl-'+v.toLowerCase());c.appendChild(el('span',null,LABEL_NAMES[k]));c.appendChild(el('b',null,v));labelsEl.appendChild(c)});
+    LABELS.forEach(function(l){
+      var v=state.labels[l[0]];if(!v)return;
+      var c=el('span','lbl lbl-'+v.toLowerCase());if(l[2])c.title=l[2];
+      c.appendChild(el('span',null,l[1]));c.appendChild(el('b',null,v));labelsEl.appendChild(c);
+    });
   }
   function renderStepper(){
     var cur=stageIndex(stageOf());stepper.textContent='';
@@ -117,16 +122,20 @@
       li.appendChild(b);stepper.appendChild(li);
     });
   }
+  // The stage content goes in the scrolling panel; the next step's button, progress and errors go in the bar
+  // pinned under it, so they stay in view on a laptop screen.
   function renderPanel(){
-    panel.textContent='';
-    var cur=stageOf(),live=!viewing;
+    panel.textContent='';actionbar.textContent='';actionbar.hidden=true;
+    var cur=stageOf(),shown=viewing||cur;
+    ({setup:renderSetup,results:renderResults,strategy:renderStrategy,content:renderContent})[shown](!viewing);
     if(viewing){
-      var bar=el('div','viewing');bar.appendChild(el('span',null,'You are looking at an earlier step.'));
-      var back=el('button','btn ghostd','Back to '+STAGES[stageIndex(cur)][1].toLowerCase());back.type='button';
+      var bar=el('div','viewing'),back=el('button','btn run','Back to '+STAGES[stageIndex(cur)][1].toLowerCase());
+      bar.appendChild(el('span',null,'You are looking at an earlier step.'));back.type='button';
       back.addEventListener('click',function(){viewing=null;renderAll()});
-      bar.appendChild(back);panel.appendChild(bar);
+      bar.appendChild(back);actionbar.appendChild(bar);actionbar.hidden=false;
     }
-    ({setup:renderSetup,results:renderResults,strategy:renderStrategy,content:renderContent})[viewing||cur](live);
+    var key=shown+':'+state.experimentCount;
+    if(key!==lastShown){scroller.scrollTop=0;lastShown=key}
   }
   function head(step,title,intro,tags){
     var i=stageIndex(step);
@@ -137,15 +146,16 @@
   }
   function note(text,cls){panel.insertBefore(el('div',cls||'dnote',text),panel.firstChild)}
   function action(label,route,hint){
-    var box=el('div','stage-action'),btn=el('button','btn run',label);btn.type='button';
-    btn.addEventListener('click',function(){act(route,box)});
-    box.appendChild(btn);if(hint)box.appendChild(el('span','dsub',hint));panel.appendChild(box);
+    var btn=el('button','btn run',label);btn.type='button';
+    btn.addEventListener('click',function(){act(route)});
+    if(hint)actionbar.appendChild(el('span','dsub',hint));
+    actionbar.appendChild(btn);actionbar.hidden=false;
   }
   function rich(parent,parts){parts.forEach(function(p){parent.appendChild(typeof p==='string'?document.createTextNode(p):el('b',null,p.b))});return parent}
   function looked(x){return cap((x.toolCalls||[]).map(function(c){return (TOOL_NAMES[c.name]||c.name)+(c.suppliedBySystem?' (added by the system)':'')}).join(', '))+'.'}
 
   function renderSetup(live){
-    head('setup','Start with a baseline','Every audience gets its original message on each channel it uses. That gives SignalLoop something to measure before the agents suggest what to change.');
+    head('setup','Start with a baseline',STATIC.companies[company].name+' segments its audiences '+SEGMENTS[company]+'. The baseline sends each audience its original message on every channel it uses, so SignalLoop has something to measure before the agents suggest what to change.');
     var ul=el('ul','aud-list');
     STATIC.companies[company].audiences.forEach(function(a){
       var li=el('li');li.appendChild(el('b',null,a.name));li.appendChild(el('span',null,a.channels.map(function(c){return CH[c]}).join(' · ')));ul.appendChild(li);
@@ -187,7 +197,7 @@
     panel.appendChild(d);
 
     if(!live)return;
-    if(state.experimentCount>=state.maxExperiments)panel.appendChild(el('div','dsum','This session has reached '+state.maxExperiments+' experiments. Start over to run more.'));
+    if(state.experimentCount>=state.maxExperiments){actionbar.appendChild(el('span','dsub','This session has reached '+state.maxExperiments+' experiments. Start over to run more.'));actionbar.hidden=false}
     else action('Get a recommendation','strategy','The Marketing Agent reads these results and suggests what to test next. You review it before any content is written.');
   }
   function dimTable(title,rows){var w=el('div');w.appendChild(el('div','dlab dsubhead',title+', all audiences'));w.appendChild(table([title,'Reach','CTR'],rows.map(function(r){return {cells:[r.label,String(r.reach),pct(r.ctr)]}}),1));return w}
@@ -222,33 +232,43 @@
   function renderStrategy(live){
     var m=state.pendingPlan.marketing,r=m.recommendation,n=state.experimentCount+1;
     head('strategy','What should experiment '+n+' test?',null,[['AI · '+m.provider+' · '+m.model,'ai']]);
-    panel.appendChild(rich(el('p','rec'),['Reach ',{b:aud(r.priorityAudience)},' on ',{b:CH[r.recommendedChannel]},' with ',{b:angle(r.recommendedAngle)},' messaging in a ',{b:ctype(r.recommendedContentType).toLowerCase()},' format.']));
-    var chips=el('div','tags');chips.appendChild(el('span','chip',DECISIONS[r.decisionType]||r.decisionType));chips.appendChild(el('span','chip',cap(r.confidence)+' confidence'));panel.appendChild(chips);
-    kv(panel,[['Hypothesis',r.hypothesis],['Why',r.reasoning],['Trade-off',r.tradeoff]]);
-    panel.appendChild(el('div','dlab dsubhead','The numbers behind it'));
+    var grid=el('div','strategy-grid'),left=el('div'),right=el('div');
+    left.appendChild(rich(el('p','rec'),['Reach ',{b:aud(r.priorityAudience)},' on ',{b:CH[r.recommendedChannel]},' with ',{b:angle(r.recommendedAngle)},' messaging in a ',{b:ctype(r.recommendedContentType).toLowerCase()},' format.']));
+    var chips=el('div','tags');chips.appendChild(el('span','chip',DECISIONS[r.decisionType]||r.decisionType));chips.appendChild(el('span','chip',cap(r.confidence)+' confidence'));left.appendChild(chips);
+    kv(left,[['Hypothesis',r.hypothesis],['Why',r.reasoning],['Trade-off',r.tradeoff]],'kv compact');
+    right.appendChild(el('div','dlab','The numbers behind it'));
     var ul=el('ul','why');
     m.evidence.forEach(function(e){
       var li=el('li');li.appendChild(el('div',null,e.statement));
       if(e.metric){var parts=[e.metric.label];if(e.metric.reach)parts.push(pct(e.metric.ctr)+' CTR','clicks '+e.metric.clicks+' of '+e.metric.reach+' reached');if(e.metric.deltaPp!=null)parts.push(pp(e.metric.deltaPp));li.appendChild(el('div','dsub',parts.join(' · ')))}
       ul.appendChild(li);
     });
-    panel.appendChild(ul);
-    var d=el('details','data');d.appendChild(el('summary',null,'What the agent looked at'));d.appendChild(el('p','dsub',looked(m)));panel.appendChild(d);
+    right.appendChild(ul);
+    var d=el('details','data');d.appendChild(el('summary',null,'What the agent looked at'));d.appendChild(el('p','dsub',looked(m)));right.appendChild(d);
+    grid.appendChild(left);grid.appendChild(right);panel.appendChild(grid);
     if(live)action('Create content for this','content','The Content Agent plans and writes the variant for '+aud(r.priorityAudience)+' on '+CH[r.recommendedChannel]+'.');
   }
 
   function renderContent(live){
     var plan=state.pendingPlan,c=plan.content,cp=c.contentPlan,r=plan.marketing.recommendation,n=state.experimentCount+1;
     head('content','The variant for experiment '+n,null,[['AI · '+c.provider+' · '+c.model,'ai'],[CH[r.recommendedChannel]+' · '+ctype(r.recommendedContentType)]]);
-    panel.appendChild(preview(r.recommendedChannel,c.generatedContent,c.sampleContact,cp.cta));
+    var grid=el('div','content-grid'),side=el('div','content-side');
+    grid.appendChild(preview(r.recommendedChannel,c.generatedContent,c.sampleContact,cp.cta));
+    side.appendChild(el('div','dlab','The experiment'));
+    plan.spec.cells.forEach(function(x){
+      var card=el('div','vs-card'+(x.role==='test'?' test':''));
+      card.appendChild(el('div','vs-l',variantLabel(x)));
+      card.appendChild(el('div','vs-h','“'+x.variant.headline+'”'));
+      card.appendChild(el('div','dsub',angle(x.messagingAngle)+' · '+ctype(x.contentType)));
+      card.appendChild(el('div','dsub',Math.round(x.share*100)+'% of '+aud(x.audienceId)+' on '+CH[x.channel]));
+      side.appendChild(card);
+    });
+    side.appendChild(el('div','dsum','Hypothesis: '+r.hypothesis));
     var d=el('details','data');d.appendChild(el('summary',null,'Why this content'));
     kv(d,[['Audience insight',cp.audienceInsight],['Content angle',cp.contentAngle],['Topic',cp.topic],['Hook',cp.hook],['Key message',cp.keyMessage],['Supporting points',cp.supportingPoints],['Tone',cp.tone],['Format',cp.format],['Content brief',cp.contentBrief]]);
     d.appendChild(el('p','dsub','What the agent looked at: '+looked(c)));
-    panel.appendChild(d);
-    panel.appendChild(el('div','dlab dsubhead','The experiment'));
-    panel.appendChild(table(['Variant','Audience','Channel','Angle','Content type','Headline','Audience split'],plan.spec.cells.map(function(x){
-      return {cells:[variantLabel(x),aud(x.audienceId),CH[x.channel],angle(x.messagingAngle),ctype(x.contentType),x.variant.headline,Math.round(x.share*100)+'%']}}),6,[3,4,6]));
-    panel.appendChild(el('div','dsum','Hypothesis: '+r.hypothesis));
+    side.appendChild(d);
+    grid.appendChild(side);panel.appendChild(grid);
     if(live)action('Run as experiment '+n,'run','Updates HubSpot, then measures a simulated response: the new variant for half of '+aud(r.priorityAudience)+', the best so far for the other half.');
   }
 
@@ -341,15 +361,15 @@
   }
 
   // --- actions ---
-  async function act(route,box){
-    if(busy)return;busy=true;syncControls();
-    [].slice.call(panel.querySelectorAll('.derr,.dnote')).forEach(function(e){e.remove()});
+  async function act(route){
+    if(busy)return;busy=true;syncControls();bringIntoView();
+    [].slice.call(demo.querySelectorAll('.derr,.dnote')).forEach(function(e){e.remove()});
     var progress=el('div','dprogress'),msg=el('div','dsub',WORKING[route]);msg.setAttribute('role','status');
-    progress.appendChild(el('div','bar'));progress.appendChild(msg);box.appendChild(progress);
+    progress.appendChild(el('div','bar'));progress.appendChild(msg);actionbar.appendChild(progress);
     var res=await api('POST',route,{objective:objSel.value});
     busy=false;
     if(!res.network&&res.status===409&&await refreshFromServer()){
-      viewing=null;renderAll();bringIntoView();
+      viewing=null;renderAll();
       note('The copy of this demo saved in your browser was out of date, so it has been refreshed. Continue from here.');
     }else if(res.network||!res.ok){
       progress.remove();syncControls();
@@ -357,13 +377,21 @@
       if(res.body&&res.body.attempts&&res.body.attempts.length){
         err.appendChild(el('div','dsub','Tried: '+res.body.attempts.map(function(a){return a.provider?(a.provider+(a.status?' ('+a.status+')':'')):(a.errors||[]).join('; ')}).join(', ')));
       }
-      err.style.flexBasis='100%';box.appendChild(err);
+      actionbar.appendChild(err);
     }else{
       state=res.body;saveState();viewing=null;renderAll();bringIntoView();
     }
   }
-  // The next step replaces the panel in place. If the top of the demo has scrolled out of view, bring it back.
-  function bringIntoView(){var top=stepper.getBoundingClientRect().top;if(top<0)scrollBy(0,top-80)}
+  // Keep the whole demo frame on screen while it is in use. On laptops the frame is sized to the window, so
+  // this lines it up under the site navigation; on phones it brings the top of the new step into view.
+  function bringIntoView(force){
+    var nav=document.querySelector('.nav'),top=(nav?nav.getBoundingClientRect().height:0)+12,r=demo.getBoundingClientRect();
+    if(force||r.top<top-1||r.bottom>innerHeight+1){
+      // Layout position, not the on-screen one, so the section's fade-in offset does not throw off the alignment.
+      var y=0;for(var n=demo;n;n=n.offsetParent)y+=n.offsetTop;
+      scrollTo({top:y-top,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+    }
+  }
 
   function load(){
     if(!objSel.options.length){
@@ -389,4 +417,12 @@
     load();
   })});
   load();
+
+  // Links to the live demo land with the whole demo frame in view, not just the section heading above it.
+  [].slice.call(document.querySelectorAll('a[href="#live"]')).forEach(function(a){
+    a.addEventListener('click',function(e){e.preventDefault();if(history.replaceState)history.replaceState(null,'','#live');bringIntoView(true)});
+  });
+  function alignOnArrival(){if(location.hash==='#live')setTimeout(function(){bringIntoView(true)},50)}
+  if(document.readyState==='complete')alignOnArrival();else addEventListener('load',alignOnArrival);
+  addEventListener('hashchange',alignOnArrival);
 })();
