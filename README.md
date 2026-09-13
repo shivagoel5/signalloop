@@ -108,14 +108,38 @@ signalloop/
 
 Without an AI key, the demo still runs baselines and analytics, and clearly reports that the agents are not connected.
 
-## Run locally (Node 20+)
+## Run locally (Node 22.9+)
 
-```bash
-npm install
-npm run dev
-```
+1. Install dependencies and create your local environment file. `.env` is ignored by git; never commit it.
 
-Then open `http://localhost:8888/#live`. Run the tests with `npm test`.
+   ```bash
+   npm install
+   cp .env.example .env
+   ```
+
+2. Open `.env` and add `GROQ_API_KEY` and/or `GEMINI_API_KEY`. Keep `HUBSPOT_MODE=mock` locally unless you want test runs to write to HubSpot.
+
+3. Check that the providers support what the agents need (a reply, tool calling and JSON-schema output):
+
+   ```bash
+   npm run check:ai
+   ```
+
+4. Run one real loop in the terminal (baseline, then Marketing Agent and Content Agent):
+
+   ```bash
+   npm run try:loop
+   ```
+
+   Optionally pass a company and objective, for example `npm run try:loop -- square traffic`.
+
+5. Preview the site and live demo at `http://localhost:8888/#live`:
+
+   ```bash
+   npm run dev
+   ```
+
+Run the automated tests (no keys needed) with `npm test`.
 
 ---
 
